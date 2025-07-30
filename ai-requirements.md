@@ -1,8 +1,8 @@
-# AI Integration Requirements for Anki Clone
+# AI Integration Requirements for Anki AI
 
 ## Executive Summary
 
-This document outlines a comprehensive AI integration roadmap to enhance the Anki Clone application with intelligent features that improve the user experience, particularly in deck and card creation. The integration will leverage Google's Gemini 1.5 Flash model through Vercel AI SDK to automate content generation, provide intelligent suggestions, and enhance the learning experience through personalized recommendations.
+This document outlines a comprehensive AI integration roadmap to enhance the Anki AI application with intelligent features that improve the user experience, particularly in deck and card creation. The integration will leverage Google's Gemini 1.5 Flash model through Vercel AI SDK to automate content generation, provide intelligent suggestions, and enhance the learning experience through personalized recommendations.
 
 ## Current State Analysis
 

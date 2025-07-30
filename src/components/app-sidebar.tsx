@@ -2,7 +2,16 @@
 
 import * as React from "react";
 import { useSession } from "next-auth/react";
-import { Send, SquareTerminal, GithubIcon, Brain, BookOpen, BarChart3, Play, Search } from "lucide-react";
+import {
+  Send,
+  SquareTerminal,
+  GithubIcon,
+  Brain,
+  BookOpen,
+  BarChart3,
+  Play,
+  Search,
+} from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
@@ -93,7 +102,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Brain className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Anki Clone</span>
+                  <span className="truncate font-medium">Anki AI</span>
                   <span className="truncate text-xs">Flashcard Learning</span>
                 </div>
               </Link>

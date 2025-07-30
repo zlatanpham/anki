@@ -13,6 +13,19 @@ const cardSchema = z.object({
     clozeText: z.string().optional(),
     tags: z.array(z.string()).optional(),
   }))
+  .refine((cards) => 
+    cards.every(card => {
+      if (card.type === 'BASIC') {
+        return card.front && card.back && !card.clozeText;
+      } else if (card.type === 'CLOZE') {
+        return card.clozeText && card.clozeText.includes('{{c') && card.clozeText.includes('}}');
+      }
+      return false;
+    }),
+    {
+      message: "Invalid card format. BASIC cards need front/back, CLOZE cards need clozeText with {{c1::text}} syntax"
+    }
+  )
 });
 
 // Cloze suggestion schema
@@ -90,24 +103,67 @@ export class AICardService {
         schema: cardSchema,
         prompt: `You are an expert flashcard creator. Generate high-quality educational flashcards from the following text.
         
+IMPORTANT FORMATTING RULES:
+1. BASIC cards must have:
+   - type: "BASIC"
+   - front: A question or prompt
+   - back: The answer
+   - DO NOT include clozeText for basic cards
+
+2. CLOZE cards must have:
+   - type: "CLOZE"
+   - clozeText: Full sentence with deletions marked as {{c1::hidden text}} or {{c2::another hidden text}}
+   - DO NOT include front/back for cloze cards
+   - MUST use the exact format: {{c1::text to hide}} with double curly braces
+
+Examples of valid CLOZE cards:
+- "The capital of {{c1::France}} is {{c2::Paris}}"
+- "{{c1::Photosynthesis}} is the process by which plants convert light energy into chemical energy"
+- "The {{c1::mitochondria}} is known as the {{c2::powerhouse}} of the cell"
+
 Guidelines:
-1. Create both BASIC (front/back) and CLOZE deletion cards where appropriate
-2. For BASIC cards: Front should be a question or prompt, back should be the answer
-3. For CLOZE cards: Use {{c1::text}} syntax for deletions, create meaningful deletions
-4. Add relevant tags based on the content topic
-5. Ensure cards are concise, clear, and test one concept at a time
-6. Avoid creating duplicate or overly similar cards
+- Create a mix of BASIC and CLOZE cards
+- For CLOZE cards, hide key terms, numbers, names, or important concepts
+- Use c1, c2, c3 etc. for multiple deletions in the same card
+- Add relevant tags based on the content topic
+- Keep cards concise and focused on one concept
 
 ${deckContext ? `Deck context: ${deckContext}` : ''}
 
 Text to process:
 ${input}
 
-Generate diverse, high-quality flashcards that will help with learning and retention.`,
+Generate diverse flashcards following the exact format specified above.`,
         maxRetries: 2, // Reduce retries for overload errors
       });
       
-      return object.cards;
+      // Validate and fix cloze cards
+      const validatedCards = object.cards.map(card => {
+        if (card.type === 'CLOZE' && card.clozeText) {
+          // Ensure cloze text has proper format
+          if (!card.clozeText.includes('{{c') || !card.clozeText.includes('}}')) {
+            console.warn('Invalid cloze format detected:', card.clozeText);
+            // Try to fix common issues
+            let fixed = card.clozeText;
+            // Replace {c1:text} with {{c1::text}}
+            fixed = fixed.replace(/\{c(\d+):([^}]+)\}/g, '{{c$1::$2}}');
+            // Replace {{c1:text}} with {{c1::text}}
+            fixed = fixed.replace(/\{\{c(\d+):([^}]+)\}\}/g, '{{c$1::$2}}');
+            // If still no valid format, skip this card
+            if (!fixed.includes('{{c') || !fixed.includes('::') || !fixed.includes('}}')) {
+              console.error('Could not fix cloze format, skipping card');
+              return null;
+            }
+            card.clozeText = fixed;
+          }
+          // Clear front/back for cloze cards
+          card.front = '';
+          card.back = undefined;
+        }
+        return card;
+      }).filter(Boolean) as GeneratedCard[];
+      
+      return validatedCards;
     } catch (error: any) {
       console.error('Error generating cards:', error);
       

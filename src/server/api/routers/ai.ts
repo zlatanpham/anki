@@ -205,6 +205,39 @@ export const aiRouter = createTRPCRouter({
       };
     }),
 
+  // Debug endpoint for testing card generation
+  testGeneration: protectedProcedure
+    .input(
+      z.object({
+        text: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (!env.GOOGLE_GENERATIVE_AI_API_KEY) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "AI features are not configured.",
+        });
+      }
+
+      const aiService = getAIService();
+      
+      // Generate with simpler text
+      const testText = input.text || "Hello means a greeting. Goodbye means farewell.";
+      const cards = await aiService.generateCards(testText);
+      
+      return {
+        input: testText,
+        generated: cards,
+        debug: cards.map(c => ({
+          type: c.type,
+          hasClozeText: !!c.clozeText,
+          clozeTextPreview: c.clozeText?.substring(0, 100),
+          isValidCloze: c.clozeText?.includes('{{c') && c.clozeText?.includes('}}'),
+        }))
+      };
+    }),
+
   // Get AI usage stats
   getUsageStats: protectedProcedure.query(async ({ ctx }) => {
     const stats = await ctx.db.aIGeneration.aggregate({

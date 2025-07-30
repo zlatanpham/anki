@@ -180,9 +180,8 @@ export default function DeckCardsPage() {
     }
   };
 
-  const isLoading = isDeckLoading || isCardsLoading;
-
-  if (isLoading) {
+  // Only show full page skeleton on initial load when deck is loading
+  if (isDeckLoading) {
     return (
       <div className="container mx-auto p-6 max-w-6xl">
         <div className="flex items-center gap-4 mb-6">
@@ -391,7 +390,13 @@ export default function DeckCardsPage() {
       </Card>
 
       {/* Cards List */}
-      {filteredCards.length === 0 ? (
+      {isCardsLoading ? (
+        <div className="space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <SkeletonCardPreview key={i} />
+          ))}
+        </div>
+      ) : filteredCards.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
             {searchFilters.search ? (

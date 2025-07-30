@@ -6,7 +6,9 @@
       "WebFetch(domain:docs.ankiweb.net)",
       "Bash(pnpm run:*)",
       "Bash(pnpm add:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(pnpm dlx playwright install:*)",
+      "Bash(curl:*)"
     ],
     "deny": []
   }

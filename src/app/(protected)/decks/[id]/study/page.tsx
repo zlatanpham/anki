@@ -13,6 +13,17 @@ import Link from "next/link";
 import { ArrowLeft, Clock, BarChart3, Pause, Play, RotateCcw, BookOpen } from "lucide-react";
 import { type ReviewRating } from "@prisma/client";
 import { ClozeDisplay } from "@/components/ClozeDisplay";
+import { SkeletonStudyCard } from "@/components/ui/skeleton-card";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { ratingColors, ratingLabels, ratingKeys } from "@/lib/theme";
 
 interface StudySession {
   cards: any[];
@@ -172,10 +183,20 @@ export default function DeckStudyPage() {
 
   if (isLoadingQueue) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+      <div className="container mx-auto p-6 max-w-4xl">
+        <div className="flex items-center gap-4 mb-6">
+          <Skeleton className="h-9 w-32" />
+          <Skeleton className="h-8 w-48" />
+        </div>
+        
+        <div className="mb-6">
+          <Skeleton className="h-2 w-full" />
+        </div>
+        
+        <SkeletonStudyCard />
+        
+        <div className="flex justify-center mt-6 gap-3">
+          <Skeleton className="h-16 w-32" />
         </div>
       </div>
     );
@@ -184,26 +205,41 @@ export default function DeckStudyPage() {
   if (!session) {
     return (
       <div className="container mx-auto p-6 max-w-4xl">
+        <Breadcrumb className="mb-4">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link href="/">Dashboard</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link href="/decks">Decks</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link href={`/decks/${deckId}/cards`}>{deck?.name || "Deck"}</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Study</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              onClick={() => router.push(`/decks/${deckId}/cards`)}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to {deck?.name || "Deck"}
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold flex items-center gap-2">
-                <BookOpen className="w-6 h-6" />
-                Study: {deck?.name}
-              </h1>
-              <p className="text-muted-foreground">
-                Focus on cards from this deck
-              </p>
-            </div>
-          </div>
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <BookOpen className="w-6 h-6" />
+            Study: {deck?.name}
+          </h1>
+          <p className="text-muted-foreground">
+            Focus on cards from this deck
+          </p>
         </div>
 
         {/* Study Stats */}
@@ -336,20 +372,20 @@ export default function DeckStudyPage() {
       {/* Session Stats */}
       <div className="grid grid-cols-4 gap-2 mb-6">
         <div className="text-center p-2 bg-red-50 rounded">
-          <div className="font-semibold text-red-600">{session.sessionStats.again}</div>
-          <div className="text-xs text-red-600">Again</div>
+          <div className={`font-semibold ${ratingColors.again.textColor}`}>{session.sessionStats.again}</div>
+          <div className={`text-xs ${ratingColors.again.textColor}`}>{ratingLabels.again}</div>
         </div>
         <div className="text-center p-2 bg-orange-50 rounded">
-          <div className="font-semibold text-orange-600">{session.sessionStats.hard}</div>
-          <div className="text-xs text-orange-600">Hard</div>
+          <div className={`font-semibold ${ratingColors.hard.textColor}`}>{session.sessionStats.hard}</div>
+          <div className={`text-xs ${ratingColors.hard.textColor}`}>{ratingLabels.hard}</div>
         </div>
         <div className="text-center p-2 bg-green-50 rounded">
-          <div className="font-semibold text-green-600">{session.sessionStats.good}</div>
-          <div className="text-xs text-green-600">Good</div>
+          <div className={`font-semibold ${ratingColors.good.textColor}`}>{session.sessionStats.good}</div>
+          <div className={`text-xs ${ratingColors.good.textColor}`}>{ratingLabels.good}</div>
         </div>
         <div className="text-center p-2 bg-blue-50 rounded">
-          <div className="font-semibold text-blue-600">{session.sessionStats.easy}</div>
-          <div className="text-xs text-blue-600">Easy</div>
+          <div className={`font-semibold ${ratingColors.easy.textColor}`}>{session.sessionStats.easy}</div>
+          <div className={`text-xs ${ratingColors.easy.textColor}`}>{ratingLabels.easy}</div>
         </div>
       </div>
 
@@ -446,42 +482,42 @@ export default function DeckStudyPage() {
               <span className="ml-2 text-xs opacity-70">Space</span>
             </Button>
           ) : (
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Button
-                variant="destructive"
+                variant={ratingColors.again.variant}
                 onClick={() => submitCardReview("AGAIN")}
                 disabled={submitReview.isPending}
-                className="flex flex-col gap-1 h-16"
+                className={`flex flex-col gap-1 min-h-[64px] p-4 text-base sm:text-sm ${ratingColors.again.variant === "destructive" ? "" : ratingColors.again.className}`}
               >
-                <span>Again</span>
-                <span className="text-xs opacity-70">1</span>
+                <span className="font-semibold">{ratingLabels.again}</span>
+                <span className="text-xs opacity-70 hidden sm:block">Press {ratingKeys.again}</span>
               </Button>
               <Button
-                variant="outline"
+                variant={ratingColors.hard.variant}
                 onClick={() => submitCardReview("HARD")}
                 disabled={submitReview.isPending}
-                className="flex flex-col gap-1 h-16 border-orange-200 text-orange-600 hover:bg-orange-50"
+                className={`flex flex-col gap-1 min-h-[64px] p-4 text-base sm:text-sm ${ratingColors.hard.className}`}
               >
-                <span>Hard</span>
-                <span className="text-xs opacity-70">2</span>
+                <span className="font-semibold">{ratingLabels.hard}</span>
+                <span className="text-xs opacity-70 hidden sm:block">Press {ratingKeys.hard}</span>
               </Button>
               <Button
-                variant="outline"
+                variant={ratingColors.good.variant}
                 onClick={() => submitCardReview("GOOD")}
                 disabled={submitReview.isPending}
-                className="flex flex-col gap-1 h-16 border-green-200 text-green-600 hover:bg-green-50"
+                className={`flex flex-col gap-1 min-h-[64px] p-4 text-base sm:text-sm ${ratingColors.good.className}`}
               >
-                <span>Good</span>
-                <span className="text-xs opacity-70">3</span>
+                <span className="font-semibold">{ratingLabels.good}</span>
+                <span className="text-xs opacity-70 hidden sm:block">Press {ratingKeys.good}</span>
               </Button>
               <Button
-                variant="outline"
+                variant={ratingColors.easy.variant}
                 onClick={() => submitCardReview("EASY")}
                 disabled={submitReview.isPending}
-                className="flex flex-col gap-1 h-16 border-blue-200 text-blue-600 hover:bg-blue-50"
+                className={`flex flex-col gap-1 min-h-[64px] p-4 text-base sm:text-sm ${ratingColors.easy.variant === "default" ? "" : ratingColors.easy.className}`}
               >
-                <span>Easy</span>
-                <span className="text-xs opacity-70">4</span>
+                <span className="font-semibold">{ratingLabels.easy}</span>
+                <span className="text-xs opacity-70 hidden sm:block">Press {ratingKeys.easy}</span>
               </Button>
             </div>
           )}

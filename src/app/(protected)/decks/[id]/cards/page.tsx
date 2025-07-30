@@ -47,6 +47,16 @@ import { ClozePreview } from "@/components/ClozeDisplay";
 import { validateClozeText, renderClozeContext } from "@/lib/cloze";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { AdvancedSearch } from "@/components/AdvancedSearch";
+import { SkeletonCardPreview } from "@/components/ui/skeleton-card";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 interface CreateCardForm {
   cardType: CardType;
@@ -174,12 +184,32 @@ export default function DeckCardsPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading cards...</p>
+      <div className="container mx-auto p-6 max-w-6xl">
+        <div className="flex items-center gap-4 mb-6">
+          <Button variant="ghost" size="sm" disabled>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Decks
+          </Button>
+          <div className="flex-1">
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-64" />
           </div>
+        </div>
+        
+        <Card className="mb-6">
+          <CardContent className="p-4">
+            <Skeleton className="h-10 w-full mb-2" />
+            <div className="flex gap-2">
+              <Skeleton className="h-9 w-24" />
+              <Skeleton className="h-9 w-24" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <div className="space-y-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <SkeletonCardPreview key={i} />
+          ))}
         </div>
       </div>
     );
@@ -205,14 +235,28 @@ export default function DeckCardsPage() {
 
   return (
     <div className="container mx-auto p-6 max-w-6xl">
-      <div className="flex items-center gap-4 mb-6">
-        <Link href="/decks">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Decks
-          </Button>
-        </Link>
-        <div className="flex-1">
+      <Breadcrumb className="mb-4">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link href="/">Dashboard</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link href="/decks">Decks</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{deck.name}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      
+      <div className="flex items-center justify-between mb-6">
+        <div>
           <h1 className="text-3xl font-bold">{deck.name}</h1>
           <p className="text-muted-foreground">
             Manage cards in this deck • {cardsData?.totalCount || 0} cards total
@@ -463,7 +507,7 @@ export default function DeckCardsPage() {
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label="Card options">
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>

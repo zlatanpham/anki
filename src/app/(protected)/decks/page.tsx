@@ -32,6 +32,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { ImportWizard } from "@/components/ImportWizard";
+import { SkeletonCardList } from "@/components/ui/skeleton-card";
 import { ExportDeck } from "@/components/ExportDeck";
 import {
   DropdownMenu,
@@ -126,12 +127,13 @@ export default function DecksPage() {
   if (isLoading) {
     return (
       <div className="container mx-auto p-6">
-        <div className="flex min-h-[400px] items-center justify-center">
-          <div className="text-center">
-            <div className="border-primary mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2"></div>
-            <p className="text-muted-foreground">Loading decks...</p>
-          </div>
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold">My Decks</h1>
+          <p className="text-muted-foreground">
+            Manage your flashcard decks and track your learning progress
+          </p>
         </div>
+        <SkeletonCardList count={6} />
       </div>
     );
   }
@@ -275,7 +277,7 @@ export default function DecksPage() {
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label="Deck options">
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useSession } from "next-auth/react";
-import { Send, SquareTerminal, GithubIcon, ComponentIcon, BookOpen, BarChart3, Play, Search } from "lucide-react";
+import { Send, SquareTerminal, GithubIcon, Brain, BookOpen, BarChart3, Play, Search } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
@@ -50,12 +50,12 @@ const data = {
   navSecondary: [
     {
       title: "Github",
-      url: "https://github.com/your-username/next-starter",
+      url: "https://github.com/zlatanpham/anki",
       icon: GithubIcon,
     },
     {
       title: "Feedback",
-      url: "https://github.com/your-username/next-starter/issues",
+      url: "https://github.com/zlatanpham/anki/issues",
       icon: Send,
     },
   ],
@@ -83,18 +83,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }, [session]);
 
   return (
-    <Sidebar variant="inset" {...props}>
+    <Sidebar variant="inset" collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/">
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <ComponentIcon className="size-4" />
+                  <Brain className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Next Starter</span>
-                  <span className="truncate text-xs">Boilerplate</span>
+                  <span className="truncate font-medium">Anki Clone</span>
+                  <span className="truncate text-xs">Flashcard Learning</span>
                 </div>
               </Link>
             </SidebarMenuButton>

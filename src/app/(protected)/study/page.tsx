@@ -12,6 +12,9 @@ import Link from "next/link";
 import { ArrowLeft, Clock, BarChart3, Pause, Play, RotateCcw } from "lucide-react";
 import { type ReviewRating } from "@prisma/client";
 import { ClozeDisplay } from "@/components/ClozeDisplay";
+import { SkeletonStudyCard, SkeletonCard } from "@/components/ui/skeleton-card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ratingColors, ratingLabels, ratingKeys } from "@/lib/theme";
 
 interface StudySession {
   cards: any[];
@@ -170,12 +173,15 @@ export default function StudyPage() {
 
   if (isLoadingQueue) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading study session...</p>
-          </div>
+      <div className="container mx-auto p-6 max-w-4xl">
+        <div className="flex items-center gap-4 mb-6">
+          <Skeleton className="h-9 w-32" />
+          <Skeleton className="h-8 w-32" />
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <SkeletonCard />
+          <SkeletonCard />
         </div>
       </div>
     );
@@ -309,10 +315,10 @@ export default function StudyPage() {
         </div>
         
         <div className="flex items-center gap-2">
-          <Button onClick={togglePause} variant="outline" size="sm">
+          <Button onClick={togglePause} variant="outline" size="sm" aria-label={isPaused ? "Resume study" : "Pause study"}>
             {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
           </Button>
-          <Button onClick={restartSession} variant="outline" size="sm">
+          <Button onClick={restartSession} variant="outline" size="sm" aria-label="Restart session">
             <RotateCcw className="h-4 w-4" />
           </Button>
         </div>
@@ -401,41 +407,42 @@ export default function StudyPage() {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Button
-                variant="destructive"
+                variant={ratingColors.again.variant}
                 onClick={() => submitCardReview("AGAIN")}
                 disabled={submitReview.isPending}
-                className="flex flex-col h-auto py-3"
+                className={`flex flex-col gap-1 min-h-[64px] p-4 text-base sm:text-sm ${ratingColors.again.variant === "destructive" ? "" : ratingColors.again.className}`}
               >
-                <span className="font-semibold">Again</span>
-                <span className="text-xs opacity-75">Press 1</span>
+                <span className="font-semibold">{ratingLabels.again}</span>
+                <span className="text-xs opacity-70 hidden sm:block">Press {ratingKeys.again}</span>
               </Button>
               <Button
-                variant="outline"
+                variant={ratingColors.hard.variant}
                 onClick={() => submitCardReview("HARD")}
                 disabled={submitReview.isPending}
-                className="flex flex-col h-auto py-3 border-orange-200 text-orange-700 hover:bg-orange-50"
+                className={`flex flex-col gap-1 min-h-[64px] p-4 text-base sm:text-sm ${ratingColors.hard.className}`}
               >
-                <span className="font-semibold">Hard</span>
-                <span className="text-xs opacity-75">Press 2</span>
+                <span className="font-semibold">{ratingLabels.hard}</span>
+                <span className="text-xs opacity-70 hidden sm:block">Press {ratingKeys.hard}</span>
               </Button>
               <Button
-                variant="outline"
+                variant={ratingColors.good.variant}
                 onClick={() => submitCardReview("GOOD")}
                 disabled={submitReview.isPending}
-                className="flex flex-col h-auto py-3 border-green-200 text-green-700 hover:bg-green-50"
+                className={`flex flex-col gap-1 min-h-[64px] p-4 text-base sm:text-sm ${ratingColors.good.className}`}
               >
-                <span className="font-semibold">Good</span>
-                <span className="text-xs opacity-75">Press 3</span>
+                <span className="font-semibold">{ratingLabels.good}</span>
+                <span className="text-xs opacity-70 hidden sm:block">Press {ratingKeys.good}</span>
               </Button>
               <Button
+                variant={ratingColors.easy.variant}
                 onClick={() => submitCardReview("EASY")}
                 disabled={submitReview.isPending}
-                className="flex flex-col h-auto py-3 bg-blue-600 hover:bg-blue-700"
+                className={`flex flex-col gap-1 min-h-[64px] p-4 text-base sm:text-sm ${ratingColors.easy.variant === "default" ? "bg-blue-600 hover:bg-blue-700" : ratingColors.easy.className}`}
               >
-                <span className="font-semibold">Easy</span>
-                <span className="text-xs opacity-75">Press 4</span>
+                <span className="font-semibold">{ratingLabels.easy}</span>
+                <span className="text-xs opacity-70 hidden sm:block">Press {ratingKeys.easy}</span>
               </Button>
             </div>
           )}

@@ -416,19 +416,27 @@ export default function DeckCardsPage() {
                       <div>
                         <div className="text-sm font-medium text-muted-foreground mb-1">Front</div>
                         <div className="text-sm bg-muted/50 p-3 rounded border-l-2 border-blue-200">
-                          {card.front.length > 150 
-                            ? `${card.front.substring(0, 150)}...` 
-                            : card.front
-                          }
+                          <div 
+                            className="prose prose-sm max-w-none line-clamp-3"
+                            dangerouslySetInnerHTML={{ 
+                              __html: card.front.length > 150 
+                                ? card.front.substring(0, 150) + '...' 
+                                : card.front
+                            }}
+                          />
                         </div>
                       </div>
                       <div>
                         <div className="text-sm font-medium text-muted-foreground mb-1">Back</div>
                         <div className="text-sm bg-muted/50 p-3 rounded border-l-2 border-green-200">
-                          {card.back.length > 150 
-                            ? `${card.back.substring(0, 150)}...` 
-                            : card.back
-                          }
+                          <div 
+                            className="prose prose-sm max-w-none line-clamp-3"
+                            dangerouslySetInnerHTML={{ 
+                              __html: card.back.length > 150 
+                                ? card.back.substring(0, 150) + '...' 
+                                : card.back
+                            }}
+                          />
                         </div>
                       </div>
                     </div>

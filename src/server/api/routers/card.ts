@@ -379,12 +379,23 @@ export const cardRouter = createTRPCRouter({
       const userId = ctx.session.user.id;
 
       try {
-        // First check if user owns the deck containing the card
+        // First check if user owns the deck containing the card or is a member of the organization
         const existingCard = await ctx.db.card.findFirst({
           where: {
             id: input.id,
             deck: {
-              user_id: userId,
+              OR: [
+                { user_id: userId },
+                {
+                  organization: {
+                    OrganizationMember: {
+                      some: {
+                        user_id: userId,
+                      },
+                    },
+                  },
+                },
+              ],
             },
           },
         });

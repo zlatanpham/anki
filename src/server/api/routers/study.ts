@@ -497,4 +497,455 @@ export const studyRouter = createTRPCRouter({
         });
       }
     }),
+
+  // Get review queue for a specific deck
+  getDeckReviewQueue: protectedProcedure
+    .input(z.object({
+      deckId: z.string().uuid(),
+      limit: z.number().min(1).max(50).default(20),
+    }))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const { deckId, limit } = input;
+      const now = new Date();
+
+      try {
+        const whereConditions = {
+          user_id: userId,
+          due_date: { lte: now },
+          state: { not: "SUSPENDED" },
+          card: {
+            deck_id: deckId,
+            deck: {
+              OR: [
+                { user_id: userId },
+                {
+                  organization: {
+                    OrganizationMember: {
+                      some: {
+                        user_id: userId,
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        };
+
+        const cardStates = await ctx.db.cardState.findMany({
+          where: whereConditions,
+          include: {
+            card: {
+              include: {
+                deck: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: [
+            { state: "asc" }, // NEW, LEARNING, REVIEW
+            { due_date: "asc" },
+          ],
+          take: limit,
+        });
+
+        return cardStates.map(cardState => ({
+          ...cardState.card,
+          cardState,
+        }));
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch deck review queue",
+          cause: error,
+        });
+      }
+    }),
+
+  // Get due cards count for a specific deck
+  getDeckDueCardsCount: protectedProcedure
+    .input(z.object({
+      deckId: z.string().uuid(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const { deckId } = input;
+      const now = new Date();
+
+      try {
+        const whereConditions = {
+          user_id: userId,
+          due_date: { lte: now },
+          state: { not: "SUSPENDED" },
+          card: {
+            deck_id: deckId,
+            deck: {
+              OR: [
+                { user_id: userId },
+                {
+                  organization: {
+                    OrganizationMember: {
+                      some: {
+                        user_id: userId,
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        };
+
+        const [due, new_, learning] = await Promise.all([
+          ctx.db.cardState.count({
+            where: whereConditions,
+          }),
+          ctx.db.cardState.count({
+            where: { ...whereConditions, state: "NEW" },
+          }),
+          ctx.db.cardState.count({
+            where: { ...whereConditions, state: "LEARNING" },
+          }),
+        ]);
+
+        return {
+          due,
+          new: new_,
+          learning,
+        };
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch deck due cards count",
+          cause: error,
+        });
+      }
+    }),
+
+  // Get comprehensive deck statistics
+  getDeckStats: protectedProcedure
+    .input(z.object({
+      deckId: z.string().uuid(),
+      period: z.enum(["today", "week", "month", "all"]).default("week"),
+    }))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const { deckId, period } = input;
+      const now = new Date();
+      
+      let startDate: Date;
+      switch (period) {
+        case "today":
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          break;
+        case "week":
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case "month":
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          break;
+        case "all":
+        default:
+          startDate = new Date(0);
+          break;
+      }
+
+      try {
+        const [reviews, cardStates] = await Promise.all([
+          ctx.db.review.findMany({
+            where: {
+              user_id: userId,
+              reviewed_at: { gte: startDate },
+              card: {
+                deck_id: deckId,
+                deck: {
+                  OR: [
+                    { user_id: userId },
+                    {
+                      organization: {
+                        OrganizationMember: {
+                          some: { user_id: userId },
+                        },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+            include: { card: true },
+          }),
+          ctx.db.cardState.findMany({
+            where: {
+              user_id: userId,
+              card: {
+                deck_id: deckId,
+                deck: {
+                  OR: [
+                    { user_id: userId },
+                    {
+                      organization: {
+                        OrganizationMember: {
+                          some: { user_id: userId },
+                        },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          }),
+        ]);
+
+        const totalReviews = reviews.length;
+        const totalTimeMs = reviews.reduce((sum, review) => sum + (review.response_time || 0), 0);
+        const totalTimeMinutes = totalTimeMs / (1000 * 60);
+        const averageResponseTime = totalReviews > 0 ? totalTimeMs / totalReviews : 0;
+
+        const successfulReviews = reviews.filter(r => r.rating === "GOOD" || r.rating === "EASY").length;
+        const accuracy = totalReviews > 0 ? (successfulReviews / totalReviews) * 100 : 0;
+
+        const masteredCards = cardStates.filter(cs => cs.state === "REVIEW" && cs.interval >= 21).length;
+        const learningCards = cardStates.filter(cs => cs.state === "LEARNING" || cs.state === "NEW").length;
+
+        // Calculate streak (simplified - just days with reviews)
+        const reviewDays = new Set(reviews.map(r => r.reviewed_at.toDateString())).size;
+        
+        return {
+          totalReviews,
+          totalTimeMinutes,
+          averageResponseTime,
+          accuracy,
+          masteredCards,
+          learningCards,
+          currentStreak: reviewDays, // Simplified streak calculation
+          bestStreak: reviewDays, // Would need more complex logic for actual best streak
+          studyDays: reviewDays,
+        };
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch deck statistics",
+          cause: error,
+        });
+      }
+    }),
+
+  // Get deck activity data for charts
+  getDeckActivity: protectedProcedure
+    .input(z.object({
+      deckId: z.string().uuid(),
+      period: z.enum(["today", "week", "month", "all"]).default("week"),
+    }))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const { deckId, period } = input;
+      const now = new Date();
+      
+      let startDate: Date;
+      let days: number;
+      switch (period) {
+        case "today":
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          days = 1;
+          break;
+        case "week":
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          days = 7;
+          break;
+        case "month":
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          days = 30;
+          break;
+        case "all":
+        default:
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // Last 30 days for chart
+          days = 30;
+          break;
+      }
+
+      try {
+        const reviews = await ctx.db.review.findMany({
+          where: {
+            user_id: userId,
+            reviewed_at: { gte: startDate },
+            card: {
+              deck_id: deckId,
+              deck: {
+                OR: [
+                  { user_id: userId },
+                  {
+                    organization: {
+                      OrganizationMember: {
+                        some: { user_id: userId },
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        });
+
+        // Group reviews by date
+        const dailyData: Record<string, { reviews: number; totalTime: number }> = {};
+        
+        for (let i = 0; i < days; i++) {
+          const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
+          const dateKey = date.toISOString().split('T')[0];
+          dailyData[dateKey] = { reviews: 0, totalTime: 0 };
+        }
+
+        reviews.forEach(review => {
+          const dateKey = review.reviewed_at.toISOString().split('T')[0];
+          if (dailyData[dateKey]) {
+            dailyData[dateKey].reviews++;
+            dailyData[dateKey].totalTime += review.response_time || 0;
+          }
+        });
+
+        return Object.entries(dailyData).map(([date, data]) => ({
+          date,
+          reviews: data.reviews,
+          averageTime: data.reviews > 0 ? data.totalTime / data.reviews : 0,
+        }));
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch deck activity",
+          cause: error,
+        });
+      }
+    }),
+
+  // Get deck review distribution (Again, Hard, Good, Easy)
+  getDeckReviewDistribution: protectedProcedure
+    .input(z.object({
+      deckId: z.string().uuid(),
+      period: z.enum(["today", "week", "month", "all"]).default("week"),
+    }))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const { deckId, period } = input;
+      const now = new Date();
+      
+      let startDate: Date;
+      switch (period) {
+        case "today":
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          break;
+        case "week":
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case "month":
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          break;
+        case "all":
+        default:
+          startDate = new Date(0);
+          break;
+      }
+
+      try {
+        const reviews = await ctx.db.review.findMany({
+          where: {
+            user_id: userId,
+            reviewed_at: { gte: startDate },
+            card: {
+              deck_id: deckId,
+              deck: {
+                OR: [
+                  { user_id: userId },
+                  {
+                    organization: {
+                      OrganizationMember: {
+                        some: { user_id: userId },
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        });
+
+        const distribution = {
+          again: reviews.filter(r => r.rating === "AGAIN").length,
+          hard: reviews.filter(r => r.rating === "HARD").length,
+          good: reviews.filter(r => r.rating === "GOOD").length,
+          easy: reviews.filter(r => r.rating === "EASY").length,
+        };
+
+        return distribution;
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch deck review distribution",
+          cause: error,
+        });
+      }
+    }),
+
+  // Get card performance data (placeholder for future enhancement)
+  getDeckCardPerformance: protectedProcedure
+    .input(z.object({
+      deckId: z.string().uuid(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const { deckId } = input;
+
+      try {
+        // This could be expanded to show individual card performance
+        // For now, returning basic data
+        const cardStates = await ctx.db.cardState.findMany({
+          where: {
+            user_id: userId,
+            card: {
+              deck_id: deckId,
+              deck: {
+                OR: [
+                  { user_id: userId },
+                  {
+                    organization: {
+                      OrganizationMember: {
+                        some: { user_id: userId },
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+          include: {
+            card: {
+              select: {
+                id: true,
+                front: true,
+                card_type: true,
+              },
+            },
+          },
+        });
+
+        return cardStates.map(cs => ({
+          cardId: cs.card.id,
+          cardType: cs.card.card_type,
+          state: cs.state,
+          interval: cs.interval,
+          easinessFactor: cs.easiness_factor,
+          lapses: cs.lapses,
+        }));
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch card performance data",
+          cause: error,
+        });
+      }
+    }),
 });

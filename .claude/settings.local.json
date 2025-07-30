@@ -5,7 +5,8 @@
       "Bash(pnpm run lint:*)",
       "WebFetch(domain:docs.ankiweb.net)",
       "Bash(pnpm run:*)",
-      "Bash(pnpm add:*)"
+      "Bash(pnpm add:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": []
   }

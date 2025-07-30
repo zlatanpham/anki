@@ -464,13 +464,20 @@ export default function DeckCardsPage() {
       {/* Study Deck Action */}
       {filteredCards.length > 0 && (
         <div className="mt-8 text-center border-t pt-8">
-          <Link href={`/decks/${deckId}/study`}>
-            <Button size="lg" className="px-8">
-              Study This Deck
-            </Button>
-          </Link>
+          <div className="flex justify-center gap-4">
+            <Link href={`/decks/${deckId}/study`}>
+              <Button size="lg" className="px-8">
+                Study This Deck
+              </Button>
+            </Link>
+            <Link href={`/decks/${deckId}/stats`}>
+              <Button size="lg" variant="outline" className="px-8">
+                View Stats
+              </Button>
+            </Link>
+          </div>
           <p className="text-sm text-muted-foreground mt-2">
-            Start a focused study session with cards from this deck only
+            Start a focused study session or view detailed performance statistics
           </p>
         </div>
       )}

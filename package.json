@@ -30,6 +30,7 @@
     "test:unit:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@ai-sdk/google": "^1.2.22",
     "@auth/prisma-adapter": "^2.7.2",
     "@hookform/resolvers": "^5.0.1",
     "@prisma/client": "^6.5.0",
@@ -62,6 +63,7 @@
     "@trpc/client": "^11.0.0",
     "@trpc/react-query": "^11.0.0",
     "@trpc/server": "^11.0.0",
+    "ai": "^4.3.19",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

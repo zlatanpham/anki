@@ -21,6 +21,9 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+    GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
+    AI_MODEL: z.string().default("gemini-1.5-flash"),
+    AI_RATE_LIMIT: z.string().default("100"),
   },
 
   /**
@@ -46,6 +49,9 @@ export const env = createEnv({
     EMAIL_FROM: process.env.EMAIL_FROM,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL, // Add NEXTAUTH_URL
     NODE_ENV: process.env.NODE_ENV,
+    GOOGLE_GENERATIVE_AI_API_KEY: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+    AI_MODEL: process.env.AI_MODEL,
+    AI_RATE_LIMIT: process.env.AI_RATE_LIMIT,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

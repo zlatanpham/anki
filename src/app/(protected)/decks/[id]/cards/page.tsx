@@ -48,6 +48,9 @@ import { validateClozeText, renderClozeContext } from "@/lib/cloze";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { AdvancedSearch } from "@/components/AdvancedSearch";
 import { SkeletonCardPreview } from "@/components/ui/skeleton-card";
+import { AICardGenerator } from "@/components/ai/AICardGenerator";
+import { ClozeSuggestions } from "@/components/ai/ClozeSuggestions";
+import { GrammarChecker } from "@/components/ai/GrammarChecker";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Breadcrumb,
@@ -75,7 +78,7 @@ export default function DeckCardsPage() {
     cardType: undefined as "BASIC" | "CLOZE" | undefined,
     tags: [] as string[],
     deckIds: [deckId],
-    searchFields: ["front", "back", "cloze_text", "tags"] as string[],
+    searchFields: ["front", "back", "cloze_text", "tags"] as ("front" | "back" | "cloze_text" | "tags")[],
     createdAfter: undefined as Date | undefined,
     createdBefore: undefined as Date | undefined,
     sortBy: "created_at" as "created_at" | "updated_at" | "front",
@@ -92,10 +95,10 @@ export default function DeckCardsPage() {
   });
 
   // Get deck details
-  const { data: deck, isLoading: isDeckLoading } = api.deck.getById.useQuery({ id: deckId });
+  const { data: deck, isLoading: isDeckLoading, refetch: refetchDeck } = api.deck.getById.useQuery({ id: deckId });
 
   // Get cards for this deck
-  const { data: cardsData, isLoading: isCardsLoading, refetch } = api.card.getByDeck.useQuery({
+  const { data: cardsData, isLoading: isCardsLoading, refetch: refetchCards } = api.card.getByDeck.useQuery({
     deckId,
     ...searchFilters,
     search: searchFilters.search || undefined,
@@ -115,7 +118,7 @@ export default function DeckCardsPage() {
         clozeText: "",
         tags: "",
       });
-      void refetch();
+      void refetchCards();
     },
     onError: (error) => {
       toast.error(`Failed to create card: ${error.message}`);
@@ -126,7 +129,7 @@ export default function DeckCardsPage() {
   const deleteCard = api.card.delete.useMutation({
     onSuccess: () => {
       toast.success("Card deleted successfully!");
-      void refetch();
+      void refetchCards();
     },
     onError: (error) => {
       toast.error(`Failed to delete card: ${error.message}`);
@@ -262,13 +265,22 @@ export default function DeckCardsPage() {
           </p>
         </div>
         
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Card
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <AICardGenerator 
+            deckId={deckId} 
+            deckName={deck.name}
+            onCardsAdded={() => {
+              void refetchCards();
+              void refetchDeck();
+            }}
+          />
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Card
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Create New Card</DialogTitle>
@@ -304,7 +316,13 @@ export default function DeckCardsPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="front">Front (Question)</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="front">Front (Question)</Label>
+                    <GrammarChecker
+                      text={createForm.front.replace(/<[^>]*>/g, '')}
+                      onApply={(corrected) => setCreateForm(prev => ({ ...prev, front: corrected }))}
+                    />
+                  </div>
                   <div className="mt-1">
                     <RichTextEditor
                       content={createForm.front}
@@ -316,7 +334,13 @@ export default function DeckCardsPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="back">Back (Answer)</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="back">Back (Answer)</Label>
+                    <GrammarChecker
+                      text={createForm.back.replace(/<[^>]*>/g, '')}
+                      onApply={(corrected) => setCreateForm(prev => ({ ...prev, back: corrected }))}
+                    />
+                  </div>
                   <div className="mt-1">
                     <RichTextEditor
                       content={createForm.back}
@@ -329,7 +353,19 @@ export default function DeckCardsPage() {
 
                 {createForm.cardType === "CLOZE" && (
                   <div>
-                    <Label htmlFor="clozeText">Cloze Context</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="clozeText">Cloze Context</Label>
+                      <div className="flex gap-2">
+                        <ClozeSuggestions 
+                          initialText={createForm.clozeText.replace(/<[^>]*>/g, '')}
+                          onApply={(clozeText) => setCreateForm(prev => ({ ...prev, clozeText }))}
+                        />
+                        <GrammarChecker
+                          text={createForm.clozeText.replace(/<[^>]*>/g, '')}
+                          onApply={(corrected) => setCreateForm(prev => ({ ...prev, clozeText: corrected }))}
+                        />
+                      </div>
+                    </div>
                     <div className="mt-1">
                       <RichTextEditor
                         content={createForm.clozeText}
@@ -372,7 +408,8 @@ export default function DeckCardsPage() {
               </DialogFooter>
             </form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {/* Search Interface */}

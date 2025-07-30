@@ -75,6 +75,7 @@ model User {
     Deck                   Deck[]
     Review                 Review[]
     CardState              CardState[]
+    AIGeneration           AIGeneration[]
 }
 
 model VerificationToken {
@@ -120,6 +121,7 @@ model Deck {
     user            User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
     organization    Organization? @relation(fields: [organization_id], references: [id], onDelete: SetNull)
     cards           Card[]
+    AIGeneration    AIGeneration[]
     
     @@index([user_id])
     @@index([organization_id])
@@ -190,4 +192,22 @@ model CardState {
     @@index([user_id, state])
     @@index([card_id])
     @@index([due_date])
+}
+
+model AIGeneration {
+    id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    user_id         String
+    deck_id         String?  @db.Uuid
+    input_text      String   @db.Text
+    generated_cards Json
+    tokens_used     Int
+    model_used      String
+    created_at      DateTime @default(now()) @db.Timestamptz(6)
+    
+    user            User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+    deck            Deck?    @relation(fields: [deck_id], references: [id], onDelete: SetNull)
+    
+    @@index([user_id])
+    @@index([deck_id])
+    @@index([created_at])
 }

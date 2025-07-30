@@ -116,8 +116,8 @@ CardState {
 - handleLapse(currentState): CardState
 
 // src/server/services/deckImport.ts
-- parseApkgFile(file: Buffer): DeckData
-- convertToInternalFormat(ankiData): Deck & Card[]
+- parseJsonFile(file: Buffer): DeckData
+- convertToInternalFormat(jsonData): Deck & Card[]
 - validateImportData(data): ValidationResult
 ```
 
@@ -199,9 +199,9 @@ CardState {
 #### 6. Import/Export Functionality
 - **Priority:** Medium
 - **Tasks:**
-  - Build .apkg file parser
+  - Build JSON file parser for deck imports
   - Create deck import wizard
-  - Implement deck export to .apkg format
+  - Implement deck export to JSON format
   - Add import validation and error handling
 
 #### 7. Statistics and Progress Tracking
@@ -277,8 +277,8 @@ CardState {
 - **Performance:** Indexed queries on due_date and user_id
 
 #### Import/Export Format
-- **Primary:** Anki .apkg format for compatibility
-- **Secondary:** JSON export for data portability
+- **Primary:** JSON format for data portability and ease of implementation
+- **Future consideration:** Anki .apkg format for compatibility with existing Anki users
 - **Consideration:** Media file handling for images/audio
 
 ## Success Metrics

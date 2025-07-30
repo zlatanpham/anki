@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { api } from "@/trpc/react";
 import Link from "next/link";
+import { SkeletonDashboard } from "@/components/ui/skeleton-card";
+import { ratingColors, ratingLabels } from "@/lib/theme";
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -27,15 +29,21 @@ export default function DashboardPage() {
   const user = session?.user as { name?: string; email?: string };
 
   // Get due cards count for dashboard
-  const { data: dueCardsCount } = api.study.getDueCardsCount.useQuery({});
+  const { data: dueCardsCount, isLoading: isLoadingDue } = api.study.getDueCardsCount.useQuery({});
 
   // Get recent decks
-  const { data: decksData } = api.deck.getAll.useQuery({ limit: 3 });
+  const { data: decksData, isLoading: isLoadingDecks } = api.deck.getAll.useQuery({ limit: 3 });
 
   // Get study stats for today
-  const { data: studyStats } = api.study.getStudyStats.useQuery({
+  const { data: studyStats, isLoading: isLoadingStats } = api.study.getStudyStats.useQuery({
     period: "today",
   });
+
+  const isLoading = isLoadingDue || isLoadingDecks || isLoadingStats;
+
+  if (isLoading) {
+    return <SkeletonDashboard />;
+  }
 
   return (
     <div className="container mx-auto space-y-6 p-6">
@@ -233,28 +241,28 @@ export default function DashboardPage() {
           <CardContent>
             <div className="grid grid-cols-2 gap-4 text-center md:grid-cols-4">
               <div>
-                <div className="text-2xl font-bold text-red-600">
+                <div className={`text-2xl font-bold ${ratingColors.again.textColor}`}>
                   {studyStats.ratingBreakdown.AGAIN}
                 </div>
-                <div className="text-muted-foreground text-sm">Again</div>
+                <div className="text-muted-foreground text-sm">{ratingLabels.again}</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-orange-600">
+                <div className={`text-2xl font-bold ${ratingColors.hard.textColor}`}>
                   {studyStats.ratingBreakdown.HARD}
                 </div>
-                <div className="text-muted-foreground text-sm">Hard</div>
+                <div className="text-muted-foreground text-sm">{ratingLabels.hard}</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-green-600">
+                <div className={`text-2xl font-bold ${ratingColors.good.textColor}`}>
                   {studyStats.ratingBreakdown.GOOD}
                 </div>
-                <div className="text-muted-foreground text-sm">Good</div>
+                <div className="text-muted-foreground text-sm">{ratingLabels.good}</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-blue-600">
+                <div className={`text-2xl font-bold ${ratingColors.easy.textColor}`}>
                   {studyStats.ratingBreakdown.EASY}
                 </div>
-                <div className="text-muted-foreground text-sm">Easy</div>
+                <div className="text-muted-foreground text-sm">{ratingLabels.easy}</div>
               </div>
             </div>
           </CardContent>

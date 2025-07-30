@@ -34,6 +34,7 @@ model Organization {
     updated_at         DateTime?            @default(now()) @db.Timestamptz(6)
     User               User?                @relation(fields: [owner_user_id], references: [id], onUpdate: NoAction, map: "fk_owner_user")
     OrganizationMember OrganizationMember[]
+    Deck               Deck[]
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -71,6 +72,9 @@ model User {
     Organization           Organization[]
     OrganizationMember     OrganizationMember[]
     Session                Session[]
+    Deck                   Deck[]
+    Review                 Review[]
+    CardState              CardState[]
 }
 
 model VerificationToken {
@@ -79,4 +83,111 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+// Flashcard System Models
+
+enum CardType {
+    BASIC
+    CLOZE
+}
+
+enum CardStateEnum {
+    NEW
+    LEARNING
+    REVIEW
+    SUSPENDED
+}
+
+enum ReviewRating {
+    AGAIN
+    HARD
+    GOOD
+    EASY
+}
+
+model Deck {
+    id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    name            String        @db.VarChar(255)
+    description     String?       @db.Text
+    user_id         String
+    organization_id String?       @db.Uuid
+    is_public       Boolean       @default(false)
+    settings        Json?
+    created_at      DateTime      @default(now()) @db.Timestamptz(6)
+    updated_at      DateTime      @default(now()) @updatedAt @db.Timestamptz(6)
+    
+    user            User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+    organization    Organization? @relation(fields: [organization_id], references: [id], onDelete: SetNull)
+    cards           Card[]
+    
+    @@index([user_id])
+    @@index([organization_id])
+    @@index([created_at])
+}
+
+model Card {
+    id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    deck_id     String    @db.Uuid
+    card_type   CardType  @default(BASIC)
+    front       String    @db.Text
+    back        String    @db.Text
+    cloze_text  String?   @db.Text
+    tags        String[]  @default([])
+    note_id     String?   @db.Uuid
+    created_at  DateTime  @default(now()) @db.Timestamptz(6)
+    updated_at  DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+    
+    deck        Deck        @relation(fields: [deck_id], references: [id], onDelete: Cascade)
+    reviews     Review[]
+    card_states CardState[]
+    
+    @@index([deck_id])
+    @@index([note_id])
+    @@index([card_type])
+    @@index([created_at])
+}
+
+model Review {
+    id                String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    card_id           String        @db.Uuid
+    user_id           String
+    rating            ReviewRating
+    response_time     Int           // milliseconds
+    reviewed_at       DateTime      @default(now()) @db.Timestamptz(6)
+    previous_interval Int           // days
+    new_interval      Int           // days
+    easiness_factor   Float
+    
+    card              Card          @relation(fields: [card_id], references: [id], onDelete: Cascade)
+    user              User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+    
+    @@index([card_id])
+    @@index([user_id])
+    @@index([reviewed_at])
+    @@index([rating])
+}
+
+model CardState {
+    id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    card_id         String        @db.Uuid
+    user_id         String
+    state           CardStateEnum @default(NEW)
+    due_date        DateTime      @db.Timestamptz(6)
+    interval        Int           @default(0)          // days
+    repetitions     Int           @default(0)
+    easiness_factor Float         @default(2.5)
+    lapses          Int           @default(0)
+    last_reviewed   DateTime?     @db.Timestamptz(6)
+    created_at      DateTime      @default(now()) @db.Timestamptz(6)
+    updated_at      DateTime      @default(now()) @updatedAt @db.Timestamptz(6)
+    
+    card            Card          @relation(fields: [card_id], references: [id], onDelete: Cascade)
+    user            User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+    
+    @@unique([card_id, user_id])
+    @@index([user_id, due_date])
+    @@index([user_id, state])
+    @@index([card_id])
+    @@index([due_date])
 }

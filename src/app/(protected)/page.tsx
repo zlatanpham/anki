@@ -8,8 +8,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { UserIcon, SettingsIcon, ShieldIcon } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import {
+  UserIcon,
+  BookOpen,
+  Play,
+  BarChart3,
+  Plus,
+} from "lucide-react";
+import { api } from "@/trpc/react";
 import Link from "next/link";
 
 export default function DashboardPage() {
@@ -17,91 +26,286 @@ export default function DashboardPage() {
 
   const user = session?.user as { name?: string; email?: string };
 
+  // Get due cards count for dashboard
+  const { data: dueCardsCount } = api.study.getDueCardsCount.useQuery({});
+
+  // Get recent decks
+  const { data: decksData } = api.deck.getAll.useQuery({ limit: 3 });
+
+  // Get study stats for today
+  const { data: studyStats } = api.study.getStudyStats.useQuery({
+    period: "today",
+  });
+
   return (
     <div className="container mx-auto space-y-6 p-6">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground">
-          Welcome back{user?.name ? `, ${user.name}` : ""}!
+          Welcome back{user?.name ? `, ${user.name}` : ""}! Ready to learn
+          something new today?
         </p>
       </div>
 
+      {/* Study Overview */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Due Cards</CardTitle>
+            <Play className="text-muted-foreground h-4 w-4" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {dueCardsCount?.totalDue || 0}
+            </div>
+            <p className="text-muted-foreground text-xs">Ready for review</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Today's Reviews
+            </CardTitle>
+            <BarChart3 className="text-muted-foreground h-4 w-4" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {studyStats?.totalReviews || 0}
+            </div>
+            <p className="text-muted-foreground text-xs">
+              {studyStats?.accuracy
+                ? `${studyStats.accuracy}% accuracy`
+                : "No reviews yet"}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Study Streak</CardTitle>
+            <BarChart3 className="text-muted-foreground h-4 w-4" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {studyStats?.studyStreak || 0}
+            </div>
+            <p className="text-muted-foreground text-xs">days in a row</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Decks</CardTitle>
+            <BookOpen className="text-muted-foreground h-4 w-4" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {decksData?.totalCount || 0}
+            </div>
+            <p className="text-muted-foreground text-xs">decks created</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
+              <Play className="h-5 w-5" />
+              Study Session
+            </CardTitle>
+            <CardDescription>Start reviewing your due cards</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {dueCardsCount && dueCardsCount.totalDue > 0 ? (
+              <>
+                <div className="flex justify-between text-sm">
+                  <span>New cards:</span>
+                  <Badge variant="secondary">{dueCardsCount.newCards}</Badge>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Learning:</span>
+                  <Badge variant="outline">{dueCardsCount.learningCards}</Badge>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Review:</span>
+                  <Badge variant="default">{dueCardsCount.reviewCards}</Badge>
+                </div>
+                <Link
+                  href="/study"
+                  className={cn(buttonVariants({ variant: "default", size: "default" }), "w-full")}
+                >
+                  <Play className="mr-2 h-4 w-4" />
+                  Start Studying
+                </Link>
+              </>
+            ) : (
+              <>
+                <p className="text-muted-foreground text-sm">
+                  All caught up! No cards due for review.
+                </p>
+                <Button variant="outline" className="w-full">
+                  <Link href="/decks">Browse Decks</Link>
+                </Button>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5" />
+              My Decks
+            </CardTitle>
+            <CardDescription>Manage your flashcard collections</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {decksData?.decks && decksData.decks.length > 0 ? (
+              <>
+                <div className="space-y-2">
+                  {decksData.decks.slice(0, 2).map((deck) => (
+                    <div
+                      key={deck.id}
+                      className="flex items-center justify-between text-sm"
+                    >
+                      <span className="truncate">{deck.name}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {deck._count.cards}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+                <Link
+                  href="/decks"
+                  className={cn(buttonVariants({ variant: "outline", size: "default" }), "w-full")}
+                >
+                  View All Decks
+                </Link>
+              </>
+            ) : (
+              <>
+                <p className="text-muted-foreground text-sm">
+                  Create your first deck to start learning.
+                </p>
+                <Link
+                  href="/decks"
+                  className={cn(buttonVariants({ variant: "default", size: "default" }), "w-full")}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create First Deck
+                </Link>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
               <UserIcon className="h-5 w-5" />
-              Profile
+              Account
             </CardTitle>
-            <CardDescription>
-              Manage your account settings and preferences
-            </CardDescription>
+            <CardDescription>Manage your profile and settings</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button variant="outline" className="w-full">
-              <Link href="/account">View Account</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <SettingsIcon className="h-5 w-5" />
-              Settings
-            </CardTitle>
-            <CardDescription>
-              Configure your application preferences
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button variant="outline" className="w-full" disabled>
-              Coming Soon
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ShieldIcon className="h-5 w-5" />
-              Security
-            </CardTitle>
-            <CardDescription>
-              Manage your security settings and permissions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button variant="outline" className="w-full" disabled>
-              Coming Soon
-            </Button>
+            <Link
+              href="/account"
+              className={cn(buttonVariants({ variant: "outline", size: "default" }), "w-full")}
+            >
+              View Account
+            </Link>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Getting Started</CardTitle>
-          <CardDescription>
-            Start building your application with this boilerplate
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="prose prose-sm max-w-none">
-            <p>
-              This is a Next.js boilerplate with authentication, database setup,
-              and a clean UI foundation. You can start building your application
-              by:
-            </p>
-            <ul>
-              <li>Adding your business logic to the tRPC routers</li>
-              <li>Creating new pages and components</li>
-              <li>Extending the database schema as needed</li>
-              <li>Customizing the UI to match your brand</li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Recent Activity or Getting Started */}
+      {studyStats?.totalReviews && studyStats.totalReviews > 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Today's Progress</CardTitle>
+            <CardDescription>
+              Keep up the great work with your studies!
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4 text-center md:grid-cols-4">
+              <div>
+                <div className="text-2xl font-bold text-red-600">
+                  {studyStats.ratingBreakdown.AGAIN}
+                </div>
+                <div className="text-muted-foreground text-sm">Again</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-orange-600">
+                  {studyStats.ratingBreakdown.HARD}
+                </div>
+                <div className="text-muted-foreground text-sm">Hard</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-green-600">
+                  {studyStats.ratingBreakdown.GOOD}
+                </div>
+                <div className="text-muted-foreground text-sm">Good</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-blue-600">
+                  {studyStats.ratingBreakdown.EASY}
+                </div>
+                <div className="text-muted-foreground text-sm">Easy</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Welcome to Your Flashcard Learning System</CardTitle>
+            <CardDescription>
+              Get started with spaced repetition learning
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="prose prose-sm max-w-none">
+              <p>
+                This is your personal spaced repetition learning system, similar
+                to Anki. Start your learning journey by:
+              </p>
+              <ul>
+                <li>Creating your first deck of flashcards</li>
+                <li>Adding cards with questions and answers</li>
+                <li>Starting daily study sessions</li>
+                <li>Tracking your progress with built-in statistics</li>
+              </ul>
+              <p className="text-muted-foreground text-sm">
+                The system uses the proven SuperMemo 2 algorithm to optimize
+                your learning schedule and help you remember information
+                long-term.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Link
+                href="/decks"
+                className={cn(buttonVariants({ variant: "default", size: "default" }))}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Create First Deck
+              </Link>
+              {dueCardsCount && dueCardsCount.totalDue > 0 && (
+                <Link
+                  href="/study"
+                  className={cn(buttonVariants({ variant: "outline", size: "default" }))}
+                >
+                  <Play className="mr-2 h-4 w-4" />
+                  Start Studying
+                </Link>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

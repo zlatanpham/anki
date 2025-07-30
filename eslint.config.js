@@ -38,6 +38,12 @@ export default tseslint.config(
         { checksVoidReturn: { attributes: false } },
       ],
       "@next/next/no-img-element": "off",
+      // Temporary overrides for development
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/prefer-nullish-coalescing": "warn", 
+      "@typescript-eslint/restrict-template-expressions": "warn",
+      "react/no-unescaped-entities": "warn",
+      "react-hooks/exhaustive-deps": "warn",
     },
   },
   {

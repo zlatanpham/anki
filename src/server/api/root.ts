@@ -7,10 +7,16 @@ import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
  */
 import { organizationRouter } from "./routers/organization";
 import { userRouter } from "./routers/user";
+import { deckRouter } from "./routers/deck";
+import { cardRouter } from "./routers/card";
+import { studyRouter } from "./routers/study";
 
 export const appRouter = createTRPCRouter({
   organization: organizationRouter,
   user: userRouter,
+  deck: deckRouter,
+  card: cardRouter,
+  study: studyRouter,
 });
 
 // export type definition of API

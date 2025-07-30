@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(rm:*)",
-      "Bash(pnpm run lint:*)"
+      "Bash(pnpm run lint:*)",
+      "WebFetch(domain:docs.ankiweb.net)",
+      "Bash(pnpm run:*)"
     ],
     "deny": []
   }

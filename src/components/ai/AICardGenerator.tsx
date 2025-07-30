@@ -37,7 +37,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { type CardType } from "@prisma/client";
-import { ClozeDisplay } from "@/components/ClozeDisplay";
+import { parseClozeText, renderClozeContext } from "@/lib/cloze";
 
 interface GeneratedCard {
   type: "BASIC" | "CLOZE";
@@ -53,6 +53,37 @@ interface AICardGeneratorProps {
   deckId: string;
   deckName?: string;
   onCardsAdded?: (count: number) => void;
+}
+
+// Simple cloze preview component for AI-generated cards
+function SimpleClozePreview({ clozeText }: { clozeText: string }) {
+  const parsedCards = parseClozeText(clozeText);
+  
+  if (parsedCards.length === 0) {
+    return (
+      <div className="text-sm text-muted-foreground">
+        Invalid cloze format
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {parsedCards.map((card, index) => (
+        <div key={index} className="text-sm">
+          <div className="font-medium text-muted-foreground">
+            Card {index + 1}:
+          </div>
+          <div className="pl-4">
+            Q: {card.question}
+          </div>
+          <div className="pl-4 text-green-600">
+            A: {card.answer}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGeneratorProps) {
@@ -427,9 +458,8 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
                                   <p className="text-xs font-medium text-muted-foreground mb-1">
                                     Cloze Preview
                                   </p>
-                                  <ClozeDisplay
+                                  <SimpleClozePreview
                                     clozeText={card.clozeText || ""}
-                                    isRevealed={false}
                                   />
                                 </div>
                               )}

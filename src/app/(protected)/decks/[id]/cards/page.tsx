@@ -44,7 +44,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { type CardType } from "@prisma/client";
 import { ClozePreview } from "@/components/ClozeDisplay";
-import { validateClozeText, renderClozeContext } from "@/lib/cloze";
+import { validateClozeText, renderClozeContext, parseClozeText } from "@/lib/cloze";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { AdvancedSearch } from "@/components/AdvancedSearch";
 import { SkeletonCardPreview } from "@/components/ui/skeleton-card";
@@ -498,53 +498,65 @@ export default function DeckCardsPage() {
                       )}
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <div className="text-sm font-medium text-muted-foreground mb-1">Front</div>
-                        <div className="text-sm bg-muted/50 p-3 rounded border-l-2 border-blue-200">
-                          <div 
-                            className="prose prose-sm max-w-none line-clamp-3"
-                            dangerouslySetInnerHTML={{ 
-                              __html: card.front.length > 150 
-                                ? card.front.substring(0, 150) + '...' 
-                                : card.front
-                            }}
-                          />
+                    {card.card_type === "BASIC" ? (
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <div className="text-sm font-medium text-muted-foreground mb-1">Front</div>
+                          <div className="text-sm bg-muted/50 p-3 rounded border-l-2 border-blue-200">
+                            <div 
+                              className="prose prose-sm max-w-none line-clamp-3"
+                              dangerouslySetInnerHTML={{ 
+                                __html: card.front.length > 150 
+                                  ? card.front.substring(0, 150) + '...' 
+                                  : card.front
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-muted-foreground mb-1">Back</div>
+                          <div className="text-sm bg-muted/50 p-3 rounded border-l-2 border-green-200">
+                            <div 
+                              className="prose prose-sm max-w-none line-clamp-3"
+                              dangerouslySetInnerHTML={{ 
+                                __html: card.back.length > 150 
+                                  ? card.back.substring(0, 150) + '...' 
+                                  : card.back
+                              }}
+                            />
+                          </div>
                         </div>
                       </div>
-                      <div>
-                        <div className="text-sm font-medium text-muted-foreground mb-1">Back</div>
-                        <div className="text-sm bg-muted/50 p-3 rounded border-l-2 border-green-200">
-                          <div 
-                            className="prose prose-sm max-w-none line-clamp-3"
-                            dangerouslySetInnerHTML={{ 
-                              __html: card.back.length > 150 
-                                ? card.back.substring(0, 150) + '...' 
-                                : card.back
-                            }}
-                          />
+                    ) : (
+                      card.cloze_text && (
+                        <div>
+                          <div className="text-sm font-medium text-muted-foreground mb-1">Cloze Cards Preview</div>
+                          <div className="text-sm bg-orange-50 p-3 rounded border-l-2 border-orange-200">
+                            {(() => {
+                              const parsedCards = parseClozeText(card.cloze_text);
+                              if (parsedCards.length === 0) {
+                                return <div className="text-muted-foreground">Invalid cloze format</div>;
+                              }
+                              return (
+                                <div className="space-y-2">
+                                  {parsedCards.slice(0, 2).map((clozeCard, index) => (
+                                    <div key={index} className="text-sm">
+                                      <span className="font-medium">Q{index + 1}:</span> {clozeCard.question}
+                                    </div>
+                                  ))}
+                                  {parsedCards.length > 2 && (
+                                    <div className="text-xs text-muted-foreground">
+                                      ... and {parsedCards.length - 2} more cloze cards
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
+                          </div>
                         </div>
-                      </div>
-                    </div>
-
-                    {card.card_type === "CLOZE" && card.cloze_text && (
-                      <div>
-                        <div className="text-sm font-medium text-muted-foreground mb-1">Cloze Context</div>
-                        <div className="text-sm bg-orange-50 p-3 rounded border-l-2 border-orange-200">
-                          <div 
-                            className="prose prose-sm max-w-none line-clamp-3"
-                            dangerouslySetInnerHTML={{ 
-                              __html: (() => {
-                                const rendered = renderClozeContext(card.cloze_text);
-                                return rendered.length > 200 
-                                  ? rendered.substring(0, 200) + '...' 
-                                  : rendered;
-                              })()
-                            }}
-                          />
-                        </div>
-                      </div>
+                      )
                     )}
+
                   </div>
 
                   <DropdownMenu>

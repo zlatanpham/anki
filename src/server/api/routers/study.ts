@@ -155,7 +155,7 @@ export const studyRouter = createTRPCRouter({
           const algorithmState = createCardStateFromPrisma(currentCardState);
 
           // Calculate next review using SuperMemo 2
-          const reviewResult = SuperMemo2Algorithm.calculateNextReview(
+          const reviewResult = SuperMemo2Algorithm.calculateNextReviewResult(
             rating as ReviewRating,
             algorithmState,
           );

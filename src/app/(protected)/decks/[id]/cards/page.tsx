@@ -46,6 +46,7 @@ import { type CardType } from "@prisma/client";
 import { ClozePreview } from "@/components/ClozeDisplay";
 import { validateClozeText, renderClozeContext } from "@/lib/cloze";
 import { RichTextEditor } from "@/components/RichTextEditor";
+import { AdvancedSearch } from "@/components/AdvancedSearch";
 
 interface CreateCardForm {
   cardType: CardType;
@@ -59,7 +60,18 @@ export default function DeckCardsPage() {
   const params = useParams();
   const deckId = params.id as string;
   
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchFilters, setSearchFilters] = useState({
+    search: "",
+    cardType: undefined as "BASIC" | "CLOZE" | undefined,
+    tags: [] as string[],
+    deckIds: [deckId],
+    searchFields: ["front", "back", "cloze_text", "tags"] as string[],
+    createdAfter: undefined as Date | undefined,
+    createdBefore: undefined as Date | undefined,
+    sortBy: "created_at" as "created_at" | "updated_at" | "front",
+    sortOrder: "desc" as "asc" | "desc",
+  });
+  const [currentPage, setCurrentPage] = useState(1);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [createForm, setCreateForm] = useState<CreateCardForm>({
     cardType: "BASIC",
@@ -75,8 +87,10 @@ export default function DeckCardsPage() {
   // Get cards for this deck
   const { data: cardsData, isLoading: isCardsLoading, refetch } = api.card.getByDeck.useQuery({
     deckId,
-    search: searchQuery || undefined,
-    limit: 50,
+    ...searchFilters,
+    search: searchFilters.search || undefined,
+    limit: 20,
+    offset: (currentPage - 1) * 20,
   });
 
   // Create card mutation
@@ -318,29 +332,32 @@ export default function DeckCardsPage() {
         </Dialog>
       </div>
 
-      {/* Search Bar */}
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-        <Input
-          placeholder="Search cards..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-        />
-      </div>
+      {/* Search Interface */}
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <AdvancedSearch
+            onSearch={(filters) => {
+              setSearchFilters(filters);
+              setCurrentPage(1);
+            }}
+            initialFilters={searchFilters}
+            deckId={deckId}
+          />
+        </CardContent>
+      </Card>
 
       {/* Cards List */}
       {filteredCards.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
-            {searchQuery ? (
+            {searchFilters.search ? (
               <>
                 <Search className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-lg font-semibold mb-2">No cards found</h3>
                 <p className="text-muted-foreground mb-4">
                   No cards match your search criteria. Try adjusting your search terms.
                 </p>
-                <Button variant="outline" onClick={() => setSearchQuery("")}>
+                <Button variant="outline" onClick={() => setSearchFilters(prev => ({ ...prev, search: "" }))}>
                   Clear Search
                 </Button>
               </>
@@ -459,6 +476,39 @@ export default function DeckCardsPage() {
             </Card>
           ))}
         </div>
+      )}
+
+      {/* Pagination */}
+      {cardsData && cardsData.totalCount > 20 && (
+        <Card className="mt-6">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Previous
+              </Button>
+              
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  Page {currentPage} of {Math.ceil(cardsData.totalCount / 20)}
+                </span>
+              </div>
+
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(prev => prev + 1)}
+                disabled={currentPage >= Math.ceil(cardsData.totalCount / 20)}
+              >
+                Next
+                <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Study Deck Action */}

@@ -32,6 +32,21 @@ const cardQuerySchema = z.object({
   cardType: z.enum(["BASIC", "CLOZE"]).optional(),
   tags: z.array(z.string()).optional(),
   search: z.string().optional(),
+  searchFields: z.array(z.enum(["front", "back", "cloze_text", "tags"])).optional(),
+  createdAfter: z.date().optional(),
+  createdBefore: z.date().optional(),
+  sortBy: z.enum(["created_at", "updated_at", "front"]).default("created_at"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+  limit: z.number().min(1).max(100).default(20),
+  offset: z.number().min(0).default(0),
+});
+
+const globalSearchSchema = z.object({
+  search: z.string().min(1),
+  cardType: z.enum(["BASIC", "CLOZE"]).optional(),
+  tags: z.array(z.string()).optional(),
+  deckIds: z.array(z.string().uuid()).optional(),
+  searchFields: z.array(z.enum(["front", "back", "cloze_text", "tags"])).optional(),
   limit: z.number().min(1).max(100).default(20),
   offset: z.number().min(0).default(0),
 });
@@ -53,7 +68,19 @@ export const cardRouter = createTRPCRouter({
     .input(cardQuerySchema)
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const { deckId, cardType, tags, search, limit, offset } = input;
+      const { 
+        deckId, 
+        cardType, 
+        tags, 
+        search, 
+        searchFields,
+        createdAfter,
+        createdBefore,
+        sortBy,
+        sortOrder,
+        limit, 
+        offset 
+      } = input;
 
       try {
         // First verify user has access to the deck
@@ -88,13 +115,41 @@ export const cardRouter = createTRPCRouter({
           };
         }
 
+        // Enhanced search functionality
         if (search) {
-          whereConditions.OR = [
-            { front: { contains: search, mode: "insensitive" } },
-            { back: { contains: search, mode: "insensitive" } },
-            { cloze_text: { contains: search, mode: "insensitive" } },
-          ];
+          const searchConditions = [];
+          const fieldsToSearch = searchFields || ["front", "back", "cloze_text", "tags"];
+          
+          if (fieldsToSearch.includes("front")) {
+            searchConditions.push({ front: { contains: search, mode: "insensitive" } });
+          }
+          if (fieldsToSearch.includes("back")) {
+            searchConditions.push({ back: { contains: search, mode: "insensitive" } });
+          }
+          if (fieldsToSearch.includes("cloze_text")) {
+            searchConditions.push({ cloze_text: { contains: search, mode: "insensitive" } });
+          }
+          if (fieldsToSearch.includes("tags")) {
+            searchConditions.push({ tags: { hasSome: [search] } });
+          }
+          
+          whereConditions.OR = searchConditions;
         }
+
+        // Date range filtering
+        if (createdAfter || createdBefore) {
+          whereConditions.created_at = {};
+          if (createdAfter) {
+            whereConditions.created_at.gte = createdAfter;
+          }
+          if (createdBefore) {
+            whereConditions.created_at.lte = createdBefore;
+          }
+        }
+
+        // Dynamic sorting
+        const orderBy: any = {};
+        orderBy[sortBy] = sortOrder;
 
         const [cards, totalCount] = await Promise.all([
           ctx.db.card.findMany({
@@ -113,9 +168,7 @@ export const cardRouter = createTRPCRouter({
                 take: 1,
               },
             },
-            orderBy: {
-              created_at: "desc",
-            },
+            orderBy,
             take: limit,
             skip: offset,
           }),
@@ -580,6 +633,174 @@ export const cardRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to search cards",
+          cause: error,
+        });
+      }
+    }),
+
+  // Global search across all accessible decks
+  globalSearch: protectedProcedure
+    .input(globalSearchSchema)
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const { search, cardType, tags, deckIds, searchFields, limit, offset } = input;
+
+      try {
+        const whereConditions: any = {
+          deck: {
+            OR: [
+              { user_id: userId },
+              { is_public: true },
+              {
+                organization: {
+                  OrganizationMember: {
+                    some: {
+                      user_id: userId,
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        };
+
+        // Card type filter
+        if (cardType) {
+          whereConditions.card_type = cardType;
+        }
+
+        // Tags filter
+        if (tags && tags.length > 0) {
+          whereConditions.tags = {
+            hasEvery: tags,
+          };
+        }
+
+        // Deck filter
+        if (deckIds && deckIds.length > 0) {
+          whereConditions.deck_id = { in: deckIds };
+        }
+
+        // Enhanced search functionality
+        const searchConditions = [];
+        const fieldsToSearch = searchFields || ["front", "back", "cloze_text", "tags"];
+        
+        if (fieldsToSearch.includes("front")) {
+          searchConditions.push({ front: { contains: search, mode: "insensitive" } });
+        }
+        if (fieldsToSearch.includes("back")) {
+          searchConditions.push({ back: { contains: search, mode: "insensitive" } });
+        }
+        if (fieldsToSearch.includes("cloze_text")) {
+          searchConditions.push({ cloze_text: { contains: search, mode: "insensitive" } });
+        }
+        if (fieldsToSearch.includes("tags")) {
+          searchConditions.push({ tags: { hasSome: [search] } });
+        }
+        
+        whereConditions.OR = searchConditions;
+
+        const [cards, totalCount] = await Promise.all([
+          ctx.db.card.findMany({
+            where: whereConditions,
+            include: {
+              deck: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+              card_states: {
+                where: {
+                  user_id: userId,
+                },
+                take: 1,
+              },
+            },
+            orderBy: {
+              updated_at: "desc",
+            },
+            take: limit,
+            skip: offset,
+          }),
+          ctx.db.card.count({
+            where: whereConditions,
+          }),
+        ]);
+
+        return {
+          cards,
+          totalCount,
+          hasMore: offset + limit < totalCount,
+        };
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR", 
+          message: "Failed to perform global search",
+          cause: error,
+        });
+      }
+    }),
+
+  // Get popular tags across user's cards
+  getPopularTags: protectedProcedure
+    .input(z.object({
+      deckId: z.string().uuid().optional(),
+      limit: z.number().min(1).max(50).default(20),
+    }))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const { deckId, limit } = input;
+
+      try {
+        const whereConditions: any = {
+          deck: {
+            OR: [
+              { user_id: userId },
+              { is_public: true },
+              {
+                organization: {
+                  OrganizationMember: {
+                    some: {
+                      user_id: userId,
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        };
+
+        if (deckId) {
+          whereConditions.deck_id = deckId;
+        }
+
+        const cards = await ctx.db.card.findMany({
+          where: whereConditions,
+          select: {
+            tags: true,
+          },
+        });
+
+        // Count tag frequency
+        const tagCounts: Record<string, number> = {};
+        cards.forEach(card => {
+          card.tags.forEach(tag => {
+            tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+          });
+        });
+
+        // Sort by frequency and return top tags
+        const popularTags = Object.entries(tagCounts)
+          .sort(([, a], [, b]) => b - a)
+          .slice(0, limit)
+          .map(([tag, count]) => ({ tag, count }));
+
+        return popularTags;
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to get popular tags",
           cause: error,
         });
       }

@@ -8,7 +8,10 @@
       "Bash(pnpm add:*)",
       "Bash(mkdir:*)",
       "Bash(pnpm dlx playwright install:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(grep:*)",
+      "Bash(mv:*)",
+      "Bash(pnpm exec playwright test:*)"
     ],
     "deny": []
   }

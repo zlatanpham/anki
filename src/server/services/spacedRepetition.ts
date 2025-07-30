@@ -36,9 +36,9 @@ export class SuperMemo2Algorithm {
   private static readonly RELEARNING_STEPS = [10]; // minutes for relearning after lapses
 
   /**
-   * Calculate the next review state based on user's rating
+   * Calculate the next review state based on user's rating (returns ReviewResult)
    */
-  static calculateNextReview(
+  static calculateNextReviewResult(
     rating: ReviewRating,
     currentState: CardState,
   ): ReviewResult {
@@ -328,6 +328,43 @@ export class SuperMemo2Algorithm {
     const result = new Date(date);
     result.setDate(result.getDate() + days);
     return result;
+  }
+
+  /**
+   * Create a new card state for cards that haven't been studied yet
+   */
+  static scheduleNewCard(): CardState {
+    const now = new Date();
+    return {
+      id: '',
+      cardId: '',
+      userId: '',
+      state: 'NEW',
+      dueDate: now,
+      interval: 0,
+      repetitions: 0,
+      easinessFactor: this.INITIAL_EASINESS_FACTOR,
+      lapses: 0,
+      lastReviewed: null,
+    };
+  }
+
+  /**
+   * Calculate next review based on rating and return updated card state
+   */
+  static calculateNextReview(rating: ReviewRating, currentState: CardState): CardState {
+    const result = this.calculateNextReviewResult(rating, currentState);
+    
+    return {
+      ...currentState,
+      state: result.newState,
+      interval: result.newInterval,
+      repetitions: result.newRepetitions,
+      easinessFactor: result.newEasinessFactor,
+      lapses: result.newLapses,
+      dueDate: result.newDueDate,
+      lastReviewed: new Date(),
+    };
   }
 }
 

@@ -22,7 +22,7 @@ export const env = createEnv({
       .enum(["development", "test", "production"])
       .default("development"),
     GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
-    AI_MODEL: z.string().default("gemini-1.5-flash"),
+    AI_MODEL: z.string().default("gemini-2.5-flash"),
     AI_RATE_LIMIT: z.string().default("100"),
   },
 

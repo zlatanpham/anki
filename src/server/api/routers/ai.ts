@@ -12,14 +12,15 @@ export const aiRouter = createTRPCRouter({
         text: z.string().min(10, "Text must be at least 10 characters"),
         deckId: z.string().uuid().optional(),
         deckContext: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // Check if AI is configured
       if (!env.GOOGLE_GENERATIVE_AI_API_KEY) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
-          message: "AI features are not configured. Please add your Google AI API key.",
+          message:
+            "AI features are not configured. Please add your Google AI API key.",
         });
       }
 
@@ -31,7 +32,7 @@ export const aiRouter = createTRPCRouter({
           select: { name: true, description: true },
         });
         if (deck) {
-          deckContext = `Deck: ${deck.name}${deck.description ? `. ${deck.description}` : ''}`;
+          deckContext = `Deck: ${deck.name}${deck.description ? `. ${deck.description}` : ""}`;
         }
       }
 
@@ -46,7 +47,7 @@ export const aiRouter = createTRPCRouter({
           input_text: input.text,
           generated_cards: cards as any, // Prisma Json type
           tokens_used: Math.ceil(input.text.length / 4), // rough estimate
-          model_used: env.AI_MODEL || 'gemini-1.5-flash',
+          model_used: env.AI_MODEL || "gemini-2.5-flash",
         },
       });
 
@@ -58,7 +59,7 @@ export const aiRouter = createTRPCRouter({
     .input(
       z.object({
         text: z.string().min(10, "Text must be at least 10 characters"),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       if (!env.GOOGLE_GENERATIVE_AI_API_KEY) {
@@ -79,7 +80,7 @@ export const aiRouter = createTRPCRouter({
     .input(
       z.object({
         text: z.string().min(1, "Text cannot be empty"),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       if (!env.GOOGLE_GENERATIVE_AI_API_KEY) {
@@ -102,7 +103,7 @@ export const aiRouter = createTRPCRouter({
         cardId: z.string().uuid(),
         front: z.string(),
         back: z.string(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       if (!env.GOOGLE_GENERATIVE_AI_API_KEY) {
@@ -143,7 +144,7 @@ export const aiRouter = createTRPCRouter({
     .input(
       z.object({
         text: z.string().min(10, "Text must be at least 10 characters"),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       if (!env.GOOGLE_GENERATIVE_AI_API_KEY) {
@@ -165,7 +166,7 @@ export const aiRouter = createTRPCRouter({
       z.object({
         limit: z.number().min(1).max(50).default(10),
         cursor: z.string().optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const generations = await ctx.db.aIGeneration.findMany({
@@ -175,7 +176,7 @@ export const aiRouter = createTRPCRouter({
         take: input.limit + 1,
         cursor: input.cursor ? { id: input.cursor } : undefined,
         orderBy: {
-          created_at: 'desc',
+          created_at: "desc",
         },
         select: {
           id: true,
@@ -210,7 +211,7 @@ export const aiRouter = createTRPCRouter({
     .input(
       z.object({
         text: z.string(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       if (!env.GOOGLE_GENERATIVE_AI_API_KEY) {
@@ -221,20 +222,22 @@ export const aiRouter = createTRPCRouter({
       }
 
       const aiService = getAIService();
-      
+
       // Generate with simpler text
-      const testText = input.text || "Hello means a greeting. Goodbye means farewell.";
+      const testText =
+        input.text || "Hello means a greeting. Goodbye means farewell.";
       const cards = await aiService.generateCards(testText);
-      
+
       return {
         input: testText,
         generated: cards,
-        debug: cards.map(c => ({
+        debug: cards.map((c) => ({
           type: c.type,
           hasClozeText: !!c.clozeText,
           clozeTextPreview: c.clozeText?.substring(0, 100),
-          isValidCloze: c.clozeText?.includes('{{c') && c.clozeText?.includes('}}'),
-        }))
+          isValidCloze:
+            c.clozeText?.includes("{{c") && c.clozeText?.includes("}}"),
+        })),
       };
     }),
 
@@ -275,7 +278,7 @@ export const aiRouter = createTRPCRouter({
       totalTokensUsed: stats._sum.tokens_used || 0,
       monthlyGenerations: monthlyStats._count.id,
       monthlyTokensUsed: monthlyStats._sum.tokens_used || 0,
-      rateLimit: parseInt(env.AI_RATE_LIMIT || '100'),
+      rateLimit: parseInt(env.AI_RATE_LIMIT || "100"),
     };
   }),
 });

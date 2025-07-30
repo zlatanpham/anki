@@ -157,7 +157,7 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
     }
   );
 
-  const createCards = api.card.createMany.useMutation({
+  const createCards = api.card.bulkCreate.useMutation({
     onSuccess: (data) => {
       toast.success(`Added ${data.count} cards to your deck!`);
       onCardsAdded?.(data.count);
@@ -191,15 +191,14 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
     setStep("adding");
 
     const cardsToCreate = selectedCards.map((card) => ({
-      deckId,
       cardType: card.type as CardType,
-      front: card.type === "BASIC" ? card.front : "",
-      back: card.type === "BASIC" ? (card.back || "") : "",
+      front: card.type === "BASIC" ? card.front : "Cloze Card",
+      back: card.type === "BASIC" ? (card.back || "") : "See cloze text",
       clozeText: card.type === "CLOZE" ? card.clozeText : undefined,
       tags: card.tags || [],
     }));
 
-    await createCards.mutateAsync({ cards: cardsToCreate });
+    await createCards.mutateAsync({ deckId, cards: cardsToCreate });
   };
 
   const handleClose = () => {

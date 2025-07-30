@@ -445,12 +445,17 @@ export default function DeckCardsPage() {
                       <div>
                         <div className="text-sm font-medium text-muted-foreground mb-1">Cloze Context</div>
                         <div className="text-sm bg-orange-50 p-3 rounded border-l-2 border-orange-200">
-                          {(() => {
-                            const rendered = renderClozeContext(card.cloze_text);
-                            return rendered.length > 200 
-                              ? `${rendered.substring(0, 200)}...` 
-                              : rendered;
-                          })()}
+                          <div 
+                            className="prose prose-sm max-w-none line-clamp-3"
+                            dangerouslySetInnerHTML={{ 
+                              __html: (() => {
+                                const rendered = renderClozeContext(card.cloze_text);
+                                return rendered.length > 200 
+                                  ? rendered.substring(0, 200) + '...' 
+                                  : rendered;
+                              })()
+                            }}
+                          />
                         </div>
                       </div>
                     )}

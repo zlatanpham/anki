@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { type CardType } from "@prisma/client";
 import { parseClozeText, renderClozeContext } from "@/lib/cloze";
+import { generateBasicCards } from "@/lib/fallback-card-generator";
 
 interface GeneratedCard {
   type: "BASIC" | "CLOZE";
@@ -106,7 +107,46 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
       toast.success(`Generated ${data.cards.length} cards!`);
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to generate cards");
+      if (error.message.includes('busy') || error.message.includes('Rate limit')) {
+        toast.error(
+          error.message,
+          {
+            duration: 5000,
+            action: {
+              label: 'Retry',
+              onClick: () => setTimeout(handleGenerate, 2000),
+            },
+          }
+        );
+        
+        // Offer fallback option
+        toast.info(
+          "You can also use basic card generation while AI is busy",
+          {
+            duration: 8000,
+            action: {
+              label: 'Use Basic Mode',
+              onClick: () => {
+                const fallbackCards = generateBasicCards(inputText);
+                if (fallbackCards.length > 0) {
+                  const cardsWithSelection = fallbackCards.map((card) => ({
+                    ...card,
+                    selected: true,
+                    isEditing: false,
+                  }));
+                  setGeneratedCards(cardsWithSelection);
+                  setStep("preview");
+                  toast.success(`Generated ${fallbackCards.length} basic cards!`);
+                } else {
+                  toast.error("Could not generate cards from this text");
+                }
+              },
+            },
+          }
+        );
+      } else {
+        toast.error(error.message || "Failed to generate cards");
+      }
     },
   });
 

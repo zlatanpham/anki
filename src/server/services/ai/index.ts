@@ -104,11 +104,35 @@ Text to process:
 ${input}
 
 Generate diverse, high-quality flashcards that will help with learning and retention.`,
+        maxRetries: 2, // Reduce retries for overload errors
       });
       
       return object.cards;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating cards:', error);
+      
+      // Check for specific error types
+      if (error.statusCode === 503 || error.message?.includes('overloaded')) {
+        throw new TRPCError({
+          code: 'TOO_MANY_REQUESTS',
+          message: 'The AI service is currently busy. Please try again in a few moments.',
+        });
+      }
+      
+      if (error.statusCode === 429) {
+        throw new TRPCError({
+          code: 'TOO_MANY_REQUESTS',
+          message: 'Rate limit exceeded. Please wait a moment before trying again.',
+        });
+      }
+      
+      if (error.message?.includes('API key')) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'AI service configuration error. Please check your API key.',
+        });
+      }
+      
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Failed to generate cards. Please try again.',
@@ -131,11 +155,20 @@ For each suggestion:
 Text: ${text}
 
 Use {{c1::text}} syntax for cloze deletions. Create variations that test different aspects of understanding.`,
+        maxRetries: 2,
       });
       
       return object.suggestions;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error suggesting clozes:', error);
+      
+      if (error.statusCode === 503 || error.message?.includes('overloaded')) {
+        throw new TRPCError({
+          code: 'TOO_MANY_REQUESTS',
+          message: 'The AI service is currently busy. Please try again in a few moments.',
+        });
+      }
+      
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Failed to suggest cloze deletions.',

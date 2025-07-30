@@ -31,6 +31,8 @@ import {
   Play,
   BarChart3,
 } from "lucide-react";
+import { ImportWizard } from "@/components/ImportWizard";
+import { ExportDeck } from "@/components/ExportDeck";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -144,13 +146,16 @@ export default function DecksPage() {
           </p>
         </div>
 
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              New Deck
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <ImportWizard onImportSuccess={() => void refetch()} />
+          
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                New Deck
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create New Deck</DialogTitle>
@@ -203,6 +208,7 @@ export default function DecksPage() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Search Bar */}
@@ -298,6 +304,18 @@ export default function DecksPage() {
                         <BookOpen className="mr-2 h-4 w-4" />
                         Manage Cards
                       </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <div className="w-full">
+                        <ExportDeck 
+                          deckId={deck.id} 
+                          deckName={deck.name}
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start p-0 h-auto font-normal"
+                        />
+                      </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem

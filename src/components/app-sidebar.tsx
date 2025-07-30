@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useSession } from "next-auth/react";
-import { Send, SquareTerminal, GithubIcon, ComponentIcon } from "lucide-react";
+import { Send, SquareTerminal, GithubIcon, ComponentIcon, BookOpen, BarChart3, Play } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
@@ -25,6 +25,21 @@ const data = {
       title: "Dashboard",
       url: "/",
       icon: SquareTerminal,
+    },
+    {
+      title: "Decks",
+      url: "/decks",
+      icon: BookOpen,
+    },
+    {
+      title: "Study",
+      url: "/study",
+      icon: Play,
+    },
+    {
+      title: "Statistics",
+      url: "/stats",
+      icon: BarChart3,
     },
   ],
   navSecondary: [

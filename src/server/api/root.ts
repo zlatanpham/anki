@@ -10,6 +10,7 @@ import { userRouter } from "./routers/user";
 import { deckRouter } from "./routers/deck";
 import { cardRouter } from "./routers/card";
 import { studyRouter } from "./routers/study";
+import { importRouter } from "./routers/import";
 
 export const appRouter = createTRPCRouter({
   organization: organizationRouter,
@@ -17,6 +18,7 @@ export const appRouter = createTRPCRouter({
   deck: deckRouter,
   card: cardRouter,
   study: studyRouter,
+  import: importRouter,
 });
 
 // export type definition of API

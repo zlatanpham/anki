@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { ArrowLeft, Clock, BarChart3, Pause, Play, RotateCcw } from "lucide-react";
 import { type ReviewRating } from "@prisma/client";
+import { ClozeDisplay } from "@/components/ClozeDisplay";
 
 interface StudySession {
   cards: any[];
@@ -354,41 +355,40 @@ export default function StudyPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                {/* Question */}
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground mb-2">Question</div>
-                  <div 
-                    className="text-lg leading-relaxed p-4 bg-muted/50 rounded-lg"
-                    dangerouslySetInnerHTML={{ __html: currentCard.card.front }}
-                  />
-                </div>
+              {currentCard.card.card_type === "CLOZE" && currentCard.card.cloze_text ? (
+                <ClozeDisplay
+                  clozeText={currentCard.card.cloze_text}
+                  front={currentCard.card.front}
+                  back={currentCard.card.back}
+                  showAnswer={session.showAnswer}
+                  onShowAnswer={showAnswer}
+                />
+              ) : (
+                <div className="space-y-6">
+                  {/* Question */}
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground mb-2">Question</div>
+                    <div 
+                      className="text-lg leading-relaxed p-4 bg-muted/50 rounded-lg"
+                      dangerouslySetInnerHTML={{ __html: currentCard.card.front }}
+                    />
+                  </div>
 
-                {session.showAnswer && (
-                  <>
-                    <Separator />
-                    {/* Answer */}
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground mb-2">Answer</div>
-                      <div 
-                        className="text-lg leading-relaxed p-4 bg-primary/5 rounded-lg"
-                        dangerouslySetInnerHTML={{ __html: currentCard.card.back }}
-                      />
-                    </div>
-
-                    {/* Cloze text if applicable */}
-                    {currentCard.card.card_type === "CLOZE" && currentCard.card.cloze_text && (
+                  {session.showAnswer && (
+                    <>
+                      <Separator />
+                      {/* Answer */}
                       <div>
-                        <div className="text-sm font-medium text-muted-foreground mb-2">Cloze Context</div>
+                        <div className="text-sm font-medium text-muted-foreground mb-2">Answer</div>
                         <div 
-                          className="text-sm leading-relaxed p-3 bg-blue-50 rounded-lg border-l-4 border-blue-200"
-                          dangerouslySetInnerHTML={{ __html: currentCard.card.cloze_text }}
+                          className="text-lg leading-relaxed p-4 bg-primary/5 rounded-lg"
+                          dangerouslySetInnerHTML={{ __html: currentCard.card.back }}
                         />
                       </div>
-                    )}
-                  </>
-                )}
-              </div>
+                    </>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 

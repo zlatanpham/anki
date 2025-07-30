@@ -1,13 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { 
   Dialog, 
   DialogContent, 
@@ -44,6 +43,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { type CardType } from "@prisma/client";
+import { ClozePreview } from "@/components/ClozeDisplay";
+import { validateClozeText, renderClozeContext } from "@/lib/cloze";
+import { RichTextEditor } from "@/components/RichTextEditor";
 
 interface CreateCardForm {
   cardType: CardType;
@@ -55,7 +57,6 @@ interface CreateCardForm {
 
 export default function DeckCardsPage() {
   const params = useParams();
-  const router = useRouter();
   const deckId = params.id as string;
   
   const [searchQuery, setSearchQuery] = useState("");
@@ -110,14 +111,28 @@ export default function DeckCardsPage() {
 
   const handleCreateCard = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!createForm.front.trim() || !createForm.back.trim()) {
+    
+    // Check if content is empty (accounting for empty HTML)
+    const frontText = createForm.front.replace(/<[^>]*>/g, '').trim();
+    const backText = createForm.back.replace(/<[^>]*>/g, '').trim();
+    
+    if (!frontText || !backText) {
       toast.error("Both front and back content are required");
       return;
     }
 
-    if (createForm.cardType === "CLOZE" && !createForm.clozeText.trim()) {
-      toast.error("Cloze text is required for cloze deletion cards");
-      return;
+    if (createForm.cardType === "CLOZE") {
+      const clozeText = createForm.clozeText.replace(/<[^>]*>/g, '').trim();
+      if (!clozeText) {
+        toast.error("Cloze text is required for cloze deletion cards");
+        return;
+      }
+
+      const validation = validateClozeText(createForm.clozeText);
+      if (!validation.isValid) {
+        toast.error(`Invalid cloze format: ${validation.errors[0]}`);
+        return;
+      }
     }
 
     const tags = createForm.tags
@@ -128,9 +143,9 @@ export default function DeckCardsPage() {
     createCard.mutate({
       deckId,
       cardType: createForm.cardType,
-      front: createForm.front.trim(),
-      back: createForm.back.trim(),
-      clozeText: createForm.cardType === "CLOZE" ? createForm.clozeText.trim() : undefined,
+      front: createForm.front,
+      back: createForm.back,
+      clozeText: createForm.cardType === "CLOZE" ? createForm.clozeText : undefined,
       tags,
     });
   };
@@ -233,39 +248,45 @@ export default function DeckCardsPage() {
 
                 <div>
                   <Label htmlFor="front">Front (Question)</Label>
-                  <Textarea
-                    id="front"
-                    value={createForm.front}
-                    onChange={(e) => setCreateForm(prev => ({ ...prev, front: e.target.value }))}
-                    placeholder="Enter the question or prompt..."
-                    className="mt-1 min-h-[100px]"
-                  />
+                  <div className="mt-1">
+                    <RichTextEditor
+                      content={createForm.front}
+                      onChange={(content) => setCreateForm(prev => ({ ...prev, front: content }))}
+                      placeholder="Enter the question or prompt..."
+                      minHeight="100px"
+                    />
+                  </div>
                 </div>
 
                 <div>
                   <Label htmlFor="back">Back (Answer)</Label>
-                  <Textarea
-                    id="back"
-                    value={createForm.back}
-                    onChange={(e) => setCreateForm(prev => ({ ...prev, back: e.target.value }))}
-                    placeholder="Enter the answer or explanation..."
-                    className="mt-1 min-h-[100px]"
-                  />
+                  <div className="mt-1">
+                    <RichTextEditor
+                      content={createForm.back}
+                      onChange={(content) => setCreateForm(prev => ({ ...prev, back: content }))}
+                      placeholder="Enter the answer or explanation..."
+                      minHeight="100px"
+                    />
+                  </div>
                 </div>
 
                 {createForm.cardType === "CLOZE" && (
                   <div>
                     <Label htmlFor="clozeText">Cloze Context</Label>
-                    <Textarea
-                      id="clozeText"
-                      value={createForm.clozeText}
-                      onChange={(e) => setCreateForm(prev => ({ ...prev, clozeText: e.target.value }))}
-                      placeholder="Enter the full text with {{c1::hidden text}} markers..."
-                      className="mt-1 min-h-[80px]"
-                    />
+                    <div className="mt-1">
+                      <RichTextEditor
+                        content={createForm.clozeText}
+                        onChange={(content) => setCreateForm(prev => ({ ...prev, clozeText: content }))}
+                        placeholder="Enter the full text with {{c1::hidden text}} markers..."
+                        minHeight="80px"
+                      />
+                    </div>
                     <p className="text-sm text-muted-foreground mt-1">
                       Use {`{{c1::text}}`} format to mark text for deletion. Example: "The capital of {`{{c1::France}}`} is Paris."
                     </p>
+                    {createForm.clozeText.trim() && createForm.clozeText !== '<p></p>' && (
+                      <ClozePreview clozeText={createForm.clozeText} className="mt-3" />
+                    )}
                   </div>
                 )}
 
@@ -399,10 +420,12 @@ export default function DeckCardsPage() {
                       <div>
                         <div className="text-sm font-medium text-muted-foreground mb-1">Cloze Context</div>
                         <div className="text-sm bg-orange-50 p-3 rounded border-l-2 border-orange-200">
-                          {card.cloze_text.length > 200 
-                            ? `${card.cloze_text.substring(0, 200)}...` 
-                            : card.cloze_text
-                          }
+                          {(() => {
+                            const rendered = renderClozeContext(card.cloze_text);
+                            return rendered.length > 200 
+                              ? `${rendered.substring(0, 200)}...` 
+                              : rendered;
+                          })()}
                         </div>
                       </div>
                     )}

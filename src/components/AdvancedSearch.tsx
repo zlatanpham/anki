@@ -126,7 +126,7 @@ export function AdvancedSearch({
     filters.search || 
     filters.cardType || 
     filters.tags.length > 0 || 
-    filters.deckIds.length > 0 || 
+    (filters.deckIds.length > 0 && !deckId) || // Only count deckIds as active filter if not in deck-specific mode
     filters.createdAfter || 
     filters.createdBefore ||
     filters.searchFields.length !== 4 ||

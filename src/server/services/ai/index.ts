@@ -3,6 +3,7 @@ import { generateText, generateObject } from "ai";
 import { z } from "zod";
 import { env } from "@/env";
 import { TRPCError } from "@trpc/server";
+import { trackAIUsage, type AIRequest, type AIResponse } from "@/lib/ai-usage-tracker";
 
 // Card generation schema for structured output
 const cardSchema = z.object({
@@ -98,8 +99,10 @@ export interface GrammarCorrection {
 export class AICardService {
   private model;
   private maxCards: number;
+  private userId?: string;
+  private organizationId?: string | null;
 
-  constructor() {
+  constructor(userId?: string, organizationId?: string | null) {
     if (!env.GOOGLE_GENERATIVE_AI_API_KEY) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
@@ -109,17 +112,16 @@ export class AICardService {
 
     this.model = google(env.AI_MODEL ?? "gemini-2.0-flash-experimental");
     this.maxCards = parseInt(env.AI_MAX_CARDS_PER_GENERATION ?? "100");
+    this.userId = userId;
+    this.organizationId = organizationId;
   }
 
   async generateCards(
     input: string,
     deckContext?: string,
   ): Promise<GeneratedCard[]> {
-    try {
-      const { object } = await generateObject({
-        model: this.model,
-        schema: cardSchema,
-        prompt: `You are an expert flashcard creator. Generate high-quality educational flashcards from the following text.
+    const startTime = Date.now();
+    const prompt = `You are an expert flashcard creator. Generate high-quality educational flashcards from the following text.
 
 IMPORTANT FORMATTING RULES:
 1. BASIC cards must have:
@@ -153,9 +155,43 @@ ${deckContext ? `Deck context: ${deckContext}` : ""}
 Text to process:
 ${input}
 
-Generate diverse flashcards following the exact format specified above.`,
+Generate diverse flashcards following the exact format specified above.`;
+    
+    try {
+      const { object, response } = await generateObject({
+        model: this.model,
+        schema: cardSchema,
+        prompt,
         maxRetries: 2, // Reduce retries for overload errors
       });
+
+      // Track AI usage if userId is provided
+      if (this.userId) {
+        const aiRequest: AIRequest = { prompt, model: env.AI_MODEL ?? "gemini-2.0-flash-experimental" };
+        
+        // The Vercel AI SDK v4 uses different response structure
+        const aiResponse: AIResponse = {
+          text: JSON.stringify(object),
+          model: env.AI_MODEL ?? "gemini-2.0-flash-experimental",
+          // Try to extract usage from the response
+          usage: response?.usage ? {
+            promptTokens: response.usage.promptTokens,
+            completionTokens: response.usage.completionTokens,
+            totalTokens: response.usage.totalTokens
+          } : undefined,
+          experimental_providerMetadata: response as any
+        };
+        
+        await trackAIUsage(
+          aiRequest,
+          aiResponse,
+          this.userId,
+          this.organizationId ?? null,
+          'card_generation',
+          startTime,
+          'success'
+        );
+      }
 
       // Limit the number of cards to maxCards and validate cloze cards
       const validatedCards = object.cards
@@ -196,6 +232,21 @@ Generate diverse flashcards following the exact format specified above.`,
       return validatedCards;
     } catch (error: any) {
       console.error("Error generating cards:", error);
+      
+      // Track failed AI usage
+      if (this.userId) {
+        const aiRequest: AIRequest = { prompt: input.substring(0, 200), model: env.AI_MODEL ?? "gemini-2.0-flash-experimental" };
+        await trackAIUsage(
+          aiRequest,
+          {} as AIResponse,
+          this.userId,
+          this.organizationId ?? null,
+          'card_generation',
+          startTime,
+          'error',
+          error.message || 'Unknown error'
+        );
+      }
 
       // Check for specific error types
       if (error.statusCode === 503 || error.message?.includes("overloaded")) {
@@ -229,11 +280,8 @@ Generate diverse flashcards following the exact format specified above.`,
   }
 
   async suggestClozes(text: string): Promise<ClozesSuggestion[]> {
-    try {
-      const { object } = await generateObject({
-        model: this.model,
-        schema: clozeSuggestionSchema,
-        prompt: `Analyze this text and suggest multiple cloze deletion variations. Focus on key concepts, definitions, dates, numbers, and important terms.
+    const startTime = Date.now();
+    const prompt = `Analyze this text and suggest multiple cloze deletion variations. Focus on key concepts, definitions, dates, numbers, and important terms.
 
 For each suggestion:
 1. Identify the key learning point
@@ -242,13 +290,54 @@ For each suggestion:
 
 Text: ${text}
 
-Use {{c1::text}} syntax for cloze deletions. Create variations that test different aspects of understanding.`,
+Use {{c1::text}} syntax for cloze deletions. Create variations that test different aspects of understanding.`;
+    
+    try {
+      const { object, response } = await generateObject({
+        model: this.model,
+        schema: clozeSuggestionSchema,
+        prompt,
         maxRetries: 2,
       });
+
+      // Track AI usage
+      if (this.userId) {
+        const aiRequest: AIRequest = { prompt, model: env.AI_MODEL ?? "gemini-2.0-flash-experimental" };
+        const aiResponse: AIResponse = {
+          text: JSON.stringify(object),
+          model: env.AI_MODEL ?? "gemini-2.0-flash-experimental",
+          experimental_providerMetadata: response?.experimental_providerMetadata
+        };
+        
+        await trackAIUsage(
+          aiRequest,
+          aiResponse,
+          this.userId,
+          this.organizationId ?? null,
+          'cloze_suggestion',
+          startTime,
+          'success'
+        );
+      }
 
       return object.suggestions;
     } catch (error: any) {
       console.error("Error suggesting clozes:", error);
+      
+      // Track failed AI usage
+      if (this.userId) {
+        const aiRequest: AIRequest = { prompt: text.substring(0, 200), model: env.AI_MODEL ?? "gemini-2.0-flash-experimental" };
+        await trackAIUsage(
+          aiRequest,
+          {} as AIResponse,
+          this.userId,
+          this.organizationId ?? null,
+          'cloze_suggestion',
+          startTime,
+          'error',
+          error.message || 'Unknown error'
+        );
+      }
 
       if (error.statusCode === 503 || error.message?.includes("overloaded")) {
         throw new TRPCError({
@@ -270,24 +359,62 @@ Use {{c1::text}} syntax for cloze deletions. Create variations that test differe
     corrections: GrammarCorrection[];
     overallQuality: string;
   }> {
-    try {
-      const { object } = await generateObject({
-        model: this.model,
-        schema: grammarCorrectionSchema,
-        prompt: `Check and correct any grammar, spelling, punctuation, or style issues in this text. Maintain the original meaning while improving clarity.
+    const startTime = Date.now();
+    const prompt = `Check and correct any grammar, spelling, punctuation, or style issues in this text. Maintain the original meaning while improving clarity.
 
 Text: ${text}
 
-Provide the corrected version and list all corrections made with explanations.`,
+Provide the corrected version and list all corrections made with explanations.`;
+    
+    try {
+      const { object, response } = await generateObject({
+        model: this.model,
+        schema: grammarCorrectionSchema,
+        prompt,
       });
+      
+      // Track AI usage
+      if (this.userId) {
+        const aiRequest: AIRequest = { prompt, model: env.AI_MODEL ?? "gemini-2.0-flash-experimental" };
+        const aiResponse: AIResponse = {
+          text: JSON.stringify(object),
+          model: env.AI_MODEL ?? "gemini-2.0-flash-experimental",
+          experimental_providerMetadata: response?.experimental_providerMetadata
+        };
+        
+        await trackAIUsage(
+          aiRequest,
+          aiResponse,
+          this.userId,
+          this.organizationId ?? null,
+          'grammar_check',
+          startTime,
+          'success'
+        );
+      }
 
       return {
         correctedText: object.corrected.text,
         corrections: object.corrected.corrections,
         overallQuality: object.corrected.overallQuality,
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error correcting grammar:", error);
+      
+      // Track failed AI usage
+      if (this.userId) {
+        const aiRequest: AIRequest = { prompt: text.substring(0, 200), model: env.AI_MODEL ?? "gemini-2.0-flash-experimental" };
+        await trackAIUsage(
+          aiRequest,
+          {} as AIResponse,
+          this.userId,
+          this.organizationId ?? null,
+          'grammar_check',
+          startTime,
+          'error',
+          error.message || 'Unknown error'
+        );
+      }
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Failed to check grammar.",
@@ -390,18 +517,13 @@ Return a JSON object with: estimatedCards (number), topics (array of strings), d
   }
 }
 
-// Export singleton instance
-let aiService: AICardService | null = null;
-
-export function getAIService(): AICardService {
-  if (!aiService && env.GOOGLE_GENERATIVE_AI_API_KEY) {
-    aiService = new AICardService();
-  }
-  if (!aiService) {
+// Export factory function instead of singleton to support user context
+export function getAIService(userId?: string, organizationId?: string | null): AICardService {
+  if (!env.GOOGLE_GENERATIVE_AI_API_KEY) {
     throw new TRPCError({
       code: "INTERNAL_SERVER_ERROR",
       message: "AI service not available. Please configure Google AI API key.",
     });
   }
-  return aiService;
+  return new AICardService(userId, organizationId);
 }

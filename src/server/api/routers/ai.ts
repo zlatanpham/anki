@@ -37,17 +37,23 @@ export const aiRouter = createTRPCRouter({
         }
       }
 
-      const aiService = getAIService();
+      // Get user's organization
+      const userOrg = await ctx.db.organizationMember.findFirst({
+        where: { user_id: ctx.session.user.id },
+        select: { organization_id: true }
+      });
+      
+      const aiService = getAIService(ctx.session.user.id, userOrg?.organization_id);
       const cards = await aiService.generateCards(input.text, deckContext);
 
-      // Track usage
+      // Track usage in old table for backward compatibility
       await ctx.db.aIGeneration.create({
         data: {
           user_id: ctx.session.user.id,
           deck_id: input.deckId,
           input_text: input.text,
           generated_cards: cards as any, // Prisma Json type
-          tokens_used: Math.ceil(input.text.length / 4), // rough estimate
+          tokens_used: Math.ceil(input.text.length / 4), // rough estimate - actual tracking is now in AIUsageLog
           model_used: env.AI_MODEL ?? "gemini-2.0-flash-experimental",
         },
       });
@@ -70,7 +76,13 @@ export const aiRouter = createTRPCRouter({
         });
       }
 
-      const aiService = getAIService();
+      // Get user's organization
+      const userOrg = await ctx.db.organizationMember.findFirst({
+        where: { user_id: ctx.session.user.id },
+        select: { organization_id: true }
+      });
+      
+      const aiService = getAIService(ctx.session.user.id, userOrg?.organization_id);
       const suggestions = await aiService.suggestClozes(input.text);
 
       return { suggestions };
@@ -91,7 +103,13 @@ export const aiRouter = createTRPCRouter({
         });
       }
 
-      const aiService = getAIService();
+      // Get user's organization
+      const userOrg = await ctx.db.organizationMember.findFirst({
+        where: { user_id: ctx.session.user.id },
+        select: { organization_id: true }
+      });
+      
+      const aiService = getAIService(ctx.session.user.id, userOrg?.organization_id);
       const result = await aiService.correctGrammar(input.text);
 
       return result;
@@ -131,7 +149,13 @@ export const aiRouter = createTRPCRouter({
         });
       }
 
-      const aiService = getAIService();
+      // Get user's organization
+      const userOrg = await ctx.db.organizationMember.findFirst({
+        where: { user_id: ctx.session.user.id },
+        select: { organization_id: true }
+      });
+      
+      const aiService = getAIService(ctx.session.user.id, userOrg?.organization_id);
       const result = await aiService.improveCard({
         front: input.front,
         back: input.back,
@@ -243,7 +267,13 @@ export const aiRouter = createTRPCRouter({
         });
       }
 
-      const aiService = getAIService();
+      // Get user's organization
+      const userOrg = await ctx.db.organizationMember.findFirst({
+        where: { user_id: ctx.session.user.id },
+        select: { organization_id: true }
+      });
+      
+      const aiService = getAIService(ctx.session.user.id, userOrg?.organization_id);
 
       // Generate with simpler text
       const testText =

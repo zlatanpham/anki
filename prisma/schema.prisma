@@ -35,6 +35,7 @@ model Organization {
     User               User?                @relation(fields: [owner_user_id], references: [id], onUpdate: NoAction, map: "fk_owner_user")
     OrganizationMember OrganizationMember[]
     Deck               Deck[]
+    AIUsageLog         AIUsageLog[]
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -76,6 +77,9 @@ model User {
     Review                 Review[]
     CardState              CardState[]
     AIGeneration           AIGeneration[]
+    AIUsageLog             AIUsageLog[]
+    AIUserQuota            AIUserQuota?
+    AIUsageAnalytics       AIUsageAnalytics[]
 }
 
 model VerificationToken {
@@ -210,4 +214,66 @@ model AIGeneration {
     @@index([user_id])
     @@index([deck_id])
     @@index([created_at])
+}
+
+// AI Usage Tracking Models
+
+model AIUsageLog {
+    id              String       @id @default(cuid())
+    user_id         String
+    organization_id String?      @db.Uuid
+    feature         String       @db.VarChar(50) // card_generation, grammar_check, cloze_suggestion
+    model           String       @db.VarChar(100)
+    input_tokens    Int
+    output_tokens   Int
+    total_tokens    Int
+    input_cost      Decimal      @db.Decimal(10, 6)
+    output_cost     Decimal      @db.Decimal(10, 6)
+    total_cost      Decimal      @db.Decimal(10, 6)
+    currency        String       @default("USD") @db.VarChar(3)
+    latency_ms      Int
+    status          String       @db.VarChar(20) // success, error, timeout
+    error_message   String?      @db.Text
+    metadata        Json?        // Additional context
+    created_at      DateTime     @default(now()) @db.Timestamptz(6)
+    
+    user            User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+    organization    Organization? @relation(fields: [organization_id], references: [id], onDelete: SetNull)
+    
+    @@index([user_id, created_at])
+    @@index([organization_id, created_at])
+    @@index([feature, created_at])
+}
+
+model AIUserQuota {
+    id              String   @id @default(cuid())
+    user_id         String   @unique
+    monthly_limit   Int      @default(1000000) // tokens per month
+    current_usage   Int      @default(0)
+    reset_date      DateTime @db.Timestamptz(6)
+    tier            String   @default("free") @db.VarChar(20) // free, pro, enterprise
+    created_at      DateTime @default(now()) @db.Timestamptz(6)
+    updated_at      DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+    
+    user            User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model AIUsageAnalytics {
+    id              String   @id @default(cuid())
+    user_id         String
+    period          String   @db.VarChar(10) // daily, weekly, monthly
+    period_start    DateTime @db.Timestamptz(6)
+    period_end      DateTime @db.Timestamptz(6)
+    total_requests  Int
+    total_tokens    Int
+    total_cost      Decimal  @db.Decimal(10, 6)
+    avg_latency_ms  Int
+    success_rate    Decimal  @db.Decimal(5, 2)
+    top_features    Json     // {feature: count}
+    created_at      DateTime @default(now()) @db.Timestamptz(6)
+    
+    user            User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+    
+    @@unique([user_id, period, period_start])
+    @@index([user_id, period_start])
 }

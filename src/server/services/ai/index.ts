@@ -97,6 +97,7 @@ export interface GrammarCorrection {
 
 export class AICardService {
   private model;
+  private maxCards: number;
 
   constructor() {
     if (!env.GOOGLE_GENERATIVE_AI_API_KEY) {
@@ -106,7 +107,8 @@ export class AICardService {
       });
     }
 
-    this.model = google(env.AI_MODEL || "gemini-2.5-flash");
+    this.model = google(env.AI_MODEL ?? "gemini-2.0-flash-experimental");
+    this.maxCards = parseInt(env.AI_MAX_CARDS_PER_GENERATION ?? "100");
   }
 
   async generateCards(
@@ -143,6 +145,8 @@ Guidelines:
 - Use c1, c2, c3 etc. for multiple deletions in the same card
 - Add relevant tags based on the content topic
 - Keep cards concise and focused on one concept
+- IMPORTANT: Generate a maximum of ${this.maxCards} cards total
+- Focus on the most important and educational content
 
 ${deckContext ? `Deck context: ${deckContext}` : ""}
 
@@ -153,8 +157,9 @@ Generate diverse flashcards following the exact format specified above.`,
         maxRetries: 2, // Reduce retries for overload errors
       });
 
-      // Validate and fix cloze cards
+      // Limit the number of cards to maxCards and validate cloze cards
       const validatedCards = object.cards
+        .slice(0, this.maxCards) // Enforce hard limit
         .map((card) => {
           if (card.type === "CLOZE" && card.clozeText) {
             // Ensure cloze text has proper format

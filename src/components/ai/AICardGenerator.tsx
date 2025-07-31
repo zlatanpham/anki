@@ -93,6 +93,7 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
   const [generatedCards, setGeneratedCards] = useState<GeneratedCard[]>([]);
   const [step, setStep] = useState<"input" | "preview" | "adding">("input");
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [generationNotice, setGenerationNotice] = useState<string | null>(null);
 
   // API mutations
   const generateCards = api.ai.generateCards.useMutation({
@@ -104,6 +105,20 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
       }));
       setGeneratedCards(cardsWithSelection);
       setStep("preview");
+      
+      // Check if we might have hit the generation limit
+      const maxCards = usageStats.data?.maxCardsPerGeneration ?? 100;
+      if (data.cards.length === maxCards) {
+        setGenerationNotice(
+          `Generated the maximum ${maxCards} cards per request. For more cards, you can generate additional batches or consider importing pre-made decks.`
+        );
+      } else if (inputText.toLowerCase().match(/\d{3,}|all|every|complete|entire/)) {
+        // Check if user might have requested a large amount
+        setGenerationNotice(
+          `Generated ${data.cards.length} high-quality cards from your input. We focus on the most important concepts for effective learning.`
+        );
+      }
+      
       toast.success(`Generated ${data.cards.length} cards!`);
     },
     onError: (error) => {
@@ -157,6 +172,8 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
     }
   );
 
+  const usageStats = api.ai.getUsageStats.useQuery();
+
   const createCards = api.card.bulkCreate.useMutation({
     onSuccess: (data) => {
       toast.success(`Added ${data.count} cards to your deck!`);
@@ -207,6 +224,7 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
     setGeneratedCards([]);
     setStep("input");
     setShowAnalysis(false);
+    setGenerationNotice(null);
   };
 
   const toggleCardSelection = (index: number) => {
@@ -281,9 +299,16 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
                     className="min-h-[200px] font-mono text-sm"
                   />
                   <div className="flex items-center justify-between mt-2">
-                    <p className="text-sm text-muted-foreground">
-                      {inputText.length} characters
-                    </p>
+                    <div className="flex items-center gap-4">
+                      <p className="text-sm text-muted-foreground">
+                        {inputText.length} characters
+                      </p>
+                      {usageStats.data && (
+                        <p className="text-sm text-muted-foreground">
+                          Max cards: {usageStats.data.maxCardsPerGeneration}
+                        </p>
+                      )}
+                    </div>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -348,6 +373,15 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
 
             {step === "preview" && (
               <div className="space-y-4">
+                {generationNotice && (
+                  <Alert className="border-blue-200 bg-blue-50">
+                    <Info className="h-4 w-4 text-blue-600" />
+                    <AlertDescription className="text-blue-800">
+                      {generationNotice}
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Checkbox

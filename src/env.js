@@ -22,8 +22,9 @@ export const env = createEnv({
       .enum(["development", "test", "production"])
       .default("development"),
     GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
-    AI_MODEL: z.string().default("gemini-2.5-flash"),
+    AI_MODEL: z.string().default("gemini-2.0-flash-experimental"),
     AI_RATE_LIMIT: z.string().default("100"),
+    AI_MAX_CARDS_PER_GENERATION: z.string().default("100"),
   },
 
   /**
@@ -52,6 +53,7 @@ export const env = createEnv({
     GOOGLE_GENERATIVE_AI_API_KEY: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
     AI_MODEL: process.env.AI_MODEL,
     AI_RATE_LIMIT: process.env.AI_RATE_LIMIT,
+    AI_MAX_CARDS_PER_GENERATION: process.env.AI_MAX_CARDS_PER_GENERATION,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { getAIService } from "@/server/services/ai";
+import { getValidationService } from "@/server/services/ai/validation";
 import { TRPCError } from "@trpc/server";
 import { env } from "@/env";
 
@@ -47,7 +48,7 @@ export const aiRouter = createTRPCRouter({
           input_text: input.text,
           generated_cards: cards as any, // Prisma Json type
           tokens_used: Math.ceil(input.text.length / 4), // rough estimate
-          model_used: env.AI_MODEL || "gemini-2.5-flash",
+          model_used: env.AI_MODEL ?? "gemini-2.0-flash-experimental",
         },
       });
 
@@ -154,10 +155,31 @@ export const aiRouter = createTRPCRouter({
         });
       }
 
-      const aiService = getAIService();
-      const analysis = await aiService.analyzeText(input.text);
+      const validationService = getValidationService();
+      const analysis = await validationService.analyzeText(input.text);
 
       return analysis;
+    }),
+
+  // Validate generation request
+  validateRequest: protectedProcedure
+    .input(
+      z.object({
+        prompt: z.string().min(1, "Prompt cannot be empty"),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      if (!env.GOOGLE_GENERATIVE_AI_API_KEY) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "AI features are not configured.",
+        });
+      }
+
+      const validationService = getValidationService();
+      const validation = await validationService.validateRequest(input.prompt);
+
+      return validation;
     }),
 
   // Get AI generation history
@@ -278,7 +300,8 @@ export const aiRouter = createTRPCRouter({
       totalTokensUsed: stats._sum.tokens_used || 0,
       monthlyGenerations: monthlyStats._count.id,
       monthlyTokensUsed: monthlyStats._sum.tokens_used || 0,
-      rateLimit: parseInt(env.AI_RATE_LIMIT || "100"),
+      rateLimit: parseInt(env.AI_RATE_LIMIT ?? "100"),
+      maxCardsPerGeneration: parseInt(env.AI_MAX_CARDS_PER_GENERATION ?? "100"),
     };
   }),
 });

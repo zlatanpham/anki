@@ -10,7 +10,7 @@ import { HydrateClient } from "@/trpc/server";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "Next Starter",
+  title: "Anki AI",
   description: "A starter template for Next.js applications",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };

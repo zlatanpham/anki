@@ -541,7 +541,10 @@ export default function DeckCardsPage() {
                                 <div className="space-y-2">
                                   {parsedCards.slice(0, 2).map((clozeCard, index) => (
                                     <div key={index} className="text-sm">
-                                      <span className="font-medium">Q{index + 1}:</span> {clozeCard.question}
+                                      <span className="font-medium">Q{index + 1}:</span>{" "}
+                                      <span 
+                                        dangerouslySetInnerHTML={{ __html: clozeCard.question }}
+                                      />
                                     </div>
                                   ))}
                                   {parsedCards.length > 2 && (

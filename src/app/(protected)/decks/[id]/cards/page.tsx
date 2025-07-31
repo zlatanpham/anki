@@ -187,14 +187,24 @@ export default function DeckCardsPage() {
   if (isDeckLoading) {
     return (
       <div className="container mx-auto p-6 max-w-6xl">
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="sm" disabled>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Decks
-          </Button>
-          <div className="flex-1">
+        {/* Breadcrumb Skeleton */}
+        <div className="flex items-center gap-2 mb-4">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-12" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+        
+        {/* Header with title and buttons */}
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+          <div>
             <Skeleton className="h-8 w-48 mb-2" />
-            <Skeleton className="h-4 w-64" />
+            <Skeleton className="h-4 w-80" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-44" />
+            <Skeleton className="h-10 w-28" />
           </div>
         </div>
         

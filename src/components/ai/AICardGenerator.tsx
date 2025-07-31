@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -59,12 +66,10 @@ interface AICardGeneratorProps {
 // Simple cloze preview component for AI-generated cards
 function SimpleClozePreview({ clozeText }: { clozeText: string }) {
   const parsedCards = parseClozeText(clozeText);
-  
+
   if (parsedCards.length === 0) {
     return (
-      <div className="text-sm text-muted-foreground">
-        Invalid cloze format
-      </div>
+      <div className="text-muted-foreground text-sm">Invalid cloze format</div>
     );
   }
 
@@ -72,22 +77,22 @@ function SimpleClozePreview({ clozeText }: { clozeText: string }) {
     <div className="space-y-2">
       {parsedCards.map((card, index) => (
         <div key={index} className="text-sm">
-          <div className="font-medium text-muted-foreground">
+          <div className="text-muted-foreground font-medium">
             Card {index + 1}:
           </div>
-          <div className="pl-4">
-            Q: {card.question}
-          </div>
-          <div className="pl-4 text-green-600">
-            A: {card.answer}
-          </div>
+          <div className="pl-4">Q: {card.question}</div>
+          <div className="pl-4 text-green-600">A: {card.answer}</div>
         </div>
       ))}
     </div>
   );
 }
 
-export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGeneratorProps) {
+export function AICardGenerator({
+  deckId,
+  deckName,
+  onCardsAdded,
+}: AICardGeneratorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState("");
   const [generatedCards, setGeneratedCards] = useState<GeneratedCard[]>([]);
@@ -105,60 +110,59 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
       }));
       setGeneratedCards(cardsWithSelection);
       setStep("preview");
-      
+
       // Check if we might have hit the generation limit
       const maxCards = usageStats.data?.maxCardsPerGeneration ?? 100;
       if (data.cards.length === maxCards) {
         setGenerationNotice(
-          `Generated the maximum ${maxCards} cards per request. For more cards, you can generate additional batches or consider importing pre-made decks.`
+          `Generated the maximum ${maxCards} cards per request. For more cards, you can generate additional batches or consider importing pre-made decks.`,
         );
-      } else if (inputText.toLowerCase().match(/\d{3,}|all|every|complete|entire/)) {
+      } else if (
+        inputText.toLowerCase().match(/\d{3,}|all|every|complete|entire/)
+      ) {
         // Check if user might have requested a large amount
         setGenerationNotice(
-          `Generated ${data.cards.length} high-quality cards from your input. We focus on the most important concepts for effective learning.`
+          `Generated ${data.cards.length} high-quality cards from your input. We focus on the most important concepts for effective learning.`,
         );
       }
-      
+
       toast.success(`Generated ${data.cards.length} cards!`);
     },
     onError: (error) => {
-      if (error.message.includes('busy') || error.message.includes('Rate limit')) {
-        toast.error(
-          error.message,
-          {
-            duration: 5000,
-            action: {
-              label: 'Retry',
-              onClick: () => setTimeout(handleGenerate, 2000),
-            },
-          }
-        );
-        
+      if (
+        error.message.includes("busy") ||
+        error.message.includes("Rate limit")
+      ) {
+        toast.error(error.message, {
+          duration: 5000,
+          action: {
+            label: "Retry",
+            onClick: () => setTimeout(handleGenerate, 2000),
+          },
+        });
+
         // Offer fallback option
-        toast.info(
-          "You can also use basic card generation while AI is busy",
-          {
-            duration: 8000,
-            action: {
-              label: 'Use Basic Mode',
-              onClick: () => {
-                const fallbackCards = generateBasicCards(inputText);
-                if (fallbackCards.length > 0) {
-                  const cardsWithSelection = fallbackCards.map((card) => ({
-                    ...card,
-                    selected: true,
-                    isEditing: false,
-                  }));
-                  setGeneratedCards(cardsWithSelection);
-                  setStep("preview");
-                  toast.success(`Generated ${fallbackCards.length} basic cards!`);
-                } else {
-                  toast.error("Could not generate cards from this text");
-                }
-              },
+        toast.info("You can also use basic card generation while AI is busy", {
+          duration: 8000,
+          action: {
+            label: "Use Basic Mode",
+            onClick: () => {
+              const fallbackCards = generateBasicCards(inputText);
+              if (fallbackCards.length > 0) {
+                const cardsWithSelection = fallbackCards.map((card) => ({
+                  ...card,
+                  selected: true,
+                  isEditing: false,
+                }));
+                setGeneratedCards(cardsWithSelection);
+                setStep("preview");
+                toast.success(`Generated ${fallbackCards.length} basic cards!`);
+              } else {
+                toast.error("Could not generate cards from this text");
+              }
             },
-          }
-        );
+          },
+        });
       } else {
         toast.error(error.message || "Failed to generate cards");
       }
@@ -169,7 +173,7 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
     { text: inputText },
     {
       enabled: showAnalysis && inputText.length > 10,
-    }
+    },
   );
 
   const usageStats = api.ai.getUsageStats.useQuery();
@@ -210,7 +214,7 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
     const cardsToCreate = selectedCards.map((card) => ({
       cardType: card.type as CardType,
       front: card.type === "BASIC" ? card.front : "Cloze Card",
-      back: card.type === "BASIC" ? (card.back || "") : "See cloze text",
+      back: card.type === "BASIC" ? card.back || "" : "See cloze text",
       clozeText: card.type === "CLOZE" ? card.clozeText : undefined,
       tags: card.tags || [],
     }));
@@ -230,36 +234,37 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
   const toggleCardSelection = (index: number) => {
     setGeneratedCards((prev) =>
       prev.map((card, i) =>
-        i === index ? { ...card, selected: !card.selected } : card
-      )
+        i === index ? { ...card, selected: !card.selected } : card,
+      ),
     );
   };
 
   const toggleAllCards = () => {
     const allSelected = generatedCards.every((card) => card.selected);
     setGeneratedCards((prev) =>
-      prev.map((card) => ({ ...card, selected: !allSelected }))
+      prev.map((card) => ({ ...card, selected: !allSelected })),
     );
   };
 
   const toggleCardEdit = (index: number) => {
     setGeneratedCards((prev) =>
       prev.map((card, i) =>
-        i === index ? { ...card, isEditing: !card.isEditing } : card
-      )
+        i === index ? { ...card, isEditing: !card.isEditing } : card,
+      ),
     );
   };
 
   const updateCard = (index: number, updates: Partial<GeneratedCard>) => {
     setGeneratedCards((prev) =>
       prev.map((card, i) =>
-        i === index ? { ...card, ...updates, isEditing: false } : card
-      )
+        i === index ? { ...card, ...updates, isEditing: false } : card,
+      ),
     );
   };
 
   const selectedCount = generatedCards.filter((card) => card.selected).length;
-  const allSelected = generatedCards.length > 0 && selectedCount === generatedCards.length;
+  const allSelected =
+    generatedCards.length > 0 && selectedCount === generatedCards.length;
 
   return (
     <>
@@ -273,51 +278,51 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent className="flex max-h-[90vh] max-w-6xl flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5" />
               AI Card Generator
             </DialogTitle>
             <DialogDescription>
-              {step === "input" ? "Enter text to generate flashcards automatically" : 
-               step === "preview" ? "Review and edit generated cards before adding them" :
-               "Adding cards to your deck..."}
+              {step === "input"
+                ? "Enter text to generate flashcards automatically"
+                : step === "preview"
+                  ? "Review and edit generated cards before adding them"
+                  : "Adding cards to your deck..."}
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex-1 overflow-hidden">
             {step === "input" && (
               <div className="space-y-4">
-                <div>
-                  <Label htmlFor="input-text">Enter your text</Label>
-                  <Textarea
-                    id="input-text"
-                    placeholder="Paste your study material, notes, or any text you want to create flashcards from..."
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    className="min-h-[200px] font-mono text-sm"
-                  />
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="flex items-center gap-4">
-                      <p className="text-sm text-muted-foreground">
-                        {inputText.length} characters
+                <Label htmlFor="input-text">Enter your text</Label>
+                <Textarea
+                  id="input-text"
+                  placeholder="Paste your study material, notes, or any text you want to create flashcards from..."
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  className="min-h-[200px] font-mono text-sm"
+                />
+                <div className="mt-2 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <p className="text-muted-foreground text-sm">
+                      {inputText.length} characters
+                    </p>
+                    {usageStats.data && (
+                      <p className="text-muted-foreground text-sm">
+                        Max cards: {usageStats.data.maxCardsPerGeneration}
                       </p>
-                      {usageStats.data && (
-                        <p className="text-sm text-muted-foreground">
-                          Max cards: {usageStats.data.maxCardsPerGeneration}
-                        </p>
-                      )}
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowAnalysis(!showAnalysis)}
-                    >
-                      <Info className="h-4 w-4 mr-1" />
-                      {showAnalysis ? "Hide" : "Show"} Analysis
-                    </Button>
+                    )}
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowAnalysis(!showAnalysis)}
+                  >
+                    <Info className="mr-1 h-4 w-4" />
+                    {showAnalysis ? "Hide" : "Show"} Analysis
+                  </Button>
                 </div>
 
                 {showAnalysis && analyzeText.data && (
@@ -329,11 +334,17 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                           <p className="text-muted-foreground">Word Count</p>
-                          <p className="font-medium">{analyzeText.data.wordCount}</p>
+                          <p className="font-medium">
+                            {analyzeText.data.wordCount}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-muted-foreground">Estimated Cards</p>
-                          <p className="font-medium">{analyzeText.data.estimatedCards}</p>
+                          <p className="text-muted-foreground">
+                            Estimated Cards
+                          </p>
+                          <p className="font-medium">
+                            {analyzeText.data.estimatedCards}
+                          </p>
                         </div>
                         <div>
                           <p className="text-muted-foreground">Difficulty</p>
@@ -343,12 +354,18 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
                         </div>
                         <div>
                           <p className="text-muted-foreground">Topics</p>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {analyzeText.data.topics.slice(0, 3).map((topic, i) => (
-                              <Badge key={i} variant="secondary" className="text-xs">
-                                {topic}
-                              </Badge>
-                            ))}
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {analyzeText.data.topics
+                              .slice(0, 3)
+                              .map((topic, i) => (
+                                <Badge
+                                  key={i}
+                                  variant="secondary"
+                                  className="text-xs"
+                                >
+                                  {topic}
+                                </Badge>
+                              ))}
                           </div>
                         </div>
                       </div>
@@ -360,11 +377,13 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
                   <Info className="h-4 w-4" />
                   <AlertDescription>
                     <strong>Tips for best results:</strong>
-                    <ul className="list-disc list-inside mt-1 space-y-1">
+                    <ul className="mt-1 list-inside list-disc space-y-1">
                       <li>Use clear, well-structured text</li>
                       <li>Include definitions, key concepts, and examples</li>
                       <li>Break down complex topics into smaller sections</li>
-                      <li>AI will create both basic and cloze deletion cards</li>
+                      <li>
+                        AI will create both basic and cloze deletion cards
+                      </li>
                     </ul>
                   </AlertDescription>
                 </Alert>
@@ -381,7 +400,7 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
                     </AlertDescription>
                   </Alert>
                 )}
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Checkbox
@@ -394,8 +413,10 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
                     </Label>
                   </div>
                   <Badge variant="outline">
-                    {generatedCards.filter(c => c.type === "BASIC").length} Basic,{" "}
-                    {generatedCards.filter(c => c.type === "CLOZE").length} Cloze
+                    {generatedCards.filter((c) => c.type === "BASIC").length}{" "}
+                    Basic,{" "}
+                    {generatedCards.filter((c) => c.type === "CLOZE").length}{" "}
+                    Cloze
                   </Badge>
                 </div>
 
@@ -406,26 +427,46 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
                     {generatedCards.map((card, index) => (
                       <Card
                         key={index}
-                        className={card.selected ? "border-primary" : "opacity-60"}
+                        className={
+                          card.selected ? "border-primary" : "opacity-60"
+                        }
                       >
                         <CardHeader className="pb-3">
                           <div className="flex items-start justify-between">
                             <div className="flex items-center gap-2">
                               <Checkbox
                                 checked={card.selected}
-                                onCheckedChange={() => toggleCardSelection(index)}
+                                onCheckedChange={() =>
+                                  toggleCardSelection(index)
+                                }
                               />
-                              <Badge variant={card.type === "BASIC" ? "default" : "secondary"}>
+                              <Badge
+                                variant={
+                                  card.type === "BASIC"
+                                    ? "default"
+                                    : "secondary"
+                                }
+                              >
                                 {card.type === "BASIC" ? (
-                                  <><FileText className="h-3 w-3 mr-1" />Basic</>
+                                  <>
+                                    <FileText className="mr-1 h-3 w-3" />
+                                    Basic
+                                  </>
                                 ) : (
-                                  <><Brain className="h-3 w-3 mr-1" />Cloze</>
+                                  <>
+                                    <Brain className="mr-1 h-3 w-3" />
+                                    Cloze
+                                  </>
                                 )}
                               </Badge>
                               {card.tags && card.tags.length > 0 && (
                                 <div className="flex gap-1">
                                   {card.tags.map((tag, i) => (
-                                    <Badge key={i} variant="outline" className="text-xs">
+                                    <Badge
+                                      key={i}
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
                                       {tag}
                                     </Badge>
                                   ))}
@@ -455,7 +496,9 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
                                     <Textarea
                                       value={card.front}
                                       onChange={(e) =>
-                                        updateCard(index, { front: e.target.value })
+                                        updateCard(index, {
+                                          front: e.target.value,
+                                        })
                                       }
                                       className="mt-1 min-h-[60px]"
                                     />
@@ -465,7 +508,9 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
                                     <Textarea
                                       value={card.back}
                                       onChange={(e) =>
-                                        updateCard(index, { back: e.target.value })
+                                        updateCard(index, {
+                                          back: e.target.value,
+                                        })
                                       }
                                       className="mt-1 min-h-[60px]"
                                     />
@@ -477,7 +522,9 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
                                   <Textarea
                                     value={card.clozeText}
                                     onChange={(e) =>
-                                      updateCard(index, { clozeText: e.target.value })
+                                      updateCard(index, {
+                                        clozeText: e.target.value,
+                                      })
                                     }
                                     className="mt-1 min-h-[80px] font-mono text-sm"
                                     placeholder="Use {{c1::text}} syntax for deletions"
@@ -485,7 +532,9 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
                                 </div>
                               )}
                               <div>
-                                <Label className="text-xs">Tags (comma-separated)</Label>
+                                <Label className="text-xs">
+                                  Tags (comma-separated)
+                                </Label>
                                 <Input
                                   value={card.tags?.join(", ") || ""}
                                   onChange={(e) =>
@@ -504,7 +553,7 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
                                 onClick={() => toggleCardEdit(index)}
                                 className="w-full"
                               >
-                                <Check className="h-4 w-4 mr-1" />
+                                <Check className="mr-1 h-4 w-4" />
                                 Save Changes
                               </Button>
                             </div>
@@ -513,14 +562,14 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
                               {card.type === "BASIC" ? (
                                 <>
                                   <div>
-                                    <p className="text-xs font-medium text-muted-foreground mb-1">
+                                    <p className="text-muted-foreground mb-1 text-xs font-medium">
                                       Front
                                     </p>
                                     <p className="text-sm">{card.front}</p>
                                   </div>
                                   <Separator />
                                   <div>
-                                    <p className="text-xs font-medium text-muted-foreground mb-1">
+                                    <p className="text-muted-foreground mb-1 text-xs font-medium">
                                       Back
                                     </p>
                                     <p className="text-sm">{card.back}</p>
@@ -528,7 +577,7 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
                                 </>
                               ) : (
                                 <div>
-                                  <p className="text-xs font-medium text-muted-foreground mb-1">
+                                  <p className="text-muted-foreground mb-1 text-xs font-medium">
                                     Cloze Preview
                                   </p>
                                   <SimpleClozePreview
@@ -547,9 +596,11 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
             )}
 
             {step === "adding" && (
-              <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="text-muted-foreground">Adding cards to your deck...</p>
+              <div className="flex flex-col items-center justify-center space-y-4 py-12">
+                <Loader2 className="text-primary h-8 w-8 animate-spin" />
+                <p className="text-muted-foreground">
+                  Adding cards to your deck...
+                </p>
               </div>
             )}
           </div>
@@ -566,12 +617,12 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
                 >
                   {generateCards.isPending ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Generating...
                     </>
                   ) : (
                     <>
-                      <Sparkles className="h-4 w-4 mr-2" />
+                      <Sparkles className="mr-2 h-4 w-4" />
                       Generate Cards
                     </>
                   )}
@@ -592,11 +643,8 @@ export function AICardGenerator({ deckId, deckName, onCardsAdded }: AICardGenera
                 <Button variant="outline" onClick={handleClose}>
                   Cancel
                 </Button>
-                <Button
-                  onClick={handleAddCards}
-                  disabled={selectedCount === 0}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
+                <Button onClick={handleAddCards} disabled={selectedCount === 0}>
+                  <Plus className="mr-2 h-4 w-4" />
                   Add {selectedCount} Cards
                 </Button>
               </>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { api } from "@/trpc/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,15 @@ import { RichTextEditor } from "@/components/RichTextEditor";
 import { ClozeDisplay } from "@/components/ClozeDisplay";
 import { toast } from "sonner";
 import type { CardType } from "@prisma/client";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function EditCardPage() {
   const router = useRouter();
@@ -72,8 +82,7 @@ export default function EditCardPage() {
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setIsLoading(true);
 
     try {
@@ -100,10 +109,88 @@ export default function EditCardPage() {
 
   if (isLoadingCard) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+      <div className="container mx-auto p-6 max-w-7xl">
+        {/* Breadcrumb Navigation Skeleton */}
+        <div className="mb-6 flex items-center gap-2">
+          <Skeleton className="h-4 w-12" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-20" />
+        </div>
+
+        {/* Header with Action Buttons Skeleton */}
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <Skeleton className="h-8 w-32 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-20" />
+          </div>
+        </div>
+
+        {/* Two Column Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Form Card Skeleton */}
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-24" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {/* Card Type Field */}
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+
+                {/* Content Fields */}
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-32 w-full" />
+                </div>
+
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-32 w-full" />
+                </div>
+
+                {/* Tags Section */}
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-12" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-6 w-16 rounded-full" />
+                    <Skeleton className="h-6 w-20 rounded-full" />
+                  </div>
+                  <div className="flex gap-2">
+                    <Skeleton className="h-10 flex-1" />
+                    <Skeleton className="h-10 w-10" />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Preview Card Skeleton */}
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-20" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-4 border rounded-lg">
+                  <Skeleton className="h-4 w-16 mb-2" />
+                  <Skeleton className="h-20 w-full" />
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <Skeleton className="h-4 w-16 mb-2" />
+                  <Skeleton className="h-20 w-full" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -129,23 +216,54 @@ export default function EditCardPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
+    <div className="container mx-auto p-6 max-w-7xl">
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb className="mb-6">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/decks">Decks</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink href={`/decks/${deckId}/cards`}>
+              {deck?.name || "Deck"}
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Edit Card</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
+      {/* Header with Action Buttons */}
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold tracking-tight">Edit Card</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
+            Modify your flashcard content and settings
+          </p>
+        </div>
+        <div className="flex gap-2">
           <Button
-            variant="ghost"
+            onClick={handleSubmit}
+            disabled={isLoading || updateCardMutation.isPending}
+          >
+            {(isLoading || updateCardMutation.isPending) ? (
+              "Updating..."
+            ) : (
+              <>
+                <Save className="w-4 h-4 mr-2" />
+                Update Card
+              </>
+            )}
+          </Button>
+          <Button
+            variant="outline"
             onClick={() => router.push(`/decks/${deckId}/cards`)}
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to {deck?.name || "Cards"}
+            Cancel
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Edit Card</h1>
-            <p className="text-muted-foreground">
-              Modify your flashcard content and settings
-            </p>
-          </div>
         </div>
       </div>
 
@@ -156,7 +274,7 @@ export default function EditCardPage() {
             <CardTitle>Card Details</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-6">
               {/* Card Type */}
               <div className="space-y-2">
                 <Label htmlFor="cardType">Card Type</Label>
@@ -274,31 +392,7 @@ export default function EditCardPage() {
                 </div>
               </div>
 
-              {/* Submit Button */}
-              <div className="flex gap-2 pt-4">
-                <Button
-                  type="submit"
-                  disabled={isLoading || updateCardMutation.isPending}
-                  className="flex-1"
-                >
-                  {(isLoading || updateCardMutation.isPending) ? (
-                    "Updating..."
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Update Card
-                    </>
-                  )}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.push(`/decks/${deckId}/cards`)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
+            </div>
           </CardContent>
         </Card>
 

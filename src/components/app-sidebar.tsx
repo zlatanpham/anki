@@ -31,29 +31,39 @@ import { Skeleton } from "./ui/skeleton";
 const data = {
   navMain: [
     {
-      title: "Dashboard",
-      url: "/",
-      icon: SquareTerminal,
+      title: "Platform",
+      items: [
+        {
+          title: "Dashboard",
+          url: "/",
+          icon: SquareTerminal,
+        },
+        {
+          title: "Search",
+          url: "/search",
+          icon: Search,
+        },
+        {
+          title: "Statistics",
+          url: "/stats",
+          icon: BarChart3,
+        },
+      ],
     },
     {
-      title: "Decks",
-      url: "/decks",
-      icon: BookOpen,
-    },
-    {
-      title: "Study",
-      url: "/study",
-      icon: Play,
-    },
-    {
-      title: "Search",
-      url: "/search",
-      icon: Search,
-    },
-    {
-      title: "Statistics",
-      url: "/stats",
-      icon: BarChart3,
+      title: "Learn",
+      items: [
+        {
+          title: "Study",
+          url: "/study",
+          icon: Play,
+        },
+        {
+          title: "Decks",
+          url: "/decks",
+          icon: BookOpen,
+        },
+      ],
     },
   ],
   navSecondary: [

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -46,20 +46,38 @@ type TimePeriod = "today" | "week" | "month" | "all";
 export default function StatisticsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>("week");
   const [selectedDeck, setSelectedDeck] = useState<string>("all");
+  const [hasInitialData, setHasInitialData] = useState(false);
 
   // Get all decks for selection
   const { data: decksData } = api.deck.getAll.useQuery({ limit: 100 });
 
-  // Get study statistics
-  const { data: studyStats, isLoading: isLoadingStats } = api.study.getStudyStats.useQuery({
-    period: selectedPeriod,
-    deckId: selectedDeck === "all" ? undefined : selectedDeck,
-  });
+  // Get study statistics - we'll manage the loading state manually
+  const studyStatsQuery = api.study.getStudyStats.useQuery(
+    {
+      period: selectedPeriod,
+      deckId: selectedDeck === "all" ? undefined : selectedDeck,
+    }
+  );
 
   // Get due cards count
-  const { data: dueCardsCount } = api.study.getDueCardsCount.useQuery({
-    deckId: selectedDeck === "all" ? undefined : selectedDeck,
-  });
+  const dueCardsQuery = api.study.getDueCardsCount.useQuery(
+    {
+      deckId: selectedDeck === "all" ? undefined : selectedDeck,
+    }
+  );
+
+  // Set hasInitialData once we have data
+  React.useEffect(() => {
+    if (studyStatsQuery.data && !hasInitialData) {
+      setHasInitialData(true);
+    }
+  }, [studyStatsQuery.data, hasInitialData]);
+
+  const studyStats = studyStatsQuery.data;
+  const dueCardsCount = dueCardsQuery.data;
+  const isLoadingStats = studyStatsQuery.isLoading;
+  const isFetchingStats = studyStatsQuery.isFetching;
+  const isFetchingDue = dueCardsQuery.isFetching;
 
   // Mock data for charts (in a real app, this would come from the API)
   const activityData = [
@@ -85,7 +103,8 @@ export default function StatisticsPage() {
     { name: "Review", value: dueCardsCount.reviewCards, color: "#10b981" },
   ] : [];
 
-  if (isLoadingStats) {
+  // Only show full page loading on initial load
+  if (isLoadingStats && !hasInitialData) {
     return (
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center min-h-[400px]">
@@ -152,10 +171,20 @@ export default function StatisticsPage() {
             </SelectContent>
           </Select>
         </div>
+
+        {/* Loading indicator for filter changes */}
+        {(isFetchingStats || isFetchingDue) && (
+          <div className="flex items-center gap-2 ml-auto">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+            <span className="text-sm text-muted-foreground">Updating...</span>
+          </div>
+        )}
       </div>
 
       {/* Key Metrics */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
+      <div className={`grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6 transition-opacity duration-200 ${
+        isFetchingStats ? 'opacity-50' : 'opacity-100'
+      }`}>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Reviews</CardTitle>
@@ -212,7 +241,9 @@ export default function StatisticsPage() {
       </div>
 
       {/* Charts */}
-      <Tabs defaultValue="activity" className="space-y-6">
+      <Tabs defaultValue="activity" className={`space-y-6 transition-opacity duration-200 ${
+        isFetchingStats || isFetchingDue ? 'opacity-50' : 'opacity-100'
+      }`}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="activity">Activity</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>

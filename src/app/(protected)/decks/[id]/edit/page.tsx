@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -101,10 +102,63 @@ export default function EditDeckPage() {
 
   if (isLoadingDeck) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+      <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8 max-w-2xl">
+        {/* Header skeleton */}
+        <div className="mb-6 lg:mb-8">
+          <Skeleton className="h-4 w-24 mb-3" />
+          <div className="space-y-1">
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          {/* Main Form skeleton */}
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-40" />
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-24 w-full" />
+              </div>
+              <Skeleton className="h-20 w-full" />
+              <div className="flex gap-2">
+                <Skeleton className="h-10 flex-1" />
+                <Skeleton className="h-10 w-20" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Stats skeleton */}
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-36" />
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+              </div>
+              <Skeleton className="h-16 w-full" />
+            </CardContent>
+          </Card>
+
+          {/* Danger zone skeleton */}
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-28" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-12 w-full mb-4" />
+              <Skeleton className="h-10 w-32" />
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -130,23 +184,26 @@ export default function EditDeckPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-2xl">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            onClick={() => router.push(`/decks/${deckId}/cards`)}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Cards
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Edit Deck</h1>
-            <p className="text-muted-foreground">
-              Modify your deck settings and information
-            </p>
-          </div>
+    <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8 max-w-2xl">
+      {/* Header - Mobile-first responsive design */}
+      <div className="mb-6 lg:mb-8">
+        {/* Back button - Better touch target on mobile */}
+        <button
+          onClick={() => router.push(`/decks/${deckId}/cards`)}
+          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors mb-3"
+        >
+          <ArrowLeft className="h-4 w-4 mr-1.5" />
+          <span className="font-medium">Back to Cards</span>
+        </button>
+        
+        {/* Title section - Responsive sizing and spacing */}
+        <div className="space-y-1">
+          <h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold tracking-tight">
+            Edit Deck
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
+            Modify your deck settings and information
+          </p>
         </div>
       </div>
 

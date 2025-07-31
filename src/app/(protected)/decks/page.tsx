@@ -128,8 +128,10 @@ export default function DecksPage() {
     return (
       <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
         <div className="mb-6">
-          <h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold tracking-tight">My Decks</h1>
-          <p className="text-sm sm:text-base text-muted-foreground mt-1">
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl lg:text-2xl">
+            My Decks
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Manage your flashcard decks and track your learning progress
           </p>
         </div>
@@ -140,76 +142,81 @@ export default function DecksPage() {
 
   return (
     <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold tracking-tight">My Decks</h1>
-          <p className="text-sm sm:text-base text-muted-foreground mt-1">
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl lg:text-2xl">
+            My Decks
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Manage your flashcard decks and track your learning progress
           </p>
         </div>
 
         <div className="flex gap-2">
           <ImportWizard onImportSuccess={() => void refetch()} />
-          
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+
+          <Dialog
+            open={isCreateDialogOpen}
+            onOpenChange={setIsCreateDialogOpen}
+          >
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
                 New Deck
               </Button>
             </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create New Deck</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleCreateDeck}>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Deck Name</Label>
-                  <Input
-                    id="name"
-                    value={createForm.name}
-                    onChange={(e) =>
-                      setCreateForm((prev) => ({
-                        ...prev,
-                        name: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter deck name..."
-                    className="mt-1"
-                  />
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New Deck</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleCreateDeck}>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="name">Deck Name</Label>
+                    <Input
+                      id="name"
+                      value={createForm.name}
+                      onChange={(e) =>
+                        setCreateForm((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
+                      placeholder="Enter deck name..."
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="description">Description (Optional)</Label>
+                    <Textarea
+                      id="description"
+                      value={createForm.description}
+                      onChange={(e) =>
+                        setCreateForm((prev) => ({
+                          ...prev,
+                          description: e.target.value,
+                        }))
+                      }
+                      placeholder="Describe what this deck is about..."
+                      className="mt-1 min-h-[80px]"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="description">Description (Optional)</Label>
-                  <Textarea
-                    id="description"
-                    value={createForm.description}
-                    onChange={(e) =>
-                      setCreateForm((prev) => ({
-                        ...prev,
-                        description: e.target.value,
-                      }))
-                    }
-                    placeholder="Describe what this deck is about..."
-                    className="mt-1 min-h-[80px]"
-                  />
-                </div>
-              </div>
-              <DialogFooter className="mt-6">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsCreateDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={createDeck.isPending}>
-                  {createDeck.isPending ? "Creating..." : "Create Deck"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+                <DialogFooter className="mt-6">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsCreateDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={createDeck.isPending}>
+                    {createDeck.isPending ? "Creating..." : "Create Deck"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -277,7 +284,12 @@ export default function DecksPage() {
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label="Deck options">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      aria-label="Deck options"
+                    >
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -308,17 +320,11 @@ export default function DecksPage() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <div className="w-full">
-                        <ExportDeck 
-                          deckId={deck.id} 
-                          deckName={deck.name}
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start p-0 h-auto font-normal"
-                        />
-                      </div>
-                    </DropdownMenuItem>
+                    <ExportDeck
+                      deckId={deck.id}
+                      deckName={deck.name}
+                      asDropdownItem={true}
+                    />
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       className="text-destructive"
@@ -365,14 +371,19 @@ export default function DecksPage() {
                 <div className="mt-4 flex gap-2">
                   <Link
                     href={`/decks/${deck.id}/study`}
-                    className={cn(buttonVariants({ variant: "default", size: "sm" }), "flex-1")}
+                    className={cn(
+                      buttonVariants({ variant: "default", size: "sm" }),
+                      "flex-1",
+                    )}
                   >
                     <Play className="mr-2 h-4 w-4" />
                     Study
                   </Link>
                   <Link
                     href={`/decks/${deck.id}/cards`}
-                    className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+                    className={cn(
+                      buttonVariants({ variant: "outline", size: "sm" }),
+                    )}
                   >
                     <BookOpen className="h-4 w-4" />
                   </Link>
@@ -388,7 +399,10 @@ export default function DecksPage() {
         <div className="mt-8 text-center">
           <Link
             href="/study"
-            className={cn(buttonVariants({ variant: "default", size: "lg" }), "px-8")}
+            className={cn(
+              buttonVariants({ variant: "default", size: "lg" }),
+              "px-8",
+            )}
           >
             <Play className="mr-2 h-4 w-4" />
             Start Studying All Decks

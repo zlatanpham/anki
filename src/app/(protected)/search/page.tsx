@@ -70,22 +70,23 @@ export default function GlobalSearchPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Link href="/decks">
-            <Button variant="ghost">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Decks
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold">Global Search</h1>
-            <p className="text-muted-foreground">
-              Search across all your flashcards and decks
-            </p>
-          </div>
+    <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8 max-w-7xl">
+      {/* Header - Mobile-first responsive design */}
+      <div className="mb-6 lg:mb-8">
+        {/* Back button - Better touch target on mobile */}
+        <Link href="/decks" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors mb-3">
+          <ArrowLeft className="h-4 w-4 mr-1.5" />
+          <span className="font-medium">Back to Decks</span>
+        </Link>
+        
+        {/* Title section - Responsive sizing and spacing */}
+        <div className="space-y-1">
+          <h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold tracking-tight">
+            Global Search
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
+            Search across all your flashcards and decks
+          </p>
         </div>
       </div>
 

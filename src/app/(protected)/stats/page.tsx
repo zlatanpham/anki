@@ -99,27 +99,30 @@ export default function StatisticsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <Link href="/">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
+    <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8 max-w-7xl">
+      {/* Header - Mobile-first responsive design */}
+      <div className="mb-6 lg:mb-8">
+        {/* Back button - Better touch target on mobile */}
+        <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors mb-3">
+          <ArrowLeft className="h-4 w-4 mr-1.5" />
+          <span className="font-medium">Dashboard</span>
         </Link>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold">Learning Statistics</h1>
-          <p className="text-muted-foreground">
+        
+        {/* Title section - Responsive sizing and spacing */}
+        <div className="space-y-1">
+          <h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold tracking-tight">
+            Learning Statistics
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
             Track your progress and analyze your learning patterns
           </p>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-4 mb-6">
+      {/* Filters - Responsive layout */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Period:</span>
+          <span className="text-sm font-medium text-muted-foreground">Period:</span>
           <Select value={selectedPeriod} onValueChange={(value: TimePeriod) => setSelectedPeriod(value)}>
             <SelectTrigger className="w-32">
               <SelectValue />
@@ -134,9 +137,9 @@ export default function StatisticsPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Deck:</span>
+          <span className="text-sm font-medium text-muted-foreground">Deck:</span>
           <Select value={selectedDeck} onValueChange={setSelectedDeck}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-full sm:w-48">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

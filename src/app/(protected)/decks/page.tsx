@@ -126,10 +126,10 @@ export default function DecksPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold">My Decks</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold tracking-tight">My Decks</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Manage your flashcard decks and track your learning progress
           </p>
         </div>
@@ -139,11 +139,11 @@ export default function DecksPage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">My Decks</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold tracking-tight">My Decks</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Manage your flashcard decks and track your learning progress
           </p>
         </div>

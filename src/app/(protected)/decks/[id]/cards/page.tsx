@@ -257,10 +257,10 @@ export default function DeckCardsPage() {
         </BreadcrumbList>
       </Breadcrumb>
       
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold">{deck.name}</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold tracking-tight">{deck.name}</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Manage cards in this deck • {cardsData?.totalCount || 0} cards total
           </p>
         </div>

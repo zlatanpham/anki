@@ -46,10 +46,10 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">
+    <div className="container mx-auto space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="space-y-1">
+        <h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold tracking-tight">Dashboard</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
           Welcome back{user?.name ? `, ${user.name}` : ""}! Ready to learn
           something new today?
         </p>

@@ -189,15 +189,19 @@ export default function StudyPage() {
 
   if (!session) {
     return (
-      <div className="container mx-auto p-6 max-w-4xl">
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
+      <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8 max-w-4xl">
+        {/* Header - Mobile-first responsive design */}
+        <div className="mb-6 lg:mb-8">
+          {/* Back button - Better touch target on mobile */}
+          <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors mb-3">
+            <ArrowLeft className="h-4 w-4 mr-1.5" />
+            <span className="font-medium">Dashboard</span>
           </Link>
-          <h1 className="text-3xl font-bold">Study Session</h1>
+          
+          {/* Title section - Responsive sizing */}
+          <h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold tracking-tight">
+            Study Session
+          </h1>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
@@ -301,24 +305,25 @@ export default function StudyPage() {
   const totalReviews = Object.values(session.sessionStats).reduce((a, b) => a + b, 0);
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      {/* Session Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Button onClick={endSession} variant="ghost" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            End Session
+    <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8 max-w-4xl">
+      {/* Session Header - Responsive layout */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
+        <div className="flex items-center gap-3">
+          <Button onClick={endSession} variant="ghost" size="sm" className="h-9 px-3">
+            <ArrowLeft className="h-4 w-4 mr-1.5" />
+            <span className="hidden sm:inline">End Session</span>
+            <span className="sm:hidden">End</span>
           </Button>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground font-medium">
             Card {session.currentIndex + 1} of {session.cards.length}
           </div>
         </div>
         
         <div className="flex items-center gap-2">
-          <Button onClick={togglePause} variant="outline" size="sm" aria-label={isPaused ? "Resume study" : "Pause study"}>
+          <Button onClick={togglePause} variant="outline" size="sm" className="h-9 w-9 p-0" aria-label={isPaused ? "Resume study" : "Pause study"}>
             {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
           </Button>
-          <Button onClick={restartSession} variant="outline" size="sm" aria-label="Restart session">
+          <Button onClick={restartSession} variant="outline" size="sm" className="h-9 w-9 p-0" aria-label="Restart session">
             <RotateCcw className="h-4 w-4" />
           </Button>
         </div>

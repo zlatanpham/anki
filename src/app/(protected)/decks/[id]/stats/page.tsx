@@ -84,7 +84,7 @@ export default function DeckStatsPage() {
 
   if (!deck) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
         <Card>
           <CardContent className="p-6 text-center">
             <h2 className="text-xl font-semibold mb-2">Deck Not Found</h2>
@@ -138,40 +138,45 @@ export default function DeckStatsPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            onClick={() => router.push(`/decks/${deckId}/cards`)}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Cards
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <BarChart3 className="w-6 h-6" />
-              {deck.name} Statistics
-            </h1>
-            <p className="text-muted-foreground">
-              Detailed performance insights for this deck
-            </p>
-          </div>
+    <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8 max-w-7xl">
+      {/* Header - Mobile-first responsive design */}
+      <div className="mb-6 lg:mb-8">
+        {/* Back button - Better touch target on mobile */}
+        <Button
+          variant="ghost"
+          onClick={() => router.push(`/decks/${deckId}/cards`)}
+          className="mb-3 -ml-2 pl-2"
+        >
+          <ArrowLeft className="w-4 h-4 mr-1.5" />
+          <span className="font-medium">Back to Cards</span>
+        </Button>
+        
+        {/* Title section - Responsive sizing and spacing */}
+        <div className="space-y-1">
+          <h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold tracking-tight flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6" />
+            {deck.name} Statistics
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Detailed performance insights for this deck
+          </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Select value={selectedPeriod} onValueChange={(value: TimePeriod) => setSelectedPeriod(value)}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="today">Today</SelectItem>
-              <SelectItem value="week">This Week</SelectItem>
-              <SelectItem value="month">This Month</SelectItem>
-              <SelectItem value="all">All Time</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      </div>
+      
+      {/* Period selector */}
+      <div className="flex items-center gap-2 mb-6">
+        <span className="text-sm font-medium text-muted-foreground">Period:</span>
+        <Select value={selectedPeriod} onValueChange={(value: TimePeriod) => setSelectedPeriod(value)}>
+          <SelectTrigger className="w-32">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="today">Today</SelectItem>
+            <SelectItem value="week">This Week</SelectItem>
+            <SelectItem value="month">This Month</SelectItem>
+            <SelectItem value="all">All Time</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Key Metrics */}

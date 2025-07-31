@@ -358,54 +358,76 @@ export const cardRouter = createTRPCRouter({
           });
         }
 
-        const createdCards = await ctx.db.$transaction(async (tx) => {
-          const cards = [];
-
-          for (const cardData of input.cards) {
-            // Validate cloze content for cloze cards
-            if (cardData.cardType === "CLOZE" && !cardData.clozeText) {
-              throw new TRPCError({
-                code: "BAD_REQUEST",
-                message: "Cloze text is required for cloze deletion cards",
-              });
-            }
-
-            // Create the card
-            const newCard = await tx.card.create({
-              data: {
-                deck_id: input.deckId,
-                card_type: cardData.cardType,
-                front: cardData.front,
-                back: cardData.back,
-                cloze_text: cardData.clozeText,
-                tags: cardData.tags,
-              },
+        // Validate all cards before creating
+        for (const cardData of input.cards) {
+          if (cardData.cardType === "CLOZE" && !cardData.clozeText) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Cloze text is required for cloze deletion cards",
             });
+          }
+        }
 
-            // Create initial card state for the user
+        // Use createMany for better performance in serverless
+        const createdCards = await ctx.db.$transaction(async (tx) => {
+          // Prepare card data for bulk creation
+          const cardsToCreate = input.cards.map(cardData => ({
+            deck_id: input.deckId,
+            card_type: cardData.cardType as CardType,
+            front: cardData.front,
+            back: cardData.back,
+            cloze_text: cardData.clozeText,
+            tags: cardData.tags,
+          }));
+
+          // Bulk create all cards at once
+          await tx.card.createMany({
+            data: cardsToCreate,
+          });
+
+          // Fetch the created cards to get their IDs
+          const cards = await tx.card.findMany({
+            where: {
+              deck_id: input.deckId,
+              created_at: {
+                gte: new Date(Date.now() - 1000), // Cards created in the last second
+              },
+            },
+            orderBy: {
+              created_at: 'desc',
+            },
+            take: input.cards.length,
+          });
+
+          // Prepare card states for bulk creation
+          const cardStates = cards.map(card => {
             const initialState = SuperMemo2Algorithm.createInitialCardState(
-              newCard.id,
+              card.id,
               userId,
             );
+            
+            return {
+              card_id: initialState.cardId,
+              user_id: initialState.userId,
+              state: initialState.state,
+              due_date: initialState.dueDate,
+              interval: initialState.interval,
+              repetitions: initialState.repetitions,
+              easiness_factor: initialState.easinessFactor,
+              lapses: initialState.lapses,
+              last_reviewed: initialState.lastReviewed,
+            };
+          });
 
-            await tx.cardState.create({
-              data: {
-                card_id: initialState.cardId,
-                user_id: initialState.userId,
-                state: initialState.state,
-                due_date: initialState.dueDate,
-                interval: initialState.interval,
-                repetitions: initialState.repetitions,
-                easiness_factor: initialState.easinessFactor,
-                lapses: initialState.lapses,
-                last_reviewed: initialState.lastReviewed,
-              },
-            });
-
-            cards.push(newCard);
-          }
+          // Bulk create all card states at once
+          await tx.cardState.createMany({
+            data: cardStates,
+          });
 
           return cards;
+        }, {
+          maxWait: 50000, // 50 seconds max wait
+          timeout: 60000, // 60 seconds timeout
         });
 
         return {

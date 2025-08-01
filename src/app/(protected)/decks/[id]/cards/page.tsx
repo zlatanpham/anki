@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -105,6 +105,33 @@ export default function DeckCardsPage() {
     limit: 20,
     offset: (currentPage - 1) * 20,
   });
+
+  // Refresh data when the page regains focus (e.g., after returning from study session)
+  useEffect(() => {
+    const handleFocus = () => {
+      // Only refetch if the page is visible and data is not currently loading
+      if (document.visibilityState === 'visible' && !isDeckLoading && !isCardsLoading) {
+        void refetchDeck();
+        void refetchCards();
+      }
+    };
+
+    // Check if we're coming back from a study session by looking for a sessionStorage flag
+    const completedStudy = sessionStorage.getItem('study-session-completed');
+    if (completedStudy === deckId) {
+      sessionStorage.removeItem('study-session-completed');
+      void refetchDeck();
+      void refetchCards();
+    }
+
+    document.addEventListener('visibilitychange', handleFocus);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleFocus);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [deckId, isDeckLoading, isCardsLoading, refetchDeck, refetchCards]);
 
   // Create card mutation
   const createCard = api.card.create.useMutation({

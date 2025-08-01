@@ -41,7 +41,7 @@ export default function StudyPage() {
   );
 
   // Get due cards count
-  const { data: dueCardsCount } = api.study.getDueCardsCount.useQuery({});
+  const { data: dueCardsCount, refetch: refetchDueCount } = api.study.getDueCardsCount.useQuery({});
 
   // Submit review mutation
   const submitReview = api.study.submitReview.useMutation({
@@ -77,11 +77,17 @@ export default function StudyPage() {
     }
   };
 
-  const endSession = () => {
+  const endSession = async () => {
     setSession(null);
     setResponseStartTime(null);
     setIsPaused(false);
-    void refetchQueue();
+    
+    // Force refresh both queue and due counts
+    await Promise.all([
+      refetchQueue(),
+      refetchDueCount()
+    ]);
+    
     toast.success("Study session completed!");
   };
 
@@ -170,6 +176,20 @@ export default function StudyPage() {
     document.addEventListener("keydown", handleKeyPress);
     return () => document.removeEventListener("keydown", handleKeyPress);
   }, [session, isPaused]);
+
+  // Refresh data when page gains focus
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && !session) {
+        // Refresh data when returning to the page and not in a session
+        void refetchQueue();
+        void refetchDueCount();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [session, refetchQueue, refetchDueCount]);
 
   if (isLoadingQueue) {
     return (

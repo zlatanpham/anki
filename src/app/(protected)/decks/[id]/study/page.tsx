@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,6 @@ import { api } from "@/trpc/react";
 import { toast } from "sonner";
 import Link from "next/link";
 import {
-  ArrowLeft,
   Clock,
   BarChart3,
   Pause,
@@ -116,7 +115,7 @@ export default function DeckStudyPage() {
     }
   };
 
-  const finishSession = () => {
+  const finishSession = async () => {
     if (session) {
       const duration = new Date().getTime() - session.startTime.getTime();
       const minutes = Math.round(duration / 60000);
@@ -129,15 +128,23 @@ export default function DeckStudyPage() {
       toast.success(
         `Study session completed! Reviewed ${totalCards} cards in ${minutes} minutes.`,
       );
+
+      // Set a flag to indicate study session was completed
+      sessionStorage.setItem("study-session-completed", deckId);
+
+      // Navigate back to the deck cards page after a short delay
+      setTimeout(() => {
+        router.push(`/decks/${deckId}/cards`);
+      }, 1500);
     }
     setSession(null);
     setResponseStartTime(null);
-    refetchQueue();
+    await refetchQueue();
   };
 
-  const showAnswer = () => {
+  const showAnswer = useCallback(() => {
     setSession((prev) => (prev ? { ...prev, showAnswer: true } : null));
-  };
+  }, []);
 
   const submitCardReview = async (rating: ReviewRating) => {
     if (!session || !responseStartTime) return;
@@ -173,9 +180,15 @@ export default function DeckStudyPage() {
   };
 
   const resetSession = () => {
+    // Set a flag to indicate study session was reset/ended
+    sessionStorage.setItem("study-session-completed", deckId);
+
     setSession(null);
     setResponseStartTime(null);
     refetchQueue();
+
+    // Navigate back to the deck cards page
+    router.push(`/decks/${deckId}/cards`);
   };
 
   // Keyboard shortcuts

@@ -74,26 +74,31 @@ export default function DeckStudyPage() {
 
   // Submit review mutation
   const submitReview = api.study.submitReview.useMutation({
-    onSuccess: () => {
-      // Move to next card or end session
-      if (session && session.currentIndex < session.cards.length - 1) {
+    onError: (error, variables) => {
+      toast.error(error.message || "Failed to submit review");
+
+      // Rollback on error: go back to previous card
+      if (session) {
+        const prevIndex = Math.max(0, session.currentIndex - 1);
         setSession((prev) =>
           prev
             ? {
                 ...prev,
-                currentIndex: prev.currentIndex + 1,
-                showAnswer: false,
+                currentIndex: prevIndex,
+                showAnswer: true,
+                sessionStats: {
+                  ...prev.sessionStats,
+                  [variables.rating.toLowerCase()]: Math.max(
+                    0,
+                    prev.sessionStats[
+                      variables.rating.toLowerCase() as keyof typeof prev.sessionStats
+                    ] - 1,
+                  ),
+                },
               }
             : null,
         );
-        setResponseStartTime(new Date());
-      } else {
-        // End session
-        void finishSession();
       }
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to submit review");
     },
   });
 
@@ -146,29 +151,45 @@ export default function DeckStudyPage() {
     setSession((prev) => (prev ? { ...prev, showAnswer: true } : null));
   }, []);
 
-  const submitCardReview = async (rating: ReviewRating) => {
+  const submitCardReview = (rating: ReviewRating) => {
     if (!session || !responseStartTime) return;
 
     const currentCard = session.cards[session.currentIndex];
     const responseTime = new Date().getTime() - responseStartTime.getTime();
 
-    // Update session stats
-    setSession((prev) =>
-      prev
-        ? {
-            ...prev,
-            sessionStats: {
-              ...prev.sessionStats,
-              [rating.toLowerCase()]:
-                prev.sessionStats[
-                  rating.toLowerCase() as keyof typeof prev.sessionStats
-                ] + 1,
-            },
-          }
-        : null,
-    );
+    // Optimistically update session stats and move to next card
+    setSession((prev) => {
+      if (!prev) return null;
 
-    await submitReview.mutateAsync({
+      const newStats = {
+        ...prev.sessionStats,
+        [rating.toLowerCase()]:
+          prev.sessionStats[
+            rating.toLowerCase() as keyof typeof prev.sessionStats
+          ] + 1,
+      };
+
+      // Check if this is the last card
+      if (prev.currentIndex >= prev.cards.length - 1) {
+        // Trigger finish session after a short delay to show completion
+        setTimeout(() => void finishSession(), 100);
+        return { ...prev, sessionStats: newStats };
+      }
+
+      // Move to next card immediately
+      return {
+        ...prev,
+        currentIndex: prev.currentIndex + 1,
+        showAnswer: false,
+        sessionStats: newStats,
+      };
+    });
+
+    // Reset response time for next card
+    setResponseStartTime(new Date());
+
+    // Submit review in background
+    submitReview.mutate({
       cardId: currentCard.id,
       rating,
       responseTime,
@@ -205,16 +226,16 @@ export default function DeckStudyPage() {
         event.preventDefault();
         switch (event.code) {
           case "Digit1":
-            void submitCardReview("AGAIN");
+            submitCardReview("AGAIN");
             break;
           case "Digit2":
-            void submitCardReview("HARD");
+            submitCardReview("HARD");
             break;
           case "Digit3":
-            void submitCardReview("GOOD");
+            submitCardReview("GOOD");
             break;
           case "Digit4":
-            void submitCardReview("EASY");
+            submitCardReview("EASY");
             break;
         }
       }
@@ -389,7 +410,8 @@ export default function DeckStudyPage() {
     (a, b) => a + b,
     0,
   );
-  const progress = session.cards.length > 0 ? (totalAnswered / session.cards.length) * 100 : 0;
+  const progress =
+    session.cards.length > 0 ? (totalAnswered / session.cards.length) * 100 : 0;
   const totalReviews = totalAnswered;
 
   return (

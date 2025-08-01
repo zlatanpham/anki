@@ -25,10 +25,10 @@ export const ratingColors = {
     bgHover: "hover:bg-green-50",
   },
   easy: {
-    variant: "default" as const,
-    className: "bg-blue-600 hover:bg-blue-700 text-white",
+    variant: "outline" as const,
+    className: "border-blue-200 text-blue-700 hover:bg-blue-50",
     borderColor: "border-blue-200",
-    textColor: "text-blue-600",
+    textColor: "text-blue-700",
     bgHover: "hover:bg-blue-50",
   },
 } as const;

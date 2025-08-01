@@ -11,7 +11,7 @@ import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Anki AI",
-  description: "A starter template for Next.js applications",
+  description: "Anki AI - Intelligent Flashcards for Effective Learning",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 

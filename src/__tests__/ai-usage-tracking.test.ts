@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@jest/globals';
-import { extractUsageMetrics, calculateCost } from '@/lib/ai-usage-tracker';
-import { AI_PRICING_MODELS } from '@/lib/ai-pricing';
+import { extractUsageMetrics } from '@/lib/ai-usage-tracker';
+import { AI_PRICING_MODELS, calculateCost } from '@/lib/ai-pricing';
 
 describe('AI Usage Tracking', () => {
   describe('extractUsageMetrics', () => {
@@ -97,12 +97,12 @@ describe('AI Usage Tracking', () => {
   describe('AI Pricing Models', () => {
     it('should have correct pricing for all models', () => {
       const flashPricing = AI_PRICING_MODELS['gemini-1.5-flash'];
-      expect(flashPricing.inputPricePer1k).toBe(0.00025);
-      expect(flashPricing.outputPricePer1k).toBe(0.00125);
+      expect(flashPricing?.inputPricePer1k).toBe(0.00025);
+      expect(flashPricing?.outputPricePer1k).toBe(0.00125);
 
       const proPricing = AI_PRICING_MODELS['gemini-1.5-pro'];
-      expect(proPricing.inputPricePer1k).toBe(0.00125);
-      expect(proPricing.outputPricePer1k).toBe(0.00500);
+      expect(proPricing?.inputPricePer1k).toBe(0.00125);
+      expect(proPricing?.outputPricePer1k).toBe(0.00500);
     });
   });
 });

@@ -41,7 +41,11 @@ export default function GlobalSearchPage() {
 
   const searchQuery = api.card.globalSearch.useQuery(
     {
-      ...filters,
+      search: filters.search,
+      cardType: filters.cardType,
+      tags: filters.tags,
+      deckIds: filters.deckIds,
+      searchFields: filters.searchFields as ("front" | "back" | "cloze_text" | "tags")[] | undefined,
       limit: ITEMS_PER_PAGE,
       offset: (currentPage - 1) * ITEMS_PER_PAGE,
     },
@@ -270,12 +274,12 @@ export default function GlobalSearchPage() {
                         {/* Card State Info */}
                         {card.card_states && card.card_states.length > 0 && (
                           <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                            <span>State: {card.card_states[0].state}</span>
-                            {card.card_states[0].interval > 0 && (
-                              <span>Interval: {card.card_states[0].interval} days</span>
+                            <span>State: {card.card_states[0]!.state}</span>
+                            {card.card_states[0]!.interval > 0 && (
+                              <span>Interval: {card.card_states[0]!.interval} days</span>
                             )}
                             <span>
-                              Due: {new Date(card.card_states[0].due_date).toLocaleDateString()}
+                              Due: {new Date(card.card_states[0]!.due_date).toLocaleDateString()}
                             </span>
                           </div>
                         )}

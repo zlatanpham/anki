@@ -26,7 +26,7 @@ import {
   Info,
   Sparkles,
 } from "lucide-react";
-import { ClozeDisplay } from "@/components/ClozeDisplay";
+import { ClozePreview } from "@/components/ClozeDisplay";
 
 interface ClozesSuggestionsProps {
   initialText?: string;
@@ -177,9 +177,8 @@ export function ClozeSuggestions({ initialText = "", onApply }: ClozesSuggestion
                                 <p className="text-xs font-medium text-muted-foreground mb-2">
                                   Variation {vIndex + 1}
                                 </p>
-                                <ClozeDisplay
+                                <ClozePreview
                                   clozeText={version}
-                                  isRevealed={false}
                                 />
                               </div>
                               <Button

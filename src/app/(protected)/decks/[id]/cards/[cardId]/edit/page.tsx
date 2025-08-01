@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
-import Link from "next/link";
 import { api } from "@/trpc/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { X, Plus, ArrowLeft, Save } from "lucide-react";
 import { RichTextEditor } from "@/components/RichTextEditor";
-import { ClozeDisplay } from "@/components/ClozeDisplay";
+import { ClozePreview } from "@/components/ClozeDisplay";
 import { toast } from "sonner";
 import type { CardType } from "@prisma/client";
 import {
@@ -86,18 +85,14 @@ export default function EditCardPage() {
     setIsLoading(true);
 
     try {
-      const cardData: any = {
+      const cardData = {
         id: cardId,
         cardType: cardType,
         front,
         back,
         tags,
+        ...(cardType === "CLOZE" ? { clozeText } : {})
       };
-
-      // Only include clozeText for CLOZE cards
-      if (cardType === "CLOZE") {
-        cardData.clozeText = clozeText;
-      }
 
       await updateCardMutation.mutateAsync(cardData);
     } catch (error) {
@@ -431,9 +426,8 @@ export default function EditCardPage() {
                   </Label>
                   <div className="mt-2">
                     {clozeText ? (
-                      <ClozeDisplay 
+                      <ClozePreview 
                         clozeText={clozeText}
-                        isPreview={true}
                       />
                     ) : (
                       <p className="text-muted-foreground">Enter cloze text...</p>

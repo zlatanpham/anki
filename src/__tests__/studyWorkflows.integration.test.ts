@@ -109,8 +109,8 @@ describe('Study Workflow Integration Tests', () => {
       // Verify the progression makes sense
       expect(results[0]!.state).toBe('REVIEW'); // GOOD from NEW goes to REVIEW
       expect(results[1]!.interval).toBe(6); // Second review interval
-      expect(results[2]!.easinessFactor).toBeLessThan(2.5); // HARD reduces EF
-      expect(results[4]!.easinessFactor).toBeGreaterThan(results[3]!.easinessFactor); // EASY increases EF
+      expect(results[2]!.ef).toBeLessThan(2.5); // HARD reduces EF
+      expect(results[4]!.ef).toBeGreaterThan(results[3]!.ef); // EASY increases EF
       expect(results[5]!.state).toBe('LEARNING'); // AGAIN causes lapse
       expect(results[6]!.state).toBe('LEARNING'); // Still in learning after lapse recovery
       
@@ -192,11 +192,11 @@ describe('Study Workflow Integration Tests', () => {
       ];
       
       // Set different initial states
-      cards[1].state = 'LEARNING';
-      cards[1].repetitions = 1;
-      cards[2].state = 'REVIEW';
-      cards[2].repetitions = 3;
-      cards[2].interval = 10;
+      cards[1]!.state = 'LEARNING';
+      cards[1]!.repetitions = 1;
+      cards[2]!.state = 'REVIEW';
+      cards[2]!.repetitions = 3;
+      cards[2]!.interval = 10;
       
       // Simulate reviewing all cards
       const ratings: ReviewRating[] = ['GOOD', 'HARD', 'EASY'];
@@ -205,9 +205,9 @@ describe('Study Workflow Integration Tests', () => {
       );
       
       // Verify all cards were processed correctly
-      expect(results[0].state).toBe('REVIEW'); // NEW -> REVIEW with GOOD
-      expect(results[1].state).toBe('REVIEW'); // LEARNING -> REVIEW with HARD
-      expect(results[2].state).toBe('REVIEW'); // REVIEW stays REVIEW with EASY
+      expect(results[0]!.state).toBe('REVIEW'); // NEW -> REVIEW with GOOD
+      expect(results[1]!.state).toBe('REVIEW'); // LEARNING -> REVIEW with HARD
+      expect(results[2]!.state).toBe('REVIEW'); // REVIEW stays REVIEW with EASY
       
       // All should have future due dates
       const now = new Date();

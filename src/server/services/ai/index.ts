@@ -174,10 +174,10 @@ Generate diverse flashcards following the exact format specified above.`;
           text: JSON.stringify(object),
           model: env.AI_MODEL ?? "gemini-2.0-flash-experimental",
           // Try to extract usage from the response
-          usage: response?.usage ? {
-            promptTokens: response.usage.promptTokens,
-            completionTokens: response.usage.completionTokens,
-            totalTokens: response.usage.totalTokens
+          usage: (response as any)?.usage ? {
+            promptTokens: (response as any).usage.promptTokens,
+            completionTokens: (response as any).usage.completionTokens,
+            totalTokens: (response as any).usage.totalTokens
           } : undefined,
           experimental_providerMetadata: response as any
         };
@@ -306,7 +306,7 @@ Use {{c1::text}} syntax for cloze deletions. Create variations that test differe
         const aiResponse: AIResponse = {
           text: JSON.stringify(object),
           model: env.AI_MODEL ?? "gemini-2.0-flash-experimental",
-          experimental_providerMetadata: response?.experimental_providerMetadata
+          experimental_providerMetadata: (response as any)?.experimental_providerMetadata
         };
         
         await trackAIUsage(
@@ -379,7 +379,7 @@ Provide the corrected version and list all corrections made with explanations.`;
         const aiResponse: AIResponse = {
           text: JSON.stringify(object),
           model: env.AI_MODEL ?? "gemini-2.0-flash-experimental",
-          experimental_providerMetadata: response?.experimental_providerMetadata
+          experimental_providerMetadata: (response as any)?.experimental_providerMetadata
         };
         
         await trackAIUsage(

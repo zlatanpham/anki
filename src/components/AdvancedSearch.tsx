@@ -75,7 +75,7 @@ export function AdvancedSearch({
   });
 
   // Get user's decks for filtering
-  const { data: decks } = api.deck.getByUser.useQuery({});
+  const { data: decks } = api.deck.getAll.useQuery({});
 
   // Get popular tags for suggestions
   const { data: popularTags } = api.card.getPopularTags.useQuery({
@@ -259,11 +259,11 @@ export function AdvancedSearch({
                 )}
 
                 {/* Deck Filter (only for global search) */}
-                {!deckId && decks && decks.length > 0 && (
+                {!deckId && decks?.decks && decks.decks.length > 0 && (
                   <div className="space-y-2">
                     <Label>Decks</Label>
                     <div className="max-h-32 overflow-y-auto space-y-1">
-                      {decks.map((deck) => (
+                      {decks.decks.map((deck) => (
                         <div key={deck.id} className="flex items-center space-x-2">
                           <Checkbox
                             id={deck.id}

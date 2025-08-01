@@ -66,7 +66,7 @@ export const importRouter = createTRPCRouter({
           preview: {
             deckInfo: {
               name: data.deck?.name || 'Unknown',
-              description: data.deck?.description,
+              description: data.deck?.description || undefined,
               cardCount: validation.cardCount,
             },
             sampleCards: data.cards?.slice(0, 3).map((card, index) => ({
@@ -92,7 +92,7 @@ export const importRouter = createTRPCRouter({
           preview: {
             deckInfo: {
               name: 'Unknown',
-              description: null,
+              description: undefined,
               cardCount: 0,
             },
             sampleCards: [],

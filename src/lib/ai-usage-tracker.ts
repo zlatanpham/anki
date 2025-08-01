@@ -1,6 +1,6 @@
 import { db } from "@/server/db";
-import { calculateCost } from "./ai-pricing";
 import { Prisma } from "@prisma/client";
+import { calculateCost } from "./ai-pricing";
 
 export interface AIUsageMetrics {
   inputTokens: number;
@@ -8,9 +8,9 @@ export interface AIUsageMetrics {
   totalTokens: number;
   model: string;
   cost: {
-    input: number;
-    output: number;
-    total: number;
+    inputCost: number;
+    outputCost: number;
+    totalCost: number;
     currency: string;
   };
   latencyMs: number;
@@ -127,9 +127,9 @@ export async function trackAIUsage(
 
   try {
     // Ensure cost values are valid numbers
-    const inputCost = usage.cost?.input ?? 0;
-    const outputCost = usage.cost?.output ?? 0;
-    const totalCost = usage.cost?.total ?? 0;
+    const inputCost = usage.cost?.inputCost ?? 0;
+    const outputCost = usage.cost?.outputCost ?? 0;
+    const totalCost = usage.cost?.totalCost ?? 0;
     
     // Create usage log entry
     await db.aIUsageLog.create({

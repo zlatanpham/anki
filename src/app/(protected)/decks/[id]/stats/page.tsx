@@ -104,13 +104,13 @@ export default function DeckStatsPage() {
   const prepareActivityData = () => {
     if (!activityData) return [];
     
-    return activityData.map((day: any) => ({
+    return activityData.map((day) => ({
       date: new Date(day.date).toLocaleDateString('en-US', { 
         month: 'short', 
         day: 'numeric' 
       }),
-      reviews: day.reviews || 0,
-      timeSpent: Math.round((day.averageTime || 0) / 1000 / 60), // Convert to minutes
+      reviews: day.reviews ?? 0,
+      timeSpent: Math.round((day.averageTime ?? 0) / 1000 / 60), // Convert to minutes
     }));
   };
 
@@ -265,7 +265,7 @@ export default function DeckStatsPage() {
                         outerRadius={80}
                         fill="#8884d8"
                         dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                       >
                         {prepareReviewDistributionData().map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
@@ -507,7 +507,7 @@ export default function DeckStatsPage() {
                       </div>
                     </div>
                   )}
-                  {!(deckStats?.totalReviews >= 100 || deckStats?.currentStreak >= 7 || deckStats?.accuracy >= 90) && (
+                  {!((deckStats?.totalReviews ?? 0) >= 100 || (deckStats?.currentStreak ?? 0) >= 7 || (deckStats?.accuracy ?? 0) >= 90) && (
                     <p className="text-muted-foreground text-center py-8">
                       Keep studying to unlock achievements!
                     </p>

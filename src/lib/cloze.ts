@@ -26,15 +26,15 @@ export function parseClozeText(clozeText: string): ClozeCard[] {
   const clozeGroups = new Map<number, Array<{ match: string; content: string; index: number }>>();
   
   matches.forEach((match) => {
-    const clozeNumber = parseInt(match[1]);
-    const content = match[2];
+    const clozeNumber = parseInt(match[1] ?? '0');
+    const content = match[2] ?? '';
     
     if (!clozeGroups.has(clozeNumber)) {
       clozeGroups.set(clozeNumber, []);
     }
     
     clozeGroups.get(clozeNumber)?.push({
-      match: match[0],
+      match: match[0] ?? '',
       content,
       index: match.index ?? 0,
     });
@@ -52,15 +52,15 @@ export function parseClozeText(clozeText: string): ClozeCard[] {
     
     // Second pass: replace cloze deletions in question
     matches.forEach((match) => {
-      const matchClozeNumber = parseInt(match[1]);
-      const content = match[2];
+      const matchClozeNumber = parseInt(match[1] ?? '0');
+      const content = match[2] ?? '';
       
       if (matchClozeNumber === clozeNumber) {
         // Replace with blank for the target cloze
         question = question.replace(match[0], '[...]');
       } else {
         // Replace with content for other clozes
-        question = question.replace(match[0], content);
+        question = question.replace(match[0] ?? '', content);
       }
     });
 

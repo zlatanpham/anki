@@ -15,11 +15,11 @@ export function generateBasicCards(text: string): GeneratedCard[] {
   // Create cards from definitions
   definitions.forEach((def) => {
     const parts = def.split(/\s+(?:is|are|:)\s+/i);
-    if (parts.length === 2) {
+    if (parts.length === 2 && parts[0] && parts[1]) {
       cards.push({
         type: "BASIC",
-        front: `What is ${parts[0].trim()}?`,
-        back: parts[1].trim(),
+        front: `What is ${parts[0]!.trim()}?`,
+        back: parts[1]!.trim(),
         tags: ["definition"],
       });
     }
@@ -53,6 +53,7 @@ export function generateBasicCards(text: string): GeneratedCard[] {
       
       cards.push({
         type: "CLOZE",
+        front: "", // Required by interface but not used for cloze cards
         clozeText: clozeText.trim(),
         tags: ["fact"],
       });

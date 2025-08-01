@@ -513,7 +513,7 @@ export const studyRouter = createTRPCRouter({
         const whereConditions = {
           user_id: userId,
           due_date: { lte: now },
-          state: { not: "SUSPENDED" },
+          state: { not: "SUSPENDED" as const },
           card: {
             deck_id: deckId,
             deck: {
@@ -581,7 +581,7 @@ export const studyRouter = createTRPCRouter({
         const whereConditions = {
           user_id: userId,
           due_date: { lte: now },
-          state: { not: "SUSPENDED" },
+          state: { not: "SUSPENDED" as const },
           card: {
             deck_id: deckId,
             deck: {
@@ -796,15 +796,15 @@ export const studyRouter = createTRPCRouter({
         
         for (let i = 0; i < days; i++) {
           const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
-          const dateKey = date.toISOString().split('T')[0];
+          const dateKey = date.toISOString().split('T')[0]!;
           dailyData[dateKey] = { reviews: 0, totalTime: 0 };
         }
 
         reviews.forEach(review => {
-          const dateKey = review.reviewed_at.toISOString().split('T')[0];
+          const dateKey = review.reviewed_at.toISOString().split('T')[0]!;
           if (dailyData[dateKey]) {
-            dailyData[dateKey].reviews++;
-            dailyData[dateKey].totalTime += review.response_time || 0;
+            dailyData[dateKey]!.reviews++;
+            dailyData[dateKey]!.totalTime += review.response_time || 0;
           }
         });
 

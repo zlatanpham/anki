@@ -89,7 +89,7 @@ export default function DeckStudyPage() {
         setResponseStartTime(new Date());
       } else {
         // End session
-        finishSession();
+        void finishSession();
       }
     },
     onError: (error) => {
@@ -185,7 +185,7 @@ export default function DeckStudyPage() {
 
     setSession(null);
     setResponseStartTime(null);
-    refetchQueue();
+    void refetchQueue();
 
     // Navigate back to the deck cards page
     router.push(`/decks/${deckId}/cards`);
@@ -205,16 +205,16 @@ export default function DeckStudyPage() {
         event.preventDefault();
         switch (event.code) {
           case "Digit1":
-            submitCardReview("AGAIN");
+            void submitCardReview("AGAIN");
             break;
           case "Digit2":
-            submitCardReview("HARD");
+            void submitCardReview("HARD");
             break;
           case "Digit3":
-            submitCardReview("GOOD");
+            void submitCardReview("GOOD");
             break;
           case "Digit4":
-            submitCardReview("EASY");
+            void submitCardReview("EASY");
             break;
         }
       }
@@ -497,8 +497,11 @@ export default function DeckStudyPage() {
           <CardContent className="min-h-[300px]">
             {currentCard.card_type === "CLOZE" ? (
               <ClozeDisplay
-                clozeText={currentCard.cloze_text}
-                isRevealed={session.showAnswer}
+                clozeText={currentCard.cloze_text || ""}
+                front={currentCard.front}
+                back={currentCard.back || ""}
+                showAnswer={session.showAnswer}
+                onShowAnswer={showAnswer}
               />
             ) : (
               <div className="space-y-6">

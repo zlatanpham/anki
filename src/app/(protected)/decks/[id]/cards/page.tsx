@@ -44,7 +44,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { type CardType } from "@prisma/client";
 import { ClozePreview } from "@/components/ClozeDisplay";
-import { validateClozeText, renderClozeContext, parseClozeText } from "@/lib/cloze";
+import { validateClozeText, parseClozeText } from "@/lib/cloze";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { AdvancedSearch } from "@/components/AdvancedSearch";
 import { SkeletonCardPreview } from "@/components/ui/skeleton-card";
@@ -73,16 +73,26 @@ export default function DeckCardsPage() {
   const params = useParams();
   const deckId = params.id as string;
   
-  const [searchFilters, setSearchFilters] = useState({
+  const [searchFilters, setSearchFilters] = useState<{
+    search: string;
+    cardType?: "BASIC" | "CLOZE";
+    tags: string[];
+    deckIds: string[];
+    searchFields: string[];
+    createdAfter?: Date;
+    createdBefore?: Date;
+    sortBy: "created_at" | "updated_at" | "front";
+    sortOrder: "asc" | "desc";
+  }>({
     search: "",
-    cardType: undefined as "BASIC" | "CLOZE" | undefined,
-    tags: [] as string[],
+    cardType: undefined,
+    tags: [],
     deckIds: [deckId],
-    searchFields: ["front", "back", "cloze_text", "tags"] as ("front" | "back" | "cloze_text" | "tags")[],
-    createdAfter: undefined as Date | undefined,
-    createdBefore: undefined as Date | undefined,
-    sortBy: "created_at" as "created_at" | "updated_at" | "front",
-    sortOrder: "desc" as "asc" | "desc",
+    searchFields: ["front", "back", "cloze_text", "tags"],
+    createdAfter: undefined,
+    createdBefore: undefined,
+    sortBy: "created_at",
+    sortOrder: "desc",
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -100,8 +110,14 @@ export default function DeckCardsPage() {
   // Get cards for this deck
   const { data: cardsData, isLoading: isCardsLoading, refetch: refetchCards } = api.card.getByDeck.useQuery({
     deckId,
-    ...searchFilters,
     search: searchFilters.search || undefined,
+    cardType: searchFilters.cardType,
+    tags: searchFilters.tags,
+    createdAfter: searchFilters.createdAfter,
+    createdBefore: searchFilters.createdBefore,
+    sortBy: searchFilters.sortBy,
+    sortOrder: searchFilters.sortOrder,
+    searchFields: searchFilters.searchFields as ("front" | "back" | "cloze_text" | "tags")[],
     limit: 20,
     offset: (currentPage - 1) * 20,
   });

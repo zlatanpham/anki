@@ -34,7 +34,7 @@ function calculateCost(
   outputTokens: number,
   model: string
 ): { inputCost: number; outputCost: number; totalCost: number; currency: string } {
-  const pricing = TEST_PRICING_MODELS[model] || TEST_PRICING_MODELS['gemini-1.5-flash'];
+  const pricing = TEST_PRICING_MODELS[model] || TEST_PRICING_MODELS['gemini-1.5-flash']!;
   
   const inputCost = (inputTokens / 1000) * pricing.inputPricePer1k;
   const outputCost = (outputTokens / 1000) * pricing.outputPricePer1k;

@@ -347,26 +347,10 @@ export function AICardGenerator({
                           </p>
                         </div>
                         <div>
-                          <p className="text-muted-foreground">Difficulty</p>
+                          <p className="text-muted-foreground">Recommended Mode</p>
                           <Badge variant="outline" className="capitalize">
-                            {analyzeText.data.difficulty}
+                            {analyzeText.data.recommendedMode}
                           </Badge>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Topics</p>
-                          <div className="mt-1 flex flex-wrap gap-1">
-                            {analyzeText.data.topics
-                              .slice(0, 3)
-                              .map((topic, i) => (
-                                <Badge
-                                  key={i}
-                                  variant="secondary"
-                                  className="text-xs"
-                                >
-                                  {topic}
-                                </Badge>
-                              ))}
-                          </div>
                         </div>
                       </div>
                     </CardContent>

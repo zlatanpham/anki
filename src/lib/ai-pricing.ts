@@ -41,7 +41,7 @@ export function calculateCost(
   outputTokens: number,
   model: string
 ): { inputCost: number; outputCost: number; totalCost: number; currency: string } {
-  const pricing = AI_PRICING_MODELS[model] || AI_PRICING_MODELS['gemini-1.5-flash'];
+  const pricing = AI_PRICING_MODELS[model] ?? AI_PRICING_MODELS['gemini-1.5-flash']!;
   
   // Convert to cost (price is per 1k tokens)
   const inputCost = (inputTokens / 1000) * pricing.inputPricePer1k;
@@ -57,5 +57,5 @@ export function calculateCost(
 }
 
 export function getPricingModel(model: string): PricingModel {
-  return AI_PRICING_MODELS[model] || AI_PRICING_MODELS['gemini-1.5-flash'];
+  return AI_PRICING_MODELS[model] ?? AI_PRICING_MODELS['gemini-1.5-flash']!;
 }

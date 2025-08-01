@@ -12,7 +12,6 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
-  UserIcon,
   BookOpen,
   Play,
   BarChart3,
@@ -117,8 +116,8 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="flex flex-col h-full">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Play className="h-5 w-5" />
@@ -126,24 +125,26 @@ export default function DashboardPage() {
             </CardTitle>
             <CardDescription>Start reviewing your due cards</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="flex-1 flex flex-col space-y-3">
             {dueCardsCount && dueCardsCount.totalDue > 0 ? (
               <>
-                <div className="flex justify-between text-sm">
-                  <span>New cards:</span>
-                  <Badge variant="secondary">{dueCardsCount.newCards}</Badge>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Learning:</span>
-                  <Badge variant="outline">{dueCardsCount.learningCards}</Badge>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Review:</span>
-                  <Badge variant="default">{dueCardsCount.reviewCards}</Badge>
+                <div className="flex-1 space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span>New cards:</span>
+                    <Badge variant="secondary">{dueCardsCount.newCards}</Badge>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Learning:</span>
+                    <Badge variant="outline">{dueCardsCount.learningCards}</Badge>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Review:</span>
+                    <Badge variant="default">{dueCardsCount.reviewCards}</Badge>
+                  </div>
                 </div>
                 <Link
                   href="/study"
-                  className={cn(buttonVariants({ variant: "default", size: "default" }), "w-full")}
+                  className={cn(buttonVariants({ variant: "default", size: "default" }), "w-full mt-4")}
                 >
                   <Play className="mr-2 h-4 w-4" />
                   Start Studying
@@ -151,10 +152,10 @@ export default function DashboardPage() {
               </>
             ) : (
               <>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-muted-foreground text-sm flex-1">
                   All caught up! No cards due for review.
                 </p>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full mt-4">
                   <Link href="/decks">Browse Decks</Link>
                 </Button>
               </>
@@ -162,7 +163,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="flex flex-col h-full">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BookOpen className="h-5 w-5" />
@@ -170,10 +171,10 @@ export default function DashboardPage() {
             </CardTitle>
             <CardDescription>Manage your flashcard collections</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="flex-1 flex flex-col space-y-3">
             {decksData?.decks && decksData.decks.length > 0 ? (
               <>
-                <div className="space-y-2">
+                <div className="flex-1 space-y-2">
                   {decksData.decks.slice(0, 2).map((deck) => (
                     <div
                       key={deck.id}
@@ -188,43 +189,25 @@ export default function DashboardPage() {
                 </div>
                 <Link
                   href="/decks"
-                  className={cn(buttonVariants({ variant: "outline", size: "default" }), "w-full")}
+                  className={cn(buttonVariants({ variant: "outline", size: "default" }), "w-full mt-4")}
                 >
                   View All Decks
                 </Link>
               </>
             ) : (
               <>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-muted-foreground text-sm flex-1">
                   Create your first deck to start learning.
                 </p>
                 <Link
                   href="/decks"
-                  className={cn(buttonVariants({ variant: "default", size: "default" }), "w-full")}
+                  className={cn(buttonVariants({ variant: "default", size: "default" }), "w-full mt-4")}
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Create First Deck
                 </Link>
               </>
             )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserIcon className="h-5 w-5" />
-              Account
-            </CardTitle>
-            <CardDescription>Manage your profile and settings</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link
-              href="/account"
-              className={cn(buttonVariants({ variant: "outline", size: "default" }), "w-full")}
-            >
-              View Account
-            </Link>
           </CardContent>
         </Card>
       </div>

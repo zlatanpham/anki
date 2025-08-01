@@ -115,7 +115,7 @@ export function SkeletonStatCard() {
 
 export function SkeletonActionCard() {
   return (
-    <Card>
+    <Card className="flex flex-col h-full">
       <CardHeader>
         <div className="flex items-center gap-2">
           <Skeleton className="h-5 w-5 rounded" />
@@ -123,11 +123,13 @@ export function SkeletonActionCard() {
         </div>
         <Skeleton className="h-4 w-48 mt-2" />
       </CardHeader>
-      <CardContent className="space-y-3">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-10 w-full rounded" />
+      <CardContent className="flex-1 flex flex-col space-y-3">
+        <div className="flex-1 space-y-3">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+        </div>
+        <Skeleton className="h-10 w-full rounded mt-4" />
       </CardContent>
     </Card>
   );
@@ -135,7 +137,7 @@ export function SkeletonActionCard() {
 
 export function SkeletonDashboard() {
   return (
-    <div className="container mx-auto space-y-6 p-6">
+    <div className="container mx-auto space-y-6 px-4 py-6 sm:px-6 lg:px-8">
       <div className="space-y-2">
         <Skeleton className="h-9 w-32" />
         <Skeleton className="h-5 w-64" />
@@ -149,8 +151,8 @@ export function SkeletonDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 3 }).map((_, i) => (
+      <div className="grid gap-6 md:grid-cols-2">
+        {Array.from({ length: 2 }).map((_, i) => (
           <SkeletonActionCard key={i} />
         ))}
       </div>

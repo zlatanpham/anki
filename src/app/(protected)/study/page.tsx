@@ -321,8 +321,10 @@ export default function StudyPage() {
   const currentCard = session.cards[session.currentIndex];
   if (!currentCard) return null;
 
-  const progress = ((session.currentIndex + 1) / session.cards.length) * 100;
-  const totalReviews = Object.values(session.sessionStats).reduce((a, b) => a + b, 0);
+  // Calculate progress based on answered cards, not current position
+  const totalAnswered = Object.values(session.sessionStats).reduce((a, b) => a + b, 0);
+  const progress = session.cards.length > 0 ? (totalAnswered / session.cards.length) * 100 : 0;
+  const totalReviews = totalAnswered;
 
   return (
     <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8 max-w-4xl">
@@ -464,7 +466,7 @@ export default function StudyPage() {
                 variant={ratingColors.easy.variant}
                 onClick={() => submitCardReview("EASY")}
                 disabled={submitReview.isPending}
-                className={`flex flex-col gap-1 min-h-[64px] p-4 text-base sm:text-sm ${ratingColors.easy.variant === "default" ? "bg-blue-600 hover:bg-blue-700" : ratingColors.easy.className}`}
+                className={`flex flex-col gap-1 min-h-[64px] p-4 text-base sm:text-sm ${ratingColors.easy.className}`}
               >
                 <span className="font-semibold">{ratingLabels.easy}</span>
                 <span className="text-xs opacity-70 hidden sm:block">Press {ratingKeys.easy}</span>

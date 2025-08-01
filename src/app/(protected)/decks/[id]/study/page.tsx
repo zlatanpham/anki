@@ -384,11 +384,13 @@ export default function DeckStudyPage() {
   }
 
   const currentCard = session.cards[session.currentIndex];
-  const progress = ((session.currentIndex + 1) / session.cards.length) * 100;
-  const totalReviews = Object.values(session.sessionStats).reduce(
+  // Calculate progress based on answered cards, not current position
+  const totalAnswered = Object.values(session.sessionStats).reduce(
     (a, b) => a + b,
     0,
   );
+  const progress = session.cards.length > 0 ? (totalAnswered / session.cards.length) * 100 : 0;
+  const totalReviews = totalAnswered;
 
   return (
     <div className="container mx-auto max-w-4xl p-6">
@@ -606,7 +608,7 @@ export default function DeckStudyPage() {
                 variant={ratingColors.easy.variant}
                 onClick={() => submitCardReview("EASY")}
                 disabled={submitReview.isPending}
-                className={`flex min-h-[64px] flex-col gap-1 p-4 text-base sm:text-sm ${ratingColors.easy.variant === "default" ? "" : ratingColors.easy.className}`}
+                className={`flex min-h-[64px] flex-col gap-1 p-4 text-base sm:text-sm ${ratingColors.easy.className}`}
               >
                 <span className="font-semibold">{ratingLabels.easy}</span>
                 <span className="hidden text-xs opacity-70 sm:block">

@@ -49,8 +49,6 @@ import { RichTextEditor } from "@/components/RichTextEditor";
 import { AdvancedSearch } from "@/components/AdvancedSearch";
 import { SkeletonCardPreview } from "@/components/ui/skeleton-card";
 import { AICardGenerator } from "@/components/ai/AICardGenerator";
-import { ClozeSuggestions } from "@/components/ai/ClozeSuggestions";
-import { GrammarChecker } from "@/components/ai/GrammarChecker";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Breadcrumb,
@@ -334,12 +332,12 @@ export default function DeckCardsPage() {
                 Add Card
               </Button>
             </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
             <DialogHeader>
               <DialogTitle>Create New Card</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleCreateCard}>
-              <div className="space-y-4">
+            <form onSubmit={handleCreateCard} className="flex-1 overflow-hidden flex flex-col">
+              <div className="space-y-4 overflow-y-auto flex-1 px-1">
                 <div>
                   <Label htmlFor="cardType">Card Type</Label>
                   <Select 
@@ -369,62 +367,41 @@ export default function DeckCardsPage() {
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="front">Front (Question)</Label>
-                    <GrammarChecker
-                      text={createForm.front.replace(/<[^>]*>/g, '')}
-                      onApply={(corrected) => setCreateForm(prev => ({ ...prev, front: corrected }))}
-                    />
-                  </div>
+                  <Label htmlFor="front">Front (Question)</Label>
                   <div className="mt-1">
                     <RichTextEditor
                       content={createForm.front}
                       onChange={(content) => setCreateForm(prev => ({ ...prev, front: content }))}
                       placeholder="Enter the question or prompt..."
-                      minHeight="100px"
+                      minHeight="80px"
+                      maxHeight="150px"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="back">Back (Answer)</Label>
-                    <GrammarChecker
-                      text={createForm.back.replace(/<[^>]*>/g, '')}
-                      onApply={(corrected) => setCreateForm(prev => ({ ...prev, back: corrected }))}
-                    />
-                  </div>
+                  <Label htmlFor="back">Back (Answer)</Label>
                   <div className="mt-1">
                     <RichTextEditor
                       content={createForm.back}
                       onChange={(content) => setCreateForm(prev => ({ ...prev, back: content }))}
                       placeholder="Enter the answer or explanation..."
-                      minHeight="100px"
+                      minHeight="80px"
+                      maxHeight="150px"
                     />
                   </div>
                 </div>
 
                 {createForm.cardType === "CLOZE" && (
                   <div>
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="clozeText">Cloze Context</Label>
-                      <div className="flex gap-2">
-                        <ClozeSuggestions 
-                          initialText={createForm.clozeText.replace(/<[^>]*>/g, '')}
-                          onApply={(clozeText) => setCreateForm(prev => ({ ...prev, clozeText }))}
-                        />
-                        <GrammarChecker
-                          text={createForm.clozeText.replace(/<[^>]*>/g, '')}
-                          onApply={(corrected) => setCreateForm(prev => ({ ...prev, clozeText: corrected }))}
-                        />
-                      </div>
-                    </div>
+                    <Label htmlFor="clozeText">Cloze Context</Label>
                     <div className="mt-1">
                       <RichTextEditor
                         content={createForm.clozeText}
                         onChange={(content) => setCreateForm(prev => ({ ...prev, clozeText: content }))}
                         placeholder="Enter the full text with {{c1::hidden text}} markers..."
-                        minHeight="80px"
+                        minHeight="60px"
+                        maxHeight="120px"
                       />
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
@@ -447,7 +424,7 @@ export default function DeckCardsPage() {
                   />
                 </div>
               </div>
-              <DialogFooter className="mt-6">
+              <DialogFooter className="mt-4 border-t pt-4">
                 <Button 
                   type="button" 
                   variant="outline" 

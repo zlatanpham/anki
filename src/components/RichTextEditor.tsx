@@ -36,6 +36,7 @@ interface RichTextEditorProps {
   placeholder?: string;
   className?: string;
   minHeight?: string;
+  maxHeight?: string;
 }
 
 const colors = [
@@ -48,7 +49,8 @@ export function RichTextEditor({
   onChange, 
   placeholder = "Start typing...", 
   className = "",
-  minHeight = "120px"
+  minHeight = "120px",
+  maxHeight
 }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
@@ -279,7 +281,7 @@ export function RichTextEditor({
       </div>
 
       {/* Editor Content */}
-      <div className="relative">
+      <div className="relative" style={{ maxHeight, overflow: maxHeight ? 'auto' : undefined }}>
         <EditorContent 
           editor={editor} 
           className="min-h-[120px]"

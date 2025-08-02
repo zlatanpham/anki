@@ -152,7 +152,7 @@ interface ClozePreviewProps {
 }
 
 export function ClozePreview({ clozeText, className = "" }: ClozePreviewProps) {
-  const [showPreview, setShowPreview] = useState(false);
+  const [showPreview, setShowPreview] = useState(true);
   const parsedCards = parseClozeText(clozeText);
 
   if (parsedCards.length === 0) {
@@ -190,11 +190,13 @@ export function ClozePreview({ clozeText, className = "" }: ClozePreviewProps) {
                 Card {index + 1}
               </div>
               <div className="text-sm space-y-2">
-                <div>
-                  <span className="font-medium">Q:</span> {card.question}
+                <div className="flex gap-2">
+                  <span className="font-medium flex-shrink-0">Q:</span>
+                  <div dangerouslySetInnerHTML={{ __html: card.question }} />
                 </div>
-                <div>
-                  <span className="font-medium">A:</span> <span className="text-green-700 font-semibold">{card.answer}</span>
+                <div className="flex gap-2">
+                  <span className="font-medium flex-shrink-0">A:</span>
+                  <span className="text-green-700 font-semibold" dangerouslySetInnerHTML={{ __html: card.answer }} />
                 </div>
               </div>
             </div>

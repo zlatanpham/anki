@@ -205,4 +205,97 @@ export const userRouter = createTRPCRouter({
 
       return { success: true };
     }),
+
+  // Get comprehensive user status for determining if they're a new user
+  getUserStatus: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+
+    try {
+      // Check if user has any reviews ever (not just today)
+      const totalReviewsCount = await ctx.db.review.count({
+        where: { user_id: userId },
+      });
+
+      // Check if user has created any decks
+      const userDecksCount = await ctx.db.deck.count({
+        where: { user_id: userId },
+      });
+
+      // Check if user has any cards in any state (including suspended)
+      const userCardsCount = await ctx.db.cardState.count({
+        where: { user_id: userId },
+      });
+
+      // Get last study session date if any
+      const lastReview = await ctx.db.review.findFirst({
+        where: { user_id: userId },
+        orderBy: { reviewed_at: 'desc' },
+        select: { reviewed_at: true },
+      });
+
+      return {
+        isNewUser: totalReviewsCount === 0 && userDecksCount === 0 && userCardsCount === 0,
+        hasEverStudied: totalReviewsCount > 0,
+        totalReviews: totalReviewsCount,
+        totalDecks: userDecksCount,
+        totalCards: userCardsCount,
+        lastStudyDate: lastReview?.reviewed_at || null,
+      };
+    } catch (error) {
+      throw new Error("Failed to fetch user status");
+    }
+  }),
+
+  // Get last study session info for welcome messages
+  getLastStudySession: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+
+    try {
+      const lastReview = await ctx.db.review.findFirst({
+        where: { user_id: userId },
+        orderBy: { reviewed_at: 'desc' },
+        include: {
+          card: {
+            include: {
+              deck: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!lastReview) {
+        return null;
+      }
+
+      // Get study stats for the last session day
+      const sessionDate = new Date(lastReview.reviewed_at);
+      const startOfDay = new Date(sessionDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(sessionDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const sessionStats = await ctx.db.review.aggregate({
+        where: {
+          user_id: userId,
+          reviewed_at: {
+            gte: startOfDay,
+            lte: endOfDay,
+          },
+        },
+        _count: true,
+      });
+
+      return {
+        lastReviewDate: lastReview.reviewed_at,
+        lastDeckName: lastReview.card.deck.name,
+        lastSessionReviewCount: sessionStats._count,
+      };
+    } catch (error) {
+      throw new Error("Failed to fetch last study session");
+    }
+  }),
 });

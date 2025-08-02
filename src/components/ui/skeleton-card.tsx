@@ -150,11 +150,14 @@ export function SkeletonDashboard() {
         ))}
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {Array.from({ length: 2 }).map((_, i) => (
-          <SkeletonActionCard key={i} />
-        ))}
+      {/* Quick Actions - Responsive grid layout */}
+      <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+        <SkeletonActionCard />
+        <SkeletonActionCard />
+        {/* Third card only visible on XL screens */}
+        <div className="hidden xl:block">
+          <SkeletonActionCard />
+        </div>
       </div>
 
       {/* Recent Activity */}

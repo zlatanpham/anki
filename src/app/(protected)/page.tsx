@@ -38,7 +38,10 @@ export default function DashboardPage() {
     period: "today",
   });
 
-  const isLoading = isLoadingDue || isLoadingDecks || isLoadingStats;
+  // Get comprehensive user status
+  const { data: userStatus, isLoading: isLoadingUserStatus } = api.user.getUserStatus.useQuery();
+
+  const isLoading = isLoadingDue || isLoadingDecks || isLoadingStats || isLoadingUserStatus;
 
   if (isLoading) {
     return <SkeletonDashboard />;
@@ -115,9 +118,9 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="flex flex-col h-full">
+      {/* Quick Actions - Responsive grid layout */}
+      <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+        <Card className="flex flex-col h-full sm:col-span-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Play className="h-5 w-5" />
@@ -163,7 +166,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="flex flex-col h-full">
+        <Card className="flex flex-col h-full sm:col-span-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BookOpen className="h-5 w-5" />
@@ -210,44 +213,94 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Statistics Card - Only visible on larger screens */}
+        <Card className="hidden xl:flex flex-col h-full">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Statistics
+            </CardTitle>
+            <CardDescription>Track your learning progress</CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1 flex flex-col space-y-3">
+            <div className="flex-1 space-y-3">
+              <div className="flex justify-between text-sm">
+                <span>Total Cards:</span>
+                <Badge variant="outline">{userStatus?.totalCards || 0}</Badge>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>All-time Reviews:</span>
+                <Badge variant="secondary">{userStatus?.totalReviews || 0}</Badge>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Study Streak:</span>
+                <Badge variant="default">{studyStats?.studyStreak || 0} days</Badge>
+              </div>
+            </div>
+            <Link
+              href="/stats"
+              className={cn(buttonVariants({ variant: "outline", size: "default" }), "w-full mt-4")}
+            >
+              View Detailed Stats
+            </Link>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Recent Activity or Getting Started */}
-      {studyStats?.totalReviews && studyStats.totalReviews > 0 ? (
-        <Card>
+      {/* Recent Activity or Getting Started - Check complete user history, not just today */}
+      {userStatus && !userStatus.isNewUser ? (
+        <Card className="xl:col-span-1">
           <CardHeader>
             <CardTitle>Today's Progress</CardTitle>
             <CardDescription>
-              Keep up the great work with your studies!
+              {studyStats?.totalReviews && studyStats.totalReviews > 0 
+                ? "Keep up the great work with your studies!"
+                : "No reviews today yet. Ready to start studying?"}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4 text-center md:grid-cols-4">
-              <div>
-                <div className={`text-2xl font-bold ${ratingColors.again.textColor}`}>
-                  {studyStats.ratingBreakdown.AGAIN}
+            {studyStats?.totalReviews && studyStats.totalReviews > 0 ? (
+              <div className="grid grid-cols-2 gap-4 text-center md:grid-cols-4">
+                <div>
+                  <div className={`text-2xl font-bold ${ratingColors.again.textColor}`}>
+                    {studyStats.ratingBreakdown.AGAIN}
+                  </div>
+                  <div className="text-muted-foreground text-sm">{ratingLabels.again}</div>
                 </div>
-                <div className="text-muted-foreground text-sm">{ratingLabels.again}</div>
-              </div>
-              <div>
-                <div className={`text-2xl font-bold ${ratingColors.hard.textColor}`}>
-                  {studyStats.ratingBreakdown.HARD}
+                <div>
+                  <div className={`text-2xl font-bold ${ratingColors.hard.textColor}`}>
+                    {studyStats.ratingBreakdown.HARD}
+                  </div>
+                  <div className="text-muted-foreground text-sm">{ratingLabels.hard}</div>
                 </div>
-                <div className="text-muted-foreground text-sm">{ratingLabels.hard}</div>
-              </div>
-              <div>
-                <div className={`text-2xl font-bold ${ratingColors.good.textColor}`}>
-                  {studyStats.ratingBreakdown.GOOD}
+                <div>
+                  <div className={`text-2xl font-bold ${ratingColors.good.textColor}`}>
+                    {studyStats.ratingBreakdown.GOOD}
+                  </div>
+                  <div className="text-muted-foreground text-sm">{ratingLabels.good}</div>
                 </div>
-                <div className="text-muted-foreground text-sm">{ratingLabels.good}</div>
-              </div>
-              <div>
-                <div className={`text-2xl font-bold ${ratingColors.easy.textColor}`}>
-                  {studyStats.ratingBreakdown.EASY}
+                <div>
+                  <div className={`text-2xl font-bold ${ratingColors.easy.textColor}`}>
+                    {studyStats.ratingBreakdown.EASY}
+                  </div>
+                  <div className="text-muted-foreground text-sm">{ratingLabels.easy}</div>
                 </div>
-                <div className="text-muted-foreground text-sm">{ratingLabels.easy}</div>
               </div>
-            </div>
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-muted-foreground mb-4">Start studying to see your progress here.</p>
+                {dueCardsCount && dueCardsCount.totalDue > 0 && (
+                  <Link
+                    href="/study"
+                    className={cn(buttonVariants({ variant: "default", size: "sm" }))}
+                  >
+                    <Play className="mr-2 h-4 w-4" />
+                    Start Studying
+                  </Link>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       ) : (

@@ -285,8 +285,10 @@ export function RichTextEditor({
           className="min-h-[120px]"
         />
         {(!content || content === '<p></p>') && (
-          <div className="absolute top-3 left-3 text-muted-foreground pointer-events-none">
-            {placeholder}
+          <div className="absolute inset-0 p-3 text-muted-foreground pointer-events-none">
+            <div className="prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl mx-auto">
+              <p>{placeholder}</p>
+            </div>
           </div>
         )}
       </div>

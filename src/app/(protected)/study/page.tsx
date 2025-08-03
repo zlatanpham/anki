@@ -16,12 +16,15 @@ import {
   Pause,
   Play,
   RotateCcw,
+  BookOpen,
 } from "lucide-react";
 import { type ReviewRating } from "@prisma/client";
 import { ClozeDisplay } from "@/components/ClozeDisplay";
 import { SkeletonCard } from "@/components/ui/skeleton-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ratingColors, ratingLabels, ratingKeys } from "@/lib/theme";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 interface StudySession {
   cards: any[];
@@ -40,6 +43,7 @@ export default function StudyPage() {
   const [session, setSession] = useState<StudySession | null>(null);
   const [responseStartTime, setResponseStartTime] = useState<Date | null>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const isMobile = useIsMobile();
 
   // Get review queue
   const {
@@ -254,151 +258,180 @@ export default function StudyPage() {
 
   if (!session) {
     return (
-      <div className="container mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
-        {/* Header - Mobile-first responsive design */}
-        <div className="mb-6 lg:mb-8">
-          {/* Back button - Better touch target on mobile */}
-          <Link
-            href="/"
-            className="text-muted-foreground hover:text-foreground mb-3 inline-flex items-center text-sm transition-colors"
-          >
-            <ArrowLeft className="mr-1.5 h-4 w-4" />
-            <span className="font-medium">Dashboard</span>
-          </Link>
+      <div
+        className={cn(
+          "container mx-auto max-w-4xl",
+          isMobile ? "px-4 py-4" : "p-6",
+        )}
+      >
+        {!isMobile && (
+          <div className="mb-6">
+            {/* Back button */}
+            <Link
+              href="/"
+              className="text-muted-foreground hover:text-foreground mb-3 inline-flex items-center text-sm transition-colors"
+            >
+              <ArrowLeft className="mr-1.5 h-4 w-4" />
+              <span className="font-medium">Dashboard</span>
+            </Link>
 
-          {/* Title section - Responsive sizing */}
-          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl lg:text-2xl">
-            Study Session
-          </h1>
-        </div>
+            {/* Title section */}
+            <h1 className="text-2xl font-bold">Study Session</h1>
+            <p className="text-muted-foreground">Review cards from all decks</p>
+          </div>
+        )}
 
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Study Overview */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                Due Cards Overview
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {dueCardsCount ? (
-                <div className="space-y-4">
-                  <div className="text-primary text-3xl font-bold">
-                    {dueCardsCount.totalDue}
-                  </div>
-                  <p className="text-muted-foreground">
-                    cards ready for review
+        {/* Header for mobile */}
+        {isMobile && (
+          <div className={cn("mb-4")}>
+            <h1
+              className={cn(
+                "flex items-center gap-2 font-bold",
+                "text-lg",
+              )}
+            >
+              <BookOpen className="h-5 w-5" />
+              Study All Decks
+            </h1>
+          </div>
+        )}
+
+        {/* Study Stats */}
+        <div
+          className={cn(
+            "mb-6 grid gap-3",
+            isMobile ? "grid-cols-3" : "grid-cols-1 md:grid-cols-3",
+          )}
+        >
+          <Card className={isMobile ? "shadow-sm" : ""}>
+            <CardContent className={isMobile ? "p-4 text-center" : "p-4"}>
+              {isMobile ? (
+                <div className="flex flex-col items-center space-y-2">
+                  <p className="text-muted-foreground text-xs leading-none">
+                    Due
+                    <br />
+                    Cards
                   </p>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>New cards</span>
-                      <Badge variant="secondary">
-                        {dueCardsCount.newCards}
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Learning cards</span>
-                      <Badge variant="outline">
-                        {dueCardsCount.learningCards}
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Review cards</span>
-                      <Badge variant="default">
-                        {dueCardsCount.reviewCards}
-                      </Badge>
-                    </div>
-                  </div>
+                  <p className="text-3xl font-bold text-blue-600">
+                    {dueCardsCount?.totalDue || 0}
+                  </p>
+                  <Clock className="h-8 w-8 text-blue-600" />
                 </div>
               ) : (
-                <div className="py-8 text-center">
-                  <p className="text-muted-foreground">
-                    No cards due for review
-                  </p>
-                  <Link href="/decks">
-                    <Button variant="outline" className="mt-4">
-                      Browse Decks
-                    </Button>
-                  </Link>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-muted-foreground text-sm">Due Cards</p>
+                    <p className="text-2xl font-bold text-blue-600">
+                      {dueCardsCount?.totalDue || 0}
+                    </p>
+                  </div>
+                  <Clock className="h-8 w-8 text-blue-600" />
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Start Study Session */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Play className="h-5 w-5" />
-                Ready to Study?
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {reviewQueue?.cards && reviewQueue.cards.length > 0 ? (
-                <div className="space-y-4">
-                  <p className="text-muted-foreground text-sm">
-                    You have {reviewQueue.cards.length} cards ready for review
-                    in this session.
+          <Card className={isMobile ? "shadow-sm" : ""}>
+            <CardContent className={isMobile ? "p-4 text-center" : "p-4"}>
+              {isMobile ? (
+                <div className="flex flex-col items-center space-y-2">
+                  <p className="text-muted-foreground text-xs leading-none">
+                    New
+                    <br />
+                    Cards
                   </p>
-
-                  <Button
-                    onClick={startStudySession}
-                    className="w-full"
-                    size="lg"
-                  >
-                    <Play className="mr-2 h-4 w-4" />
-                    Start Study Session
-                  </Button>
-
-                  <div className="text-muted-foreground space-y-1 text-xs">
-                    <p>
-                      <kbd className="bg-muted rounded px-1.5 py-0.5 text-xs">
-                        Space
-                      </kbd>{" "}
-                      - Show answer
-                    </p>
-                    <p>
-                      <kbd className="bg-muted rounded px-1.5 py-0.5 text-xs">
-                        1
-                      </kbd>{" "}
-                      Again |{" "}
-                      <kbd className="bg-muted rounded px-1.5 py-0.5 text-xs">
-                        2
-                      </kbd>{" "}
-                      Hard |{" "}
-                      <kbd className="bg-muted rounded px-1.5 py-0.5 text-xs">
-                        3
-                      </kbd>{" "}
-                      Good |{" "}
-                      <kbd className="bg-muted rounded px-1.5 py-0.5 text-xs">
-                        4
-                      </kbd>{" "}
-                      Easy
-                    </p>
-                    <p>
-                      <kbd className="bg-muted rounded px-1.5 py-0.5 text-xs">
-                        P
-                      </kbd>{" "}
-                      - Pause session
-                    </p>
-                  </div>
+                  <p className="text-3xl font-bold text-green-600">
+                    {dueCardsCount?.newCards || 0}
+                  </p>
+                  <BarChart3 className="h-8 w-8 text-green-600" />
                 </div>
               ) : (
-                <div className="py-8 text-center">
-                  <p className="text-muted-foreground mb-4">
-                    No cards are currently due for review. Great job keeping up
-                    with your studies!
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-muted-foreground text-sm">New Cards</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {dueCardsCount?.newCards || 0}
+                    </p>
+                  </div>
+                  <BarChart3 className="h-8 w-8 text-green-600" />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className={isMobile ? "shadow-sm" : ""}>
+            <CardContent className={isMobile ? "p-4 text-center" : "p-4"}>
+              {isMobile ? (
+                <div className="flex flex-col items-center space-y-2">
+                  <p className="text-muted-foreground text-xs leading-none">
+                    Learning
                   </p>
-                  <Link href="/decks">
-                    <Button variant="outline">Browse Decks</Button>
-                  </Link>
+                  <p className="text-3xl font-bold text-orange-600">
+                    {dueCardsCount?.learningCards || 0}
+                  </p>
+                  <RotateCcw className="h-8 w-8 text-orange-600" />
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-muted-foreground text-sm">Learning</p>
+                    <p className="text-2xl font-bold text-orange-600">
+                      {dueCardsCount?.learningCards || 0}
+                    </p>
+                  </div>
+                  <RotateCcw className="h-8 w-8 text-orange-600" />
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
+
+        {/* Start Study Session */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Ready to Study?</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {reviewQueue?.cards && reviewQueue.cards.length > 0 ? (
+              <div className="space-y-4">
+                <p className="text-muted-foreground">
+                  You have {reviewQueue.cards.length} cards ready for review
+                  from all your decks.
+                </p>
+                <Button onClick={startStudySession} size="lg" className="w-full">
+                  Start Study Session
+                </Button>
+                {!isMobile && (
+                  <div className="text-muted-foreground space-y-3 text-center text-sm">
+                    <p>Keyboard shortcuts:</p>
+                    <p>
+                      <kbd className="bg-muted rounded px-2 py-1">Space</kbd> -
+                      Show answer
+                    </p>
+                    <p>
+                      <kbd className="bg-muted rounded px-2 py-1">1</kbd> Again
+                      • <kbd className="bg-muted rounded px-2 py-1">2</kbd> Hard
+                      • <kbd className="bg-muted rounded px-2 py-1">3</kbd> Good
+                      • <kbd className="bg-muted rounded px-2 py-1">4</kbd> Easy
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-4 text-center">
+                <p className="text-muted-foreground">
+                  No cards are due for review right now.
+                </p>
+                <p className="text-muted-foreground text-sm">
+                  Great job keeping up with your studies!
+                </p>
+                <Link href="/decks">
+                  <Button variant="outline">Browse Decks</Button>
+                </Link>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -416,142 +449,191 @@ export default function StudyPage() {
   const totalReviews = totalAnswered;
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
-      {/* Session Header - Responsive layout */}
-      <div className="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <Button
-            onClick={endSession}
-            variant="ghost"
-            size="sm"
-            className="h-9 px-3"
-          >
-            <ArrowLeft className="mr-1.5 h-4 w-4" />
-            <span className="hidden sm:inline">End Session</span>
-            <span className="sm:hidden">End</span>
-          </Button>
-          <div className="text-muted-foreground text-sm font-medium">
-            Card {session.currentIndex + 1} of {session.cards.length}
-          </div>
+    <div
+      className={cn(
+        "container mx-auto max-w-4xl",
+        isMobile ? "px-4 py-4" : "p-6",
+      )}
+    >
+      {/* Header */}
+      <div className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
+        <div className="flex items-center gap-4">
+          <h1 className="text-xl font-bold">Studying: All Decks</h1>
+          <Badge variant="outline">
+            {session.currentIndex + 1} / {session.cards.length}
+          </Badge>
         </div>
-
         <div className="flex items-center gap-2">
-          <Button
-            onClick={togglePause}
-            variant="outline"
-            size="sm"
-            className="h-9 w-9 p-0"
-            aria-label={isPaused ? "Resume study" : "Pause study"}
-          >
+          <Button variant="outline" size="sm" onClick={togglePause}>
             {isPaused ? (
               <Play className="h-4 w-4" />
             ) : (
               <Pause className="h-4 w-4" />
             )}
           </Button>
-          <Button
-            onClick={restartSession}
-            variant="outline"
-            size="sm"
-            className="h-9 w-9 p-0"
-            aria-label="Restart session"
-          >
+          <Button variant="outline" size="sm" onClick={restartSession}>
             <RotateCcw className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="sm" onClick={endSession}>
+            End Session
           </Button>
         </div>
       </div>
 
-      {/* Progress Bar */}
+      {/* Progress */}
       <div className="mb-6">
-        <Progress value={progress} className="h-2" />
-        <div className="text-muted-foreground mt-1 flex justify-between text-xs">
-          <span>Progress: {Math.round(progress)}%</span>
-          <span>Reviews: {totalReviews}</span>
+        <div className="text-muted-foreground mb-2 flex justify-between text-sm">
+          <span>Progress</span>
+          <span>{Math.round(progress)}%</span>
+        </div>
+        <Progress value={progress} className="w-full" />
+      </div>
+
+      {/* Session Stats */}
+      <div className="mb-6 grid grid-cols-4 gap-2">
+        <div className="rounded bg-red-50 p-2 text-center">
+          <div className={`font-semibold ${ratingColors.again.textColor}`}>
+            {session.sessionStats.again}
+          </div>
+          <div className={`text-xs ${ratingColors.again.textColor}`}>
+            {ratingLabels.again}
+          </div>
+        </div>
+        <div className="rounded bg-orange-50 p-2 text-center">
+          <div className={`font-semibold ${ratingColors.hard.textColor}`}>
+            {session.sessionStats.hard}
+          </div>
+          <div className={`text-xs ${ratingColors.hard.textColor}`}>
+            {ratingLabels.hard}
+          </div>
+        </div>
+        <div className="rounded bg-green-50 p-2 text-center">
+          <div className={`font-semibold ${ratingColors.good.textColor}`}>
+            {session.sessionStats.good}
+          </div>
+          <div className={`text-xs ${ratingColors.good.textColor}`}>
+            {ratingLabels.good}
+          </div>
+        </div>
+        <div className="rounded bg-blue-50 p-2 text-center">
+          <div className={`font-semibold ${ratingColors.easy.textColor}`}>
+            {session.sessionStats.easy}
+          </div>
+          <div className={`text-xs ${ratingColors.easy.textColor}`}>
+            {ratingLabels.easy}
+          </div>
         </div>
       </div>
 
+
       {isPaused ? (
-        <Card className="mb-6">
-          <CardContent className="py-12 text-center">
-            <Pause className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
-            <h3 className="mb-2 text-lg font-semibold">Session Paused</h3>
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Pause className="text-muted-foreground mx-auto mb-4 h-16 w-16" />
+            <h2 className="mb-2 text-xl font-semibold">Study Paused</h2>
             <p className="text-muted-foreground mb-4">
-              Take a break when you need it!
+              Take a break and resume when you're ready.
             </p>
             <Button onClick={togglePause}>
               <Play className="mr-2 h-4 w-4" />
-              Resume Study Session
+              Resume Study
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <>
-          {/* Main Card Display */}
-          <Card className="mb-6">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <Badge variant="outline">{currentCard.card.deck.name}</Badge>
-                <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                  <Clock className="h-4 w-4" />
-                  {currentCard.stateDescription}
-                </div>
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
+              <CardTitle>
+                {currentCard.card.card_type === "CLOZE"
+                  ? "Cloze Deletion"
+                  : "Flashcard"}
+              </CardTitle>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline">
+                  {currentCard.card.deck.name}
+                </Badge>
+                {currentCard.card.tags?.map((tag: string) => (
+                  <Badge key={tag} variant="secondary">
+                    {tag}
+                  </Badge>
+                ))}
               </div>
-            </CardHeader>
-            <CardContent>
-              {currentCard.card.card_type === "CLOZE" &&
-              currentCard.card.cloze_text ? (
-                <ClozeDisplay
-                  clozeText={currentCard.card.cloze_text}
-                  front={currentCard.card.front}
-                  back={currentCard.card.back}
-                  showAnswer={session.showAnswer}
-                  onShowAnswer={showAnswer}
-                />
-              ) : (
-                <div className="space-y-6">
-                  {/* Question */}
-                  <div>
-                    <div className="text-muted-foreground mb-2 text-sm font-medium">
-                      Question
-                    </div>
-                    <div
-                      className="bg-muted/50 rounded-lg p-4 text-lg leading-relaxed"
-                      dangerouslySetInnerHTML={{
-                        __html: currentCard.card.front,
-                      }}
-                    />
-                  </div>
+            </div>
+          </CardHeader>
+          <CardContent className="min-h-[300px]">
+            {currentCard.card.card_type === "CLOZE" ? (
+              <ClozeDisplay
+                clozeText={currentCard.card.cloze_text || ""}
+                front={currentCard.card.front}
+                back={currentCard.card.back || ""}
+                showAnswer={session.showAnswer}
+                onShowAnswer={showAnswer}
+              />
+            ) : (
+              <div className="space-y-6">
+                <div className="rounded-lg border p-6">
+                  <div
+                    className="prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ __html: currentCard.card.front }}
+                  />
+                </div>
 
-                  {session.showAnswer && (
-                    <>
-                      <Separator />
-                      {/* Answer */}
-                      <div>
-                        <div className="text-muted-foreground mb-2 text-sm font-medium">
-                          Answer
-                        </div>
-                        <div
-                          className="bg-primary/5 rounded-lg p-4 text-lg leading-relaxed"
-                          dangerouslySetInnerHTML={{
-                            __html: currentCard.card.back,
-                          }}
-                        />
-                      </div>
-                    </>
+                {session.showAnswer && (
+                  <>
+                    <Separator />
+                    <div className="bg-muted/50 rounded-lg border p-6">
+                      <div
+                        className="prose prose-sm max-w-none"
+                        dangerouslySetInnerHTML={{ __html: currentCard.card.back }}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Additional context for cloze cards */}
+            {currentCard.card.card_type === "CLOZE" &&
+              session.showAnswer &&
+              (currentCard.card.front || currentCard.card.back) && (
+                <div className="mt-6 space-y-4">
+                  {currentCard.card.front && (
+                    <div className="rounded-lg border bg-blue-50 p-4">
+                      <h4 className="mb-2 font-medium text-blue-900">
+                        Additional Context
+                      </h4>
+                      <div
+                        className="prose prose-sm max-w-none text-blue-800"
+                        dangerouslySetInnerHTML={{ __html: currentCard.card.front }}
+                      />
+                    </div>
+                  )}
+                  {currentCard.card.back && (
+                    <div className="rounded-lg border bg-green-50 p-4">
+                      <h4 className="mb-2 font-medium text-green-900">
+                        Extra Information
+                      </h4>
+                      <div
+                        className="prose prose-sm max-w-none text-green-800"
+                        dangerouslySetInnerHTML={{ __html: currentCard.card.back }}
+                      />
+                    </div>
                   )}
                 </div>
               )}
-            </CardContent>
-          </Card>
+          </CardContent>
+        </Card>
+      )}
 
-          {/* Action Buttons */}
+      {/* Action Buttons */}
+      {!isPaused && (
+        <div className="mt-6">
           {!session.showAnswer ? (
-            <div className="text-center">
-              <Button onClick={showAnswer} size="lg" className="px-8">
-                Show Answer
-                <span className="ml-2 text-xs opacity-75">(Space)</span>
-              </Button>
-            </div>
+            <Button onClick={showAnswer} size="lg" className="w-full">
+              Show Answer
+              <span className="ml-2 text-xs opacity-70">Space</span>
+            </Button>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Button
@@ -600,44 +682,7 @@ export default function StudyPage() {
               </Button>
             </div>
           )}
-
-          {/* Session Stats */}
-          {totalReviews > 0 && (
-            <Card className="mt-6">
-              <CardContent className="pt-6">
-                <div className="mb-3 text-sm font-medium">
-                  Session Statistics
-                </div>
-                <div className="grid grid-cols-4 gap-4 text-center">
-                  <div>
-                    <div className="text-lg font-bold text-red-600">
-                      {session.sessionStats.again}
-                    </div>
-                    <div className="text-muted-foreground text-xs">Again</div>
-                  </div>
-                  <div>
-                    <div className="text-lg font-bold text-orange-600">
-                      {session.sessionStats.hard}
-                    </div>
-                    <div className="text-muted-foreground text-xs">Hard</div>
-                  </div>
-                  <div>
-                    <div className="text-lg font-bold text-green-600">
-                      {session.sessionStats.good}
-                    </div>
-                    <div className="text-muted-foreground text-xs">Good</div>
-                  </div>
-                  <div>
-                    <div className="text-lg font-bold text-blue-600">
-                      {session.sessionStats.easy}
-                    </div>
-                    <div className="text-muted-foreground text-xs">Easy</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </>
+        </div>
       )}
     </div>
   );

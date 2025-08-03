@@ -6,13 +6,19 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { EditNameDialog } from "./_components/edit-name-dialog";
 import { ResetPasswordDialog } from "./_components/reset-password-dialog";
 import { api } from "@/trpc/react";
 import AccountPageSkeleton from "./_components/page-skeleton";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
+import { LogOut } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 export default function AccountPage() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const {
     data: user,
     isLoading,
@@ -40,8 +46,13 @@ export default function AccountPage() {
 
 
   return (
-    <div className="mx-auto w-full max-w-lg space-y-6 p-8 pb-16">
-      <h2 className="text-xl font-medium tracking-tight">My Account</h2>
+    <div className={cn(
+      "mx-auto w-full max-w-lg space-y-6",
+      isMobile ? "px-4 py-4 pb-20" : "p-8 pb-16"
+    )}>
+      {!isMobile && (
+        <h2 className="text-xl font-medium tracking-tight">My Account</h2>
+      )}
 
       {isLoading ? (
         <AccountPageSkeleton />
@@ -106,6 +117,21 @@ export default function AccountPage() {
             </div>
 
           </div>
+
+          {/* Logout button for mobile */}
+          {isMobile && (
+            <>
+              <Separator className="my-6" />
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => void signOut({ callbackUrl: "/login" })}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </Button>
+            </>
+          )}
         </>
       )}
     </div>

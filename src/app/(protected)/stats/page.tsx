@@ -41,6 +41,7 @@ import {
   BarChart,
   Bar,
 } from "recharts";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type TimePeriod = "today" | "week" | "month" | "all";
 
@@ -48,6 +49,7 @@ export default function StatisticsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>("week");
   const [selectedDeck, setSelectedDeck] = useState<string>("all");
   const [hasInitialData, setHasInitialData] = useState(false);
+  const isMobile = useIsMobile();
 
   // Get all decks for selection
   const { data: decksData } = api.deck.getAll.useQuery({ limit: 100 });
@@ -172,25 +174,27 @@ export default function StatisticsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8 max-w-7xl">
+    <div className="container mx-auto px-4 py-4 sm:py-6 sm:px-6 lg:px-8 max-w-7xl">
       {/* Header - Mobile-first responsive design */}
-      <div className="mb-6 lg:mb-8">
-        {/* Back button - Better touch target on mobile */}
-        <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors mb-3">
-          <ArrowLeft className="h-4 w-4 mr-1.5" />
-          <span className="font-medium">Dashboard</span>
-        </Link>
-        
-        {/* Title section - Responsive sizing and spacing */}
-        <div className="space-y-1">
-          <h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold tracking-tight">
-            Learning Statistics
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
-            Track your progress and analyze your learning patterns
-          </p>
+      {!isMobile && (
+        <div className="mb-6 lg:mb-8">
+          {/* Back button - Better touch target on mobile */}
+          <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors mb-3">
+            <ArrowLeft className="h-4 w-4 mr-1.5" />
+            <span className="font-medium">Dashboard</span>
+          </Link>
+          
+          {/* Title section - Responsive sizing and spacing */}
+          <div className="space-y-1">
+            <h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold tracking-tight">
+              Learning Statistics
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
+              Track your progress and analyze your learning patterns
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Filters - Responsive layout */}
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6">
@@ -236,16 +240,16 @@ export default function StatisticsPage() {
       </div>
 
       {/* Key Metrics */}
-      <div className={`grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6 transition-opacity duration-200 ${
+      <div className={`grid gap-3 grid-cols-2 sm:gap-6 md:grid-cols-2 lg:grid-cols-4 mb-4 sm:mb-6 transition-opacity duration-200 ${
         isFetchingStats ? 'opacity-50' : 'opacity-100'
       }`}>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Reviews</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 sm:px-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Total Reviews</CardTitle>
+            <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{studyStats?.totalReviews || 0}</div>
+          <CardContent className="px-3 sm:px-6">
+            <div className="text-xl sm:text-2xl font-bold">{studyStats?.totalReviews || 0}</div>
             <p className="text-xs text-muted-foreground">
               {selectedPeriod === "today" ? "today" : `this ${selectedPeriod}`}
             </p>
@@ -253,12 +257,12 @@ export default function StatisticsPage() {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Accuracy</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 sm:px-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Accuracy</CardTitle>
+            <Target className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{studyStats?.accuracy || 0}%</div>
+          <CardContent className="px-3 sm:px-6">
+            <div className="text-xl sm:text-2xl font-bold">{studyStats?.accuracy || 0}%</div>
             <p className="text-xs text-muted-foreground">
               Success rate
             </p>
@@ -266,12 +270,12 @@ export default function StatisticsPage() {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Study Streak</CardTitle>
-            <Flame className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 sm:px-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Study Streak</CardTitle>
+            <Flame className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{studyStats?.studyStreak || 0}</div>
+          <CardContent className="px-3 sm:px-6">
+            <div className="text-xl sm:text-2xl font-bold">{studyStats?.studyStreak || 0}</div>
             <p className="text-xs text-muted-foreground">
               consecutive days
             </p>
@@ -279,12 +283,12 @@ export default function StatisticsPage() {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Response Time</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3 sm:px-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Avg Time</CardTitle>
+            <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 sm:px-6">
+            <div className="text-xl sm:text-2xl font-bold">
               {studyStats?.averageResponseTime ? Math.round(studyStats.averageResponseTime / 1000) : 0}s
             </div>
             <p className="text-xs text-muted-foreground">
@@ -298,11 +302,11 @@ export default function StatisticsPage() {
       <Tabs defaultValue="activity" className={`space-y-6 transition-opacity duration-200 ${
         isFetchingStats || isFetchingDue ? 'opacity-50' : 'opacity-100'
       }`}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="cards">Card States</TabsTrigger>
-          <TabsTrigger value="insights">Insights</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+          <TabsTrigger value="activity" className="text-xs sm:text-sm">Activity</TabsTrigger>
+          <TabsTrigger value="performance" className="text-xs sm:text-sm">Performance</TabsTrigger>
+          <TabsTrigger value="cards" className="text-xs sm:text-sm">Cards</TabsTrigger>
+          <TabsTrigger value="insights" className="text-xs sm:text-sm">Insights</TabsTrigger>
         </TabsList>
 
         <TabsContent value="activity" className="space-y-6">
@@ -311,12 +315,12 @@ export default function StatisticsPage() {
               <CardHeader>
                 <CardTitle>Daily Activity</CardTitle>
               </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
+              <CardContent className="px-2 sm:px-6">
+                <ResponsiveContainer width="100%" height={isMobile ? 200 : 300}>
                   <AreaChart data={activityData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
+                    <XAxis dataKey="date" tick={{ fontSize: isMobile ? 10 : 12 }} />
+                    <YAxis tick={{ fontSize: isMobile ? 10 : 12 }} />
                     <Tooltip />
                     <Area
                       type="monotone"
@@ -334,12 +338,12 @@ export default function StatisticsPage() {
               <CardHeader>
                 <CardTitle>Daily Accuracy</CardTitle>
               </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
+              <CardContent className="px-2 sm:px-6">
+                <ResponsiveContainer width="100%" height={isMobile ? 200 : 300}>
                   <AreaChart data={activityData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis domain={[0, 100]} />
+                    <XAxis dataKey="date" tick={{ fontSize: isMobile ? 10 : 12 }} />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: isMobile ? 10 : 12 }} />
                     <Tooltip formatter={(value) => [`${value}%`, "Accuracy"]} />
                     <Area
                       type="monotone"
@@ -361,15 +365,15 @@ export default function StatisticsPage() {
               <CardHeader>
                 <CardTitle>Review Ratings Distribution</CardTitle>
               </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
+              <CardContent className="px-2 sm:px-6">
+                <ResponsiveContainer width="100%" height={isMobile ? 200 : 300}>
                   <RechartsPieChart>
                     <Pie
                       data={performanceData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
+                      innerRadius={isMobile ? 40 : 60}
+                      outerRadius={isMobile ? 70 : 100}
                       paddingAngle={5}
                       dataKey="value"
                     >
@@ -429,12 +433,12 @@ export default function StatisticsPage() {
               <CardHeader>
                 <CardTitle>Card States</CardTitle>
               </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
+              <CardContent className="px-2 sm:px-6">
+                <ResponsiveContainer width="100%" height={isMobile ? 200 : 300}>
                   <BarChart data={cardStateData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
+                    <XAxis dataKey="name" tick={{ fontSize: isMobile ? 10 : 12 }} />
+                    <YAxis tick={{ fontSize: isMobile ? 10 : 12 }} />
                     <Tooltip />
                     <Bar dataKey="value" fill="#8884d8" />
                   </BarChart>

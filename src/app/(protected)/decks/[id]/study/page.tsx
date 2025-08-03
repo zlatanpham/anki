@@ -31,6 +31,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { ratingColors, ratingLabels, ratingKeys } from "@/lib/theme";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 interface StudySession {
   cards: any[];
@@ -49,6 +51,7 @@ export default function DeckStudyPage() {
   const params = useParams();
   const router = useRouter();
   const deckId = params.id as string;
+  const isMobile = useIsMobile();
 
   const [session, setSession] = useState<StudySession | null>(null);
   const [responseStartTime, setResponseStartTime] = useState<Date | null>(null);
@@ -268,85 +271,146 @@ export default function DeckStudyPage() {
 
   if (!session) {
     return (
-      <div className="container mx-auto max-w-4xl p-6">
-        <Breadcrumb className="mb-4">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link href="/">Dashboard</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link href="/decks">Decks</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link href={`/decks/${deckId}/cards`}>
-                  {deck?.name || "Deck"}
-                </Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Study</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+      <div
+        className={cn(
+          "container mx-auto max-w-4xl",
+          isMobile ? "px-4 py-4" : "p-6",
+        )}
+      >
+        {!isMobile && (
+          <Breadcrumb className="mb-4">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link href="/">Dashboard</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link href="/decks">Decks</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link href={`/decks/${deckId}/cards`}>
+                    {deck?.name || "Deck"}
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Study</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        )}
 
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="flex items-center gap-2 text-2xl font-bold">
-            <BookOpen className="h-6 w-6" />
+        <div className={cn("mb-6", isMobile && "mb-4")}>
+          <h1
+            className={cn(
+              "flex items-center gap-2 font-bold",
+              isMobile ? "text-lg" : "text-2xl",
+            )}
+          >
+            <BookOpen className={isMobile ? "h-5 w-5" : "h-6 w-6"} />
             Study: {deck?.name}
           </h1>
-          <p className="text-muted-foreground">Focus on cards from this deck</p>
+          {!isMobile && (
+            <p className="text-muted-foreground">
+              Focus on cards from this deck
+            </p>
+          )}
         </div>
 
         {/* Study Stats */}
-        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-muted-foreground text-sm">Due Cards</p>
-                  <p className="text-2xl font-bold text-blue-600">
+        <div
+          className={cn(
+            "mb-6 grid gap-3",
+            isMobile ? "grid-cols-3" : "grid-cols-1 md:grid-cols-3",
+          )}
+        >
+          <Card className={isMobile ? "shadow-sm" : ""}>
+            <CardContent className={isMobile ? "p-4 text-center" : "p-4"}>
+              {isMobile ? (
+                <div className="flex flex-col items-center space-y-2">
+                  <p className="text-muted-foreground text-xs leading-none">
+                    Due
+                    <br />
+                    Cards
+                  </p>
+                  <p className="text-3xl font-bold text-blue-600">
                     {dueCardsCount?.due || 0}
                   </p>
+                  <Clock className="h-8 w-8 text-blue-600" />
                 </div>
-                <Clock className="h-8 w-8 text-blue-600" />
-              </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-muted-foreground text-sm">Due Cards</p>
+                    <p className="text-2xl font-bold text-blue-600">
+                      {dueCardsCount?.due || 0}
+                    </p>
+                  </div>
+                  <Clock className="h-8 w-8 text-blue-600" />
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-muted-foreground text-sm">New Cards</p>
-                  <p className="text-2xl font-bold text-green-600">
+          <Card className={isMobile ? "shadow-sm" : ""}>
+            <CardContent className={isMobile ? "p-4 text-center" : "p-4"}>
+              {isMobile ? (
+                <div className="flex flex-col items-center space-y-2">
+                  <p className="text-muted-foreground text-xs leading-none">
+                    New
+                    <br />
+                    Cards
+                  </p>
+                  <p className="text-3xl font-bold text-green-600">
                     {dueCardsCount?.new || 0}
                   </p>
+                  <BarChart3 className="h-8 w-8 text-green-600" />
                 </div>
-                <BarChart3 className="h-8 w-8 text-green-600" />
-              </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-muted-foreground text-sm">New Cards</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {dueCardsCount?.new || 0}
+                    </p>
+                  </div>
+                  <BarChart3 className="h-8 w-8 text-green-600" />
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-muted-foreground text-sm">Learning</p>
-                  <p className="text-2xl font-bold text-orange-600">
+          <Card className={isMobile ? "shadow-sm" : ""}>
+            <CardContent className={isMobile ? "p-4 text-center" : "p-4"}>
+              {isMobile ? (
+                <div className="flex flex-col items-center space-y-2">
+                  <p className="text-muted-foreground text-xs leading-none">
+                    Learning
+                  </p>
+                  <p className="text-3xl font-bold text-orange-600">
                     {dueCardsCount?.learning || 0}
                   </p>
+                  <RotateCcw className="h-8 w-8 text-orange-600" />
                 </div>
-                <RotateCcw className="h-8 w-8 text-orange-600" />
-              </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-muted-foreground text-sm">Learning</p>
+                    <p className="text-2xl font-bold text-orange-600">
+                      {dueCardsCount?.learning || 0}
+                    </p>
+                  </div>
+                  <RotateCcw className="h-8 w-8 text-orange-600" />
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -366,19 +430,21 @@ export default function DeckStudyPage() {
                 <Button onClick={startSession} size="lg" className="w-full">
                   Start Study Session
                 </Button>
-                <div className="text-muted-foreground space-y-3 text-center text-sm">
-                  <p>Keyboard shortcuts:</p>
-                  <p>
-                    <kbd className="bg-muted rounded px-2 py-1">Space</kbd> -
-                    Show answer
-                  </p>
-                  <p>
-                    <kbd className="bg-muted rounded px-2 py-1">1</kbd> Again •{" "}
-                    <kbd className="bg-muted rounded px-2 py-1">2</kbd> Hard •{" "}
-                    <kbd className="bg-muted rounded px-2 py-1">3</kbd> Good •{" "}
-                    <kbd className="bg-muted rounded px-2 py-1">4</kbd> Easy
-                  </p>
-                </div>
+                {!isMobile && (
+                  <div className="text-muted-foreground space-y-3 text-center text-sm">
+                    <p>Keyboard shortcuts:</p>
+                    <p>
+                      <kbd className="bg-muted rounded px-2 py-1">Space</kbd> -
+                      Show answer
+                    </p>
+                    <p>
+                      <kbd className="bg-muted rounded px-2 py-1">1</kbd> Again
+                      • <kbd className="bg-muted rounded px-2 py-1">2</kbd> Hard
+                      • <kbd className="bg-muted rounded px-2 py-1">3</kbd> Good
+                      • <kbd className="bg-muted rounded px-2 py-1">4</kbd> Easy
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="space-y-4 text-center">
@@ -415,9 +481,14 @@ export default function DeckStudyPage() {
   const totalReviews = totalAnswered;
 
   return (
-    <div className="container mx-auto max-w-4xl p-6">
+    <div
+      className={cn(
+        "container mx-auto max-w-4xl",
+        isMobile ? "px-4 py-4" : "p-6",
+      )}
+    >
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
         <div className="flex items-center gap-4">
           <h1 className="text-xl font-bold">Studying: {deck?.name}</h1>
           <Badge variant="outline">
@@ -503,13 +574,13 @@ export default function DeckStudyPage() {
       ) : (
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
               <CardTitle>
                 {currentCard.card_type === "CLOZE"
                   ? "Cloze Deletion"
                   : "Flashcard"}
               </CardTitle>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {currentCard.tags?.map((tag: string) => (
                   <Badge key={tag} variant="secondary">
                     {tag}

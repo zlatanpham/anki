@@ -42,6 +42,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CreateDeckForm {
   name: string;
@@ -57,6 +58,7 @@ export default function DecksPage() {
     description: "",
     isPublic: false,
   });
+  const isMobile = useIsMobile();
 
   // Get all decks
   const {
@@ -141,87 +143,94 @@ export default function DecksPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl lg:text-2xl">
-            My Decks
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-            Manage your flashcard decks and track your learning progress
-          </p>
-        </div>
+    <div className="container mx-auto px-4 py-4 sm:py-6 sm:px-6 lg:px-8">
+      <div className={cn(
+        "flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between",
+        !isMobile && "mb-4 sm:mb-6"
+      )}>
+        {!isMobile && (
+          <div>
+            <h1 className="text-lg font-semibold tracking-tight sm:text-xl lg:text-2xl">
+              My Decks
+            </h1>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Manage your flashcard decks and track your learning progress
+            </p>
+          </div>
+        )}
 
-        <div className="flex gap-2">
-          <ImportWizard onImportSuccess={() => void refetch()} />
+        {!isMobile && (
+          <div className="flex gap-2">
+            <ImportWizard onImportSuccess={() => void refetch()} />
 
-          <Dialog
-            open={isCreateDialogOpen}
-            onOpenChange={setIsCreateDialogOpen}
-          >
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                New Deck
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Deck</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleCreateDeck}>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Deck Name</Label>
-                    <Input
-                      id="name"
-                      value={createForm.name}
-                      onChange={(e) =>
-                        setCreateForm((prev) => ({
-                          ...prev,
-                          name: e.target.value,
-                        }))
-                      }
-                      placeholder="Enter deck name..."
-                      className="mt-1"
-                    />
+            <Dialog
+              open={isCreateDialogOpen}
+              onOpenChange={setIsCreateDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Deck
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create New Deck</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleCreateDeck}>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="name">Deck Name</Label>
+                      <Input
+                        id="name"
+                        value={createForm.name}
+                        onChange={(e) =>
+                          setCreateForm((prev) => ({
+                            ...prev,
+                            name: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter deck name..."
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="description">Description (Optional)</Label>
+                      <Textarea
+                        id="description"
+                        value={createForm.description}
+                        onChange={(e) =>
+                          setCreateForm((prev) => ({
+                            ...prev,
+                            description: e.target.value,
+                          }))
+                        }
+                        placeholder="Describe what this deck is about..."
+                        className="mt-1 min-h-[80px]"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="description">Description (Optional)</Label>
-                    <Textarea
-                      id="description"
-                      value={createForm.description}
-                      onChange={(e) =>
-                        setCreateForm((prev) => ({
-                          ...prev,
-                          description: e.target.value,
-                        }))
-                      }
-                      placeholder="Describe what this deck is about..."
-                      className="mt-1 min-h-[80px]"
-                    />
-                  </div>
-                </div>
-                <DialogFooter className="mt-6">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsCreateDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={createDeck.isPending}>
-                    {createDeck.isPending ? "Creating..." : "Create Deck"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
+                  <DialogFooter className="mt-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsCreateDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={createDeck.isPending}>
+                      {createDeck.isPending ? "Creating..." : "Create Deck"}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
       </div>
 
       {/* Search Bar */}
-      <div className="relative mb-6">
+      <div className="relative mb-4 sm:mb-6">
         <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
         <Input
           placeholder="Search decks..."
@@ -252,19 +261,22 @@ export default function DecksPage() {
                 <BookOpen className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
                 <h3 className="mb-2 text-lg font-semibold">No decks yet</h3>
                 <p className="text-muted-foreground mb-4">
-                  Create your first deck to start learning with spaced
-                  repetition.
+                  {isMobile 
+                    ? "Ask someone to share a deck with you to start learning."
+                    : "Create your first deck to start learning with spaced repetition."}
                 </p>
-                <Button onClick={() => setIsCreateDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Your First Deck
-                </Button>
+                {!isMobile && (
+                  <Button onClick={() => setIsCreateDialogOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Your First Deck
+                  </Button>
+                )}
               </>
             )}
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredDecks.map((deck) => (
             <Card
               key={deck.id}
@@ -282,59 +294,61 @@ export default function DecksPage() {
                   )}
                 </div>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0"
-                      aria-label="Deck options"
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem asChild>
-                      <Link href={`/decks/${deck.id}/study`}>
-                        <Play className="mr-2 h-4 w-4" />
-                        Study
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href={`/decks/${deck.id}/stats`}>
-                        <BarChart3 className="mr-2 h-4 w-4" />
-                        Statistics
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href={`/decks/${deck.id}/edit`}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit Deck
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href={`/decks/${deck.id}/cards`}>
-                        <BookOpen className="mr-2 h-4 w-4" />
-                        Manage Cards
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <ExportDeck
-                      deckId={deck.id}
-                      deckName={deck.name}
-                      asDropdownItem={true}
-                    />
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="text-destructive"
-                      onClick={() => handleDeleteDeck(deck.id, deck.name)}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {!isMobile && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        aria-label="Deck options"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem asChild>
+                        <Link href={`/decks/${deck.id}/study`}>
+                          <Play className="mr-2 h-4 w-4" />
+                          Study
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href={`/decks/${deck.id}/stats`}>
+                          <BarChart3 className="mr-2 h-4 w-4" />
+                          Statistics
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href={`/decks/${deck.id}/edit`}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit Deck
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href={`/decks/${deck.id}/cards`}>
+                          <BookOpen className="mr-2 h-4 w-4" />
+                          Manage Cards
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <ExportDeck
+                        deckId={deck.id}
+                        deckName={deck.name}
+                        asDropdownItem={true}
+                      />
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onClick={() => handleDeleteDeck(deck.id, deck.name)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -372,21 +386,23 @@ export default function DecksPage() {
                   <Link
                     href={`/decks/${deck.id}/study`}
                     className={cn(
-                      buttonVariants({ variant: "default", size: "sm" }),
+                      buttonVariants({ variant: "default", size: isMobile ? "default" : "sm" }),
                       "flex-1",
                     )}
                   >
                     <Play className="mr-2 h-4 w-4" />
                     Study
                   </Link>
-                  <Link
-                    href={`/decks/${deck.id}/cards`}
-                    className={cn(
-                      buttonVariants({ variant: "outline", size: "sm" }),
-                    )}
-                  >
-                    <BookOpen className="h-4 w-4" />
-                  </Link>
+                  {!isMobile && (
+                    <Link
+                      href={`/decks/${deck.id}/cards`}
+                      className={cn(
+                        buttonVariants({ variant: "outline", size: "sm" }),
+                      )}
+                    >
+                      <BookOpen className="h-4 w-4" />
+                    </Link>
+                  )}
                 </div>
               </CardContent>
             </Card>

@@ -42,7 +42,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { type CardType } from "@prisma/client";
+import type { CardType as PrismaCardType } from "@prisma/client";
 import { ClozePreview } from "@/components/ClozeDisplay";
 import { validateClozeText, parseClozeText } from "@/lib/cloze";
 import { RichTextEditor } from "@/components/RichTextEditor";
@@ -58,9 +58,14 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { CardStateIndicator } from "@/components/CardStateIndicator";
+import { IntervalDisplay } from "@/components/IntervalDisplay";
+import { DueDateBadge } from "@/components/DueDateBadge";
+import { CardDetailModal } from "@/components/CardDetailModal";
+import { CardSortingFilter, type SortingFilterOptions } from "@/components/CardSortingFilter";
 
 interface CreateCardForm {
-  cardType: CardType;
+  cardType: PrismaCardType;
   front: string;
   back: string;
   clozeText: string;
@@ -79,8 +84,13 @@ export default function DeckCardsPage() {
     searchFields: string[];
     createdAfter?: Date;
     createdBefore?: Date;
-    sortBy: "created_at" | "updated_at" | "front";
+    sortBy: "created_at" | "updated_at" | "front" | "due_date" | "interval" | "difficulty" | "lapses" | "repetitions";
     sortOrder: "asc" | "desc";
+    stateFilter?: ("NEW" | "LEARNING" | "REVIEW" | "SUSPENDED")[];
+    dueFilter?: "overdue" | "today" | "tomorrow" | "week" | "all";
+    intervalRange?: [number, number];
+    difficultyRange?: [number, number];
+    onlyWithLapses?: boolean;
   }>({
     search: "",
     cardType: undefined,
@@ -91,6 +101,11 @@ export default function DeckCardsPage() {
     createdBefore: undefined,
     sortBy: "created_at",
     sortOrder: "desc",
+    stateFilter: [],
+    dueFilter: "all",
+    intervalRange: [0, 365],
+    difficultyRange: [1.3, 2.7],
+    onlyWithLapses: false,
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -101,6 +116,8 @@ export default function DeckCardsPage() {
     clozeText: "",
     tags: "",
   });
+  const [selectedCard, setSelectedCard] = useState<(typeof cardsData)["cards"][0] | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // Get deck details
   const { data: deck, isLoading: isDeckLoading, refetch: refetchDeck } = api.deck.getById.useQuery({ id: deckId });
@@ -116,6 +133,11 @@ export default function DeckCardsPage() {
     sortBy: searchFilters.sortBy,
     sortOrder: searchFilters.sortOrder,
     searchFields: searchFilters.searchFields as ("front" | "back" | "cloze_text" | "tags")[],
+    stateFilter: searchFilters.stateFilter,
+    dueFilter: searchFilters.dueFilter,
+    intervalRange: searchFilters.intervalRange,
+    difficultyRange: searchFilters.difficultyRange,
+    onlyWithLapses: searchFilters.onlyWithLapses,
     limit: 20,
     offset: (currentPage - 1) * 20,
   });
@@ -177,6 +199,12 @@ export default function DeckCardsPage() {
     },
   });
 
+  // Get card with reviews query
+  const { data: cardWithReviews } = api.card.getByIdWithReviews.useQuery(
+    { id: selectedCard?.id || "" },
+    { enabled: !!selectedCard?.id }
+  );
+
   const handleCreateCard = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -222,6 +250,25 @@ export default function DeckCardsPage() {
     if (confirm("Are you sure you want to delete this card? This action cannot be undone.")) {
       deleteCard.mutate({ id: cardId });
     }
+  };
+
+  const handleCardClick = (card: typeof filteredCards[0]) => {
+    setSelectedCard(card);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleSortingFilterApply = (options: SortingFilterOptions) => {
+    setSearchFilters(prev => ({
+      ...prev,
+      sortBy: options.sortBy,
+      sortOrder: options.sortOrder,
+      stateFilter: options.stateFilter,
+      dueFilter: options.dueFilter,
+      intervalRange: options.intervalRange,
+      difficultyRange: options.difficultyRange,
+      onlyWithLapses: options.onlyWithLapses,
+    }));
+    setCurrentPage(1);
   };
 
   // Only show full page skeleton on initial load when deck is loading
@@ -342,7 +389,7 @@ export default function DeckCardsPage() {
                   <Label htmlFor="cardType">Card Type</Label>
                   <Select 
                     value={createForm.cardType} 
-                    onValueChange={(value: CardType) => 
+                    onValueChange={(value: PrismaCardType) => 
                       setCreateForm(prev => ({ ...prev, cardType: value }))
                     }
                   >
@@ -442,17 +489,34 @@ export default function DeckCardsPage() {
         </div>
       </div>
 
-      {/* Search Interface */}
+      {/* Search and Filter Interface */}
       <Card className="mb-6">
         <CardContent className="p-4">
-          <AdvancedSearch
-            onSearch={(filters) => {
-              setSearchFilters(filters);
-              setCurrentPage(1);
-            }}
-            initialFilters={searchFilters}
-            deckId={deckId}
-          />
+          <div className="space-y-4">
+            <AdvancedSearch
+              onSearch={(filters) => {
+                setSearchFilters(filters);
+                setCurrentPage(1);
+              }}
+              initialFilters={searchFilters}
+              deckId={deckId}
+            />
+            <div className="flex justify-between items-center">
+              <CardSortingFilter
+                onApply={handleSortingFilterApply}
+                initialOptions={{
+                  sortBy: searchFilters.sortBy,
+                  sortOrder: searchFilters.sortOrder,
+                  stateFilter: searchFilters.stateFilter,
+                  dueFilter: searchFilters.dueFilter,
+                  intervalRange: searchFilters.intervalRange,
+                  difficultyRange: searchFilters.difficultyRange,
+                  onlyWithLapses: searchFilters.onlyWithLapses,
+                }}
+                cardCount={cardsData?.totalCount}
+              />
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -495,11 +559,15 @@ export default function DeckCardsPage() {
       ) : (
         <div className="space-y-4">
           {filteredCards.map((card) => (
-            <Card key={card.id} className="group hover:shadow-md transition-shadow">
+            <Card 
+              key={card.id} 
+              className="group hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => handleCardClick(card)}
+            >
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
                   <div className="flex-1 space-y-3">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <Badge variant={card.card_type === "BASIC" ? "default" : "secondary"}>
                         {card.card_type === "BASIC" ? (
                           <><FileText className="h-3 w-3 mr-1" />Basic</>
@@ -508,23 +576,11 @@ export default function DeckCardsPage() {
                         )}
                       </Badge>
                       {card.card_states?.[0] && (
-                        <Badge variant="outline" className="text-xs">
-                          {card.card_states[0].state.toLowerCase()}
-                        </Badge>
-                      )}
-                      {card.tags.length > 0 && (
-                        <div className="flex gap-1">
-                          {card.tags.slice(0, 3).map((tag, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                          {card.tags.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{card.tags.length - 3}
-                            </Badge>
-                          )}
-                        </div>
+                        <>
+                          <CardStateIndicator state={card.card_states[0].state} />
+                          <IntervalDisplay interval={card.card_states[0].interval} />
+                          <DueDateBadge dueDate={card.card_states[0].due_date} />
+                        </>
                       )}
                     </div>
 
@@ -590,17 +646,37 @@ export default function DeckCardsPage() {
                       )
                     )}
 
+                    {card.tags.length > 0 && (
+                      <div className="pt-3 mt-3 border-t">
+                        <div className="flex gap-1 flex-wrap">
+                          {card.tags.map((tag, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label="Card options">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0" 
+                        aria-label="Card options"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem asChild>
-                        <Link href={`/decks/${deckId}/cards/${card.id}/edit`}>
+                        <Link 
+                          href={`/decks/${deckId}/cards/${card.id}/edit`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <Edit className="h-4 w-4 mr-2" />
                           Edit Card
                         </Link>
@@ -608,7 +684,10 @@ export default function DeckCardsPage() {
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-destructive"
-                        onClick={() => handleDeleteCard(card.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteCard(card.id);
+                        }}
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete
@@ -675,6 +754,20 @@ export default function DeckCardsPage() {
           </p>
         </div>
       )}
+
+      {/* Card Detail Modal */}
+      <CardDetailModal
+        card={cardWithReviews || selectedCard}
+        isOpen={isDetailModalOpen}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedCard(null);
+        }}
+        onEdit={() => {
+          setIsDetailModalOpen(false);
+          window.location.href = `/decks/${deckId}/cards/${selectedCard?.id}/edit`;
+        }}
+      />
     </div>
   );
 }

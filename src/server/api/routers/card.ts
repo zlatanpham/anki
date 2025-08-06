@@ -35,10 +35,16 @@ const cardQuerySchema = z.object({
   searchFields: z.array(z.enum(["front", "back", "cloze_text", "tags"])).optional(),
   createdAfter: z.date().optional(),
   createdBefore: z.date().optional(),
-  sortBy: z.enum(["created_at", "updated_at", "front"]).default("created_at"),
+  sortBy: z.enum(["created_at", "updated_at", "front", "due_date", "interval", "difficulty", "lapses", "repetitions"]).default("created_at"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
   limit: z.number().min(1).max(100).default(20),
   offset: z.number().min(0).default(0),
+  // New SR-based filters
+  stateFilter: z.array(z.enum(["NEW", "LEARNING", "REVIEW", "SUSPENDED"])).optional(),
+  dueFilter: z.enum(["overdue", "today", "tomorrow", "week", "all"]).optional(),
+  intervalRange: z.tuple([z.number(), z.number()]).optional(),
+  difficultyRange: z.tuple([z.number(), z.number()]).optional(),
+  onlyWithLapses: z.boolean().optional(),
 });
 
 const globalSearchSchema = z.object({
@@ -243,6 +249,68 @@ export const cardRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to fetch card",
+          cause: error,
+        });
+      }
+    }),
+
+  // Get card with full details including reviews
+  getByIdWithReviews: protectedProcedure
+    .input(cardParamsSchema)
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      try {
+        const card = await ctx.db.card.findFirst({
+          where: {
+            id: input.id,
+            deck: {
+              OR: [
+                { user_id: userId },
+                { is_public: true },
+              ],
+            },
+          },
+          include: {
+            deck: {
+              select: {
+                id: true,
+                name: true,
+                user_id: true,
+              },
+            },
+            card_states: {
+              where: {
+                user_id: userId,
+              },
+              take: 1,
+            },
+            reviews: {
+              where: {
+                user_id: userId,
+              },
+              orderBy: {
+                reviewed_at: 'desc',
+              },
+            },
+          },
+        });
+
+        if (!card) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Card not found",
+          });
+        }
+
+        return card;
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch card with reviews",
           cause: error,
         });
       }

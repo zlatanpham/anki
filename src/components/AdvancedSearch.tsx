@@ -33,7 +33,7 @@ interface SearchFilters {
   searchFields: string[];
   createdAfter?: Date;
   createdBefore?: Date;
-  sortBy: "created_at" | "updated_at" | "front";
+  sortBy: "created_at" | "updated_at" | "front" | "due_date" | "interval" | "difficulty" | "lapses" | "repetitions";
   sortOrder: "asc" | "desc";
 }
 

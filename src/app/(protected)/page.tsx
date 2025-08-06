@@ -80,7 +80,7 @@ export default function DashboardPage() {
             <CardTitle className="text-xs font-medium sm:text-sm">
               Due Cards
             </CardTitle>
-            <Play className="text-muted-foreground h-3 w-3 sm:h-4 sm:w-4" />
+            <Play className="text-muted-foreground h-5 w-5 flex-none" />
           </CardHeader>
           <CardContent className="px-3 sm:px-6">
             <div className="text-xl font-bold sm:text-2xl">
@@ -95,7 +95,7 @@ export default function DashboardPage() {
             <CardTitle className="text-xs font-medium sm:text-sm">
               Today's Reviews
             </CardTitle>
-            <BarChart3 className="text-muted-foreground h-3 w-3 sm:h-4 sm:w-4" />
+            <BarChart3 className="text-muted-foreground h-5 w-5 flex-none" />
           </CardHeader>
           <CardContent className="px-3 sm:px-6">
             <div className="text-xl font-bold sm:text-2xl">
@@ -114,7 +114,7 @@ export default function DashboardPage() {
             <CardTitle className="text-xs font-medium sm:text-sm">
               Study Streak
             </CardTitle>
-            <BarChart3 className="text-muted-foreground h-3 w-3 sm:h-4 sm:w-4" />
+            <BarChart3 className="text-muted-foreground h-5 w-5 flex-none" />
           </CardHeader>
           <CardContent className="px-3 sm:px-6">
             <div className="text-xl font-bold sm:text-2xl">
@@ -129,7 +129,7 @@ export default function DashboardPage() {
             <CardTitle className="text-xs font-medium sm:text-sm">
               Total Decks
             </CardTitle>
-            <BookOpen className="text-muted-foreground h-3 w-3 sm:h-4 sm:w-4" />
+            <BookOpen className="text-muted-foreground h-5 w-5 flex-none" />
           </CardHeader>
           <CardContent className="px-3 sm:px-6">
             <div className="text-xl font-bold sm:text-2xl">

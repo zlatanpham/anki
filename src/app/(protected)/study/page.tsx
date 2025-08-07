@@ -25,6 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ratingColors, ratingLabels, ratingKeys } from "@/lib/theme";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { AnswerExplanation } from "@/components/study/AnswerExplanation";
 
 interface StudySession {
   cards: any[];
@@ -588,6 +589,12 @@ export default function StudyPage() {
                         dangerouslySetInnerHTML={{ __html: currentCard.card.back }}
                       />
                     </div>
+                    <div className="mt-4">
+                      <AnswerExplanation
+                        card={currentCard.card}
+                        key={`${currentCard.card.id}-${session.currentIndex}`}
+                      />
+                    </div>
                   </>
                 )}
               </div>
@@ -617,6 +624,14 @@ export default function StudyPage() {
                       <div
                         className="prose prose-sm max-w-none text-green-800"
                         dangerouslySetInnerHTML={{ __html: currentCard.card.back }}
+                      />
+                    </div>
+                  )}
+                  {session.showAnswer && (
+                    <div className="mt-4">
+                      <AnswerExplanation
+                        card={currentCard.card}
+                        key={`${currentCard.card.id}-${session.currentIndex}`}
                       />
                     </div>
                   )}

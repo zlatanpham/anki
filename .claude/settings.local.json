@@ -20,7 +20,8 @@
       "Bash(pnpm jest:*)",
       "Bash(git diff:*)",
       "Bash(find:*)",
-      "Bash(pnpm update:*)"
+      "Bash(pnpm update:*)",
+      "Bash(pnpm remove:*)"
     ],
     "deny": []
   }

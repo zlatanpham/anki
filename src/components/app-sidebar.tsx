@@ -11,6 +11,7 @@ import {
   BarChart3,
   Play,
   Search,
+  Key,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -47,6 +48,11 @@ const data = {
           title: "Statistics",
           url: "/stats",
           icon: BarChart3,
+        },
+        {
+          title: "API Keys",
+          url: "/api-keys",
+          icon: Key,
         },
       ],
     },

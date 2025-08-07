@@ -81,6 +81,7 @@ model User {
     AIUserQuota            AIUserQuota?
     AIUsageAnalytics       AIUsageAnalytics[]
     CardExplanation        CardExplanation[]
+    ApiKey                 ApiKey[]
 }
 
 model VerificationToken {
@@ -300,4 +301,42 @@ model CardExplanation {
     @@index([card_id, user_id])
     @@index([user_id, is_saved])
     @@index([created_at])
+}
+
+// API Key Management Models
+
+model ApiKey {
+    id              String        @id @default(cuid())
+    userId          String
+    name            String        @db.VarChar(255)
+    keyHash         String        @unique
+    lastUsedAt      DateTime?
+    expiresAt       DateTime?
+    isActive        Boolean       @default(true)
+    usageCount      Int           @default(0)
+    createdAt       DateTime      @default(now())
+    revokedAt       DateTime?
+    
+    user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+    apiUsageLogs    ApiUsageLog[]
+    
+    @@index([userId])
+    @@index([keyHash])
+}
+
+model ApiUsageLog {
+    id              String    @id @default(cuid())
+    apiKeyId        String
+    endpoint        String    @db.VarChar(255)
+    method          String    @db.VarChar(10)
+    statusCode      Int
+    responseTimeMs  Int
+    ipAddress       String?   @db.VarChar(45)
+    userAgent       String?   @db.Text
+    createdAt       DateTime  @default(now())
+    
+    apiKey          ApiKey    @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+    
+    @@index([apiKeyId, createdAt])
+    @@index([endpoint, createdAt])
 }

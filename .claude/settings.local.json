@@ -19,7 +19,8 @@
       "Bash(npm test:*)",
       "Bash(pnpm jest:*)",
       "Bash(git diff:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(pnpm update:*)"
     ],
     "deny": []
   }

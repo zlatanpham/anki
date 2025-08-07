@@ -30,7 +30,9 @@
     "test:unit:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^2.0.1",
     "@ai-sdk/google": "^1.2.22",
+    "@ai-sdk/openai": "^2.0.4",
     "@auth/prisma-adapter": "^2.7.2",
     "@hookform/resolvers": "^5.0.1",
     "@prisma/client": "^6.5.0",
@@ -88,7 +90,7 @@
     "superjson": "^2.2.1",
     "tailwind-merge": "^3.2.0",
     "vaul": "^1.1.2",
-    "zod": "^3.24.3"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",

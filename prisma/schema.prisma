@@ -80,6 +80,7 @@ model User {
     AIUsageLog             AIUsageLog[]
     AIUserQuota            AIUserQuota?
     AIUsageAnalytics       AIUsageAnalytics[]
+    CardExplanation        CardExplanation[]
 }
 
 model VerificationToken {
@@ -144,9 +145,10 @@ model Card {
     created_at  DateTime  @default(now()) @db.Timestamptz(6)
     updated_at  DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
     
-    deck        Deck        @relation(fields: [deck_id], references: [id], onDelete: Cascade)
-    reviews     Review[]
-    card_states CardState[]
+    deck            Deck                @relation(fields: [deck_id], references: [id], onDelete: Cascade)
+    reviews         Review[]
+    card_states     CardState[]
+    explanations    CardExplanation[]
     
     @@index([deck_id])
     @@index([note_id])
@@ -276,4 +278,26 @@ model AIUsageAnalytics {
     
     @@unique([user_id, period, period_start])
     @@index([user_id, period_start])
+}
+
+// AI Explanation Models
+
+model CardExplanation {
+    id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    card_id           String    @db.Uuid
+    user_id           String
+    question_type     String    @db.VarChar(50) // eli5, example, importance, breakdown, custom
+    question          String?   @db.Text
+    explanation       String    @db.Text
+    tokens_used       Int?
+    is_saved          Boolean   @default(false)
+    tags              String[]  @default([])
+    created_at        DateTime  @default(now()) @db.Timestamptz(6)
+    
+    card              Card      @relation(fields: [card_id], references: [id], onDelete: Cascade)
+    user              User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+    
+    @@index([card_id, user_id])
+    @@index([user_id, is_saved])
+    @@index([created_at])
 }

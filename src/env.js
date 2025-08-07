@@ -22,7 +22,10 @@ export const env = createEnv({
       .enum(["development", "test", "production"])
       .default("development"),
     GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
+    OPENAI_API_KEY: z.string().optional(),
+    ANTHROPIC_API_KEY: z.string().optional(),
     AI_MODEL: z.string().default("gemini-2.0-flash-experimental"),
+    AI_PROVIDER: z.enum(["google", "openai", "anthropic"]).default("google"),
     AI_RATE_LIMIT: z.string().default("100"),
     AI_MAX_CARDS_PER_GENERATION: z.string().default("100"),
   },
@@ -51,7 +54,10 @@ export const env = createEnv({
     NEXTAUTH_URL: process.env.NEXTAUTH_URL, // Add NEXTAUTH_URL
     NODE_ENV: process.env.NODE_ENV,
     GOOGLE_GENERATIVE_AI_API_KEY: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     AI_MODEL: process.env.AI_MODEL,
+    AI_PROVIDER: process.env.AI_PROVIDER,
     AI_RATE_LIMIT: process.env.AI_RATE_LIMIT,
     AI_MAX_CARDS_PER_GENERATION: process.env.AI_MAX_CARDS_PER_GENERATION,
   },

@@ -1,5 +1,7 @@
 import { google } from "@ai-sdk/google";
-import { generateText, generateObject } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { anthropic } from "@ai-sdk/anthropic";
+import { generateText, generateObject, type LanguageModel } from "ai";
 import { z } from "zod";
 import { env } from "@/env";
 import { TRPCError } from "@trpc/server";
@@ -75,6 +77,13 @@ const cardImprovementSchema = z.object({
   }),
 });
 
+// Answer explanation schema
+const answerExplanationSchema = z.object({
+  explanation: z.string(),
+  suggestedFollowUps: z.array(z.string()).optional(),
+  confidence: z.number().min(0).max(1),
+});
+
 export interface GeneratedCard {
   type: "BASIC" | "CLOZE";
   front: string;
@@ -97,23 +106,70 @@ export interface GrammarCorrection {
 }
 
 export class AICardService {
-  private model;
+  private model: LanguageModel;
   private maxCards: number;
   private userId?: string;
   private organizationId?: string | null;
+  private provider: string;
 
-  constructor(userId?: string, organizationId?: string | null) {
-    if (!env.GOOGLE_GENERATIVE_AI_API_KEY) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Google AI API key not configured",
-      });
+  constructor(userId?: string, organizationId?: string | null, provider?: string) {
+    this.provider = provider || env.AI_PROVIDER || "google";
+    
+    // Initialize model based on provider
+    switch (this.provider) {
+      case "google":
+        if (!env.GOOGLE_GENERATIVE_AI_API_KEY) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Google AI API key not configured",
+          });
+        }
+        this.model = google(env.AI_MODEL || "gemini-2.0-flash-experimental");
+        break;
+        
+      case "openai":
+        if (!env.OPENAI_API_KEY) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "OpenAI API key not configured",
+          });
+        }
+        this.model = openai(env.AI_MODEL || "gpt-4o-mini");
+        break;
+        
+      case "anthropic":
+        if (!env.ANTHROPIC_API_KEY) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Anthropic API key not configured",
+          });
+        }
+        this.model = anthropic(env.AI_MODEL || "claude-3-haiku-20240307");
+        break;
+        
+      default:
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Unsupported AI provider: ${this.provider}`,
+        });
     }
 
-    this.model = google(env.AI_MODEL ?? "gemini-2.0-flash-experimental");
     this.maxCards = parseInt(env.AI_MAX_CARDS_PER_GENERATION ?? "100");
     this.userId = userId;
     this.organizationId = organizationId;
+  }
+
+  private getModelName(): string {
+    switch (this.provider) {
+      case "google":
+        return env.AI_MODEL || "gemini-2.0-flash-experimental";
+      case "openai":
+        return env.AI_MODEL || "gpt-4o-mini";
+      case "anthropic":
+        return env.AI_MODEL || "claude-3-haiku-20240307";
+      default:
+        return env.AI_MODEL || "unknown";
+    }
   }
 
   async generateCards(
@@ -167,12 +223,13 @@ Generate diverse flashcards following the exact format specified above.`;
 
       // Track AI usage if userId is provided
       if (this.userId) {
-        const aiRequest: AIRequest = { prompt, model: env.AI_MODEL ?? "gemini-2.0-flash-experimental" };
+        const modelName = this.getModelName();
+        const aiRequest: AIRequest = { prompt, model: modelName };
         
         // The Vercel AI SDK v4 uses different response structure
         const aiResponse: AIResponse = {
           text: JSON.stringify(object),
-          model: env.AI_MODEL ?? "gemini-2.0-flash-experimental",
+          model: modelName,
           // Try to extract usage from the response
           usage: (response as any)?.usage ? {
             promptTokens: (response as any).usage.promptTokens,
@@ -235,7 +292,7 @@ Generate diverse flashcards following the exact format specified above.`;
       
       // Track failed AI usage
       if (this.userId) {
-        const aiRequest: AIRequest = { prompt: input.substring(0, 200), model: env.AI_MODEL ?? "gemini-2.0-flash-experimental" };
+        const aiRequest: AIRequest = { prompt: input.substring(0, 200), model: this.getModelName() };
         await trackAIUsage(
           aiRequest,
           {} as AIResponse,
@@ -302,10 +359,10 @@ Use {{c1::text}} syntax for cloze deletions. Create variations that test differe
 
       // Track AI usage
       if (this.userId) {
-        const aiRequest: AIRequest = { prompt, model: env.AI_MODEL ?? "gemini-2.0-flash-experimental" };
+        const aiRequest: AIRequest = { prompt, model: this.getModelName() };
         const aiResponse: AIResponse = {
           text: JSON.stringify(object),
-          model: env.AI_MODEL ?? "gemini-2.0-flash-experimental",
+          model: this.getModelName(),
           experimental_providerMetadata: (response as any)?.experimental_providerMetadata
         };
         
@@ -326,7 +383,7 @@ Use {{c1::text}} syntax for cloze deletions. Create variations that test differe
       
       // Track failed AI usage
       if (this.userId) {
-        const aiRequest: AIRequest = { prompt: text.substring(0, 200), model: env.AI_MODEL ?? "gemini-2.0-flash-experimental" };
+        const aiRequest: AIRequest = { prompt: text.substring(0, 200), model: this.getModelName() };
         await trackAIUsage(
           aiRequest,
           {} as AIResponse,
@@ -375,10 +432,10 @@ Provide the corrected version and list all corrections made with explanations.`;
       
       // Track AI usage
       if (this.userId) {
-        const aiRequest: AIRequest = { prompt, model: env.AI_MODEL ?? "gemini-2.0-flash-experimental" };
+        const aiRequest: AIRequest = { prompt, model: this.getModelName() };
         const aiResponse: AIResponse = {
           text: JSON.stringify(object),
-          model: env.AI_MODEL ?? "gemini-2.0-flash-experimental",
+          model: this.getModelName(),
           experimental_providerMetadata: (response as any)?.experimental_providerMetadata
         };
         
@@ -403,7 +460,7 @@ Provide the corrected version and list all corrections made with explanations.`;
       
       // Track failed AI usage
       if (this.userId) {
-        const aiRequest: AIRequest = { prompt: text.substring(0, 200), model: env.AI_MODEL ?? "gemini-2.0-flash-experimental" };
+        const aiRequest: AIRequest = { prompt: text.substring(0, 200), model: this.getModelName() };
         await trackAIUsage(
           aiRequest,
           {} as AIResponse,
@@ -515,15 +572,199 @@ Return a JSON object with: estimatedCards (number), topics (array of strings), d
       };
     }
   }
+
+  async explainAnswer(
+    card: { front: string; back: string; clozeText?: string },
+    questionType: "eli5" | "example" | "importance" | "breakdown" | "custom",
+    customQuestion?: string,
+    conversationHistory?: Array<{ question: string; answer: string }>
+  ): Promise<{
+    explanation: string;
+    suggestedFollowUps?: string[];
+    confidence: number;
+  }> {
+    const startTime = Date.now();
+    
+    // Prepare the prompt templates
+    const promptTemplates = {
+      eli5: `Explain this answer as if teaching a 5-year-old child. Use simple words, analogies, and examples they can understand. Be friendly and encouraging.
+
+Question: {question}
+Answer: {answer}
+
+Provide a simple, clear explanation:`,
+
+      example: `Provide concrete, real-world examples that illustrate this answer. Make them relevant and easy to understand.
+
+Question: {question}
+Answer: {answer}
+
+Give 2-3 practical examples:`,
+
+      importance: `Explain why this information matters and how it connects to broader concepts or real-world applications.
+
+Question: {question}
+Answer: {answer}
+
+Explain the significance:`,
+
+      breakdown: `Break down this answer into clear, logical steps or components. Explain each part thoroughly.
+
+Question: {question}
+Answer: {answer}
+
+Provide a step-by-step breakdown:`,
+
+      custom: `Based on the question and answer below, please answer the user's specific question.
+
+Card Question: {question}
+Card Answer: {answer}
+
+User's Question: {customQuestion}
+
+{conversationContext}
+
+Provide a helpful explanation:`
+    };
+
+    // Get the question and answer from the card
+    const question = card.clozeText || card.front;
+    const answer = card.clozeText 
+      ? card.clozeText.replace(/\{\{c\d+::([^}]+)\}\}/g, '$1') 
+      : card.back;
+
+    // Build the prompt
+    let prompt = promptTemplates[questionType]
+      .replace('{question}', question)
+      .replace('{answer}', answer);
+
+    if (questionType === 'custom' && customQuestion) {
+      prompt = prompt.replace('{customQuestion}', customQuestion);
+      
+      // Add conversation history if available
+      if (conversationHistory && conversationHistory.length > 0) {
+        const context = conversationHistory
+          .map((qa) => `Previous Q: ${qa.question}\nPrevious A: ${qa.answer}`)
+          .join('\n\n');
+        prompt = prompt.replace('{conversationContext}', `Previous Context:\n${context}`);
+      } else {
+        prompt = prompt.replace('{conversationContext}', '');
+      }
+    }
+
+    // Add instruction for suggested follow-ups
+    prompt += `\n\nAlso suggest 2-3 follow-up questions the user might want to ask about this topic.`;
+
+    try {
+      const { object, response } = await generateObject({
+        model: this.model,
+        schema: answerExplanationSchema,
+        prompt,
+        maxRetries: 2,
+      });
+
+      // Track AI usage if userId is provided
+      if (this.userId) {
+        const aiRequest: AIRequest = { prompt, model: this.getModelName() };
+        
+        const aiResponse: AIResponse = {
+          text: JSON.stringify(object),
+          model: this.getModelName(),
+          usage: (response as any)?.usage ? {
+            promptTokens: (response as any).usage.promptTokens,
+            completionTokens: (response as any).usage.completionTokens,
+            totalTokens: (response as any).usage.totalTokens
+          } : undefined,
+          experimental_providerMetadata: response as any
+        };
+        
+        await trackAIUsage(
+          aiRequest,
+          aiResponse,
+          this.userId,
+          this.organizationId ?? null,
+          'answer_explanation',
+          startTime,
+          'success'
+        );
+      }
+
+      return {
+        explanation: object.explanation,
+        suggestedFollowUps: object.suggestedFollowUps,
+        confidence: object.confidence,
+      };
+    } catch (error: any) {
+      console.error("Error explaining answer:", error);
+      
+      // Track failed AI usage
+      if (this.userId) {
+        const aiRequest: AIRequest = { prompt: prompt.substring(0, 200), model: this.getModelName() };
+        await trackAIUsage(
+          aiRequest,
+          {} as AIResponse,
+          this.userId,
+          this.organizationId ?? null,
+          'answer_explanation',
+          startTime,
+          'error',
+          error.message || 'Unknown error'
+        );
+      }
+
+      if (error.statusCode === 503 || error.message?.includes("overloaded")) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "The AI service is currently busy. Please try again in a few moments.",
+        });
+      }
+
+      if (error.statusCode === 429) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "Rate limit exceeded. Please wait a moment before trying again.",
+        });
+      }
+
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to generate explanation. Please try again.",
+      });
+    }
+  }
 }
 
 // Export factory function instead of singleton to support user context
-export function getAIService(userId?: string, organizationId?: string | null): AICardService {
-  if (!env.GOOGLE_GENERATIVE_AI_API_KEY) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "AI service not available. Please configure Google AI API key.",
-    });
+export function getAIService(userId?: string, organizationId?: string | null, provider?: string): AICardService {
+  const selectedProvider = provider || env.AI_PROVIDER || "google";
+  
+  // Check if the selected provider has API key configured
+  switch (selectedProvider) {
+    case "google":
+      if (!env.GOOGLE_GENERATIVE_AI_API_KEY) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "AI service not available. Please configure Google AI API key.",
+        });
+      }
+      break;
+    case "openai":
+      if (!env.OPENAI_API_KEY) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "AI service not available. Please configure OpenAI API key.",
+        });
+      }
+      break;
+    case "anthropic":
+      if (!env.ANTHROPIC_API_KEY) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "AI service not available. Please configure Anthropic API key.",
+        });
+      }
+      break;
   }
-  return new AICardService(userId, organizationId);
+  
+  return new AICardService(userId, organizationId, selectedProvider);
 }

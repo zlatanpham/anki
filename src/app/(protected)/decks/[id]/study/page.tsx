@@ -33,6 +33,7 @@ import {
 import { ratingColors, ratingLabels, ratingKeys } from "@/lib/theme";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { AnswerExplanation } from "@/components/study/AnswerExplanation";
 
 interface StudySession {
   cards: any[];
@@ -650,6 +651,16 @@ export default function DeckStudyPage() {
                   )}
                 </div>
               )}
+
+            {/* AI Answer Explanation - only show when answer is revealed */}
+            {session.showAnswer && (
+              <AnswerExplanation
+                cardId={currentCard.id}
+                front={currentCard.front}
+                back={currentCard.back || ""}
+                clozeText={currentCard.cloze_text}
+              />
+            )}
           </CardContent>
         </Card>
       )}

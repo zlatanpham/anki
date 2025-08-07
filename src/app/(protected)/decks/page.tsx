@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -23,25 +22,11 @@ import {
   Plus,
   Search,
   BookOpen,
-  Calendar,
-  Users,
-  MoreVertical,
-  Edit,
-  Trash2,
   Play,
-  BarChart3,
 } from "lucide-react";
 import { ImportWizard } from "@/components/ImportWizard";
 import { SkeletonCardList } from "@/components/ui/skeleton-card";
-import { ExportDeck } from "@/components/ExportDeck";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { formatDistanceToNow } from "date-fns";
+import { DeckCard } from "@/components/DeckCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CreateDeckForm {
@@ -68,6 +53,7 @@ export default function DecksPage() {
   } = api.deck.getAll.useQuery({
     includePublic: true,
     limit: 50,
+    includeStats: true,
   });
 
   // Create deck mutation
@@ -278,134 +264,12 @@ export default function DecksPage() {
       ) : (
         <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredDecks.map((deck) => (
-            <Card
+            <DeckCard
               key={deck.id}
-              className="group transition-shadow hover:shadow-lg"
-            >
-              <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                <div className="flex-1">
-                  <CardTitle className="text-lg leading-tight">
-                    {deck.name}
-                  </CardTitle>
-                  {deck.description && (
-                    <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">
-                      {deck.description}
-                    </p>
-                  )}
-                </div>
-
-                {!isMobile && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        aria-label="Deck options"
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild>
-                        <Link href={`/decks/${deck.id}/study`}>
-                          <Play className="mr-2 h-4 w-4" />
-                          Study
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href={`/decks/${deck.id}/stats`}>
-                          <BarChart3 className="mr-2 h-4 w-4" />
-                          Statistics
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link href={`/decks/${deck.id}/edit`}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit Deck
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href={`/decks/${deck.id}/cards`}>
-                          <BookOpen className="mr-2 h-4 w-4" />
-                          Manage Cards
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <ExportDeck
-                        deckId={deck.id}
-                        deckName={deck.name}
-                        asDropdownItem={true}
-                      />
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="text-destructive"
-                        onClick={() => handleDeleteDeck(deck.id, deck.name)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Cards</span>
-                    <Badge variant="secondary">{deck._count.cards}</Badge>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Updated</span>
-                    <span className="text-muted-foreground text-xs">
-                      {formatDistanceToNow(new Date(deck.updated_at), {
-                        addSuffix: true,
-                      })}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {deck.is_public && (
-                      <Badge variant="outline" className="text-xs">
-                        <Users className="mr-1 h-3 w-3" />
-                        Public
-                      </Badge>
-                    )}
-                    {deck.organization && (
-                      <Badge variant="outline" className="text-xs">
-                        <Calendar className="mr-1 h-3 w-3" />
-                        {deck.organization.name}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-
-                <div className="mt-4 flex gap-2">
-                  <Link
-                    href={`/decks/${deck.id}/study`}
-                    className={cn(
-                      buttonVariants({ variant: "default", size: isMobile ? "default" : "sm" }),
-                      "flex-1",
-                    )}
-                  >
-                    <Play className="mr-2 h-4 w-4" />
-                    Study
-                  </Link>
-                  {!isMobile && (
-                    <Link
-                      href={`/decks/${deck.id}/cards`}
-                      className={cn(
-                        buttonVariants({ variant: "outline", size: "sm" }),
-                      )}
-                    >
-                      <BookOpen className="h-4 w-4" />
-                    </Link>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+              deck={deck}
+              onDelete={handleDeleteDeck}
+              showStats={true}
+            />
           ))}
         </div>
       )}

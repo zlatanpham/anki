@@ -27,6 +27,7 @@ const deckQuerySchema = z.object({
   includePublic: z.boolean().default(false),
   limit: z.number().min(1).max(100).default(20),
   offset: z.number().min(0).default(0),
+  includeStats: z.boolean().default(false),
 });
 
 export const deckRouter = createTRPCRouter({
@@ -35,7 +36,7 @@ export const deckRouter = createTRPCRouter({
     .input(deckQuerySchema)
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const { organizationId, includePublic, limit, offset } = input;
+      const { organizationId, includePublic, limit, offset, includeStats } = input;
 
       try {
         const whereConditions: any = {
@@ -83,8 +84,114 @@ export const deckRouter = createTRPCRouter({
           }),
         ]);
 
+        // If stats are requested, fetch them for all decks
+        let decksWithStats = decks;
+        if (includeStats) {
+          const now = new Date();
+          const todayStart = new Date(now);
+          todayStart.setHours(0, 0, 0, 0);
+
+          const deckIds = decks.map(d => d.id);
+          
+          // Batch fetch all stats for performance
+          const [cardStates, todayReviews] = await Promise.all([
+            // Get card states for all decks
+            ctx.db.cardState.groupBy({
+              by: ['card_id'],
+              where: {
+                user_id: userId,
+                card: {
+                  deck_id: { in: deckIds },
+                },
+              },
+              _count: true,
+            }).then(async (groups) => {
+              // Get the actual card states with deck info
+              return ctx.db.cardState.findMany({
+                where: {
+                  user_id: userId,
+                  card: {
+                    deck_id: { in: deckIds },
+                  },
+                },
+                include: {
+                  card: {
+                    select: {
+                      deck_id: true,
+                    },
+                  },
+                },
+              });
+            }),
+            
+            // Get today's reviews for all decks
+            ctx.db.review.findMany({
+              where: {
+                user_id: userId,
+                reviewed_at: { gte: todayStart },
+                card: {
+                  deck_id: { in: deckIds },
+                },
+              },
+              include: {
+                card: {
+                  select: {
+                    deck_id: true,
+                  },
+                },
+              },
+            }),
+          ]);
+
+          // Process stats for each deck
+          decksWithStats = decks.map(deck => {
+            const deckCardStates = cardStates.filter(cs => cs.card.deck_id === deck.id);
+            const deckTodayReviews = todayReviews.filter(r => r.card.deck_id === deck.id);
+
+            // Calculate due cards
+            const dueCards = deckCardStates.filter(cs => 
+              cs.state !== "SUSPENDED" && cs.due_date <= now
+            ).length;
+
+            // Calculate card state breakdown
+            const newCards = deckCardStates.filter(cs => cs.state === "NEW").length;
+            const learningCards = deckCardStates.filter(cs => cs.state === "LEARNING").length;
+            const reviewCards = deckCardStates.filter(cs => cs.state === "REVIEW").length;
+            const suspendedCards = deckCardStates.filter(cs => cs.state === "SUSPENDED").length;
+
+            // Calculate today's activity
+            const reviewedToday = deckTodayReviews.length;
+            const successfulToday = deckTodayReviews.filter(r => 
+              r.rating === "GOOD" || r.rating === "EASY"
+            ).length;
+            const todayAccuracy = reviewedToday > 0 
+              ? Math.round((successfulToday / reviewedToday) * 100) 
+              : 0;
+
+            // Calculate 30-day retention rate
+            const thirtyDaysAgo = new Date(now);
+            thirtyDaysAgo.setDate(now.getDate() - 30);
+            
+            return {
+              ...deck,
+              stats: {
+                due: dueCards,
+                new: newCards,
+                learning: learningCards,
+                review: reviewCards,
+                suspended: suspendedCards,
+                reviewedToday,
+                todayAccuracy,
+                retentionRate: 0, // Will be implemented in phase 6
+                currentStreak: 0, // Will be implemented in phase 4
+                estimatedMinutes: 0, // Will be implemented in phase 7
+              },
+            };
+          });
+        }
+
         return {
-          decks,
+          decks: decksWithStats,
           totalCount,
           hasMore: offset + limit < totalCount,
         };
@@ -412,6 +519,101 @@ export const deckRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to fetch deck statistics",
+          cause: error,
+        });
+      }
+    }),
+
+  // Get quick statistics for multiple decks
+  getQuickStats: protectedProcedure
+    .input(z.object({
+      deckIds: z.array(z.string().uuid()),
+    }))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const { deckIds } = input;
+
+      try {
+        const now = new Date();
+        const todayStart = new Date(now);
+        todayStart.setHours(0, 0, 0, 0);
+
+        // Batch fetch all data
+        const [cardStates, todayReviews] = await Promise.all([
+          ctx.db.cardState.findMany({
+            where: {
+              user_id: userId,
+              card: {
+                deck_id: { in: deckIds },
+              },
+            },
+            include: {
+              card: {
+                select: {
+                  deck_id: true,
+                },
+              },
+            },
+          }),
+          ctx.db.review.findMany({
+            where: {
+              user_id: userId,
+              reviewed_at: { gte: todayStart },
+              card: {
+                deck_id: { in: deckIds },
+              },
+            },
+            include: {
+              card: {
+                select: {
+                  deck_id: true,
+                },
+              },
+            },
+          }),
+        ]);
+
+        // Process stats by deck
+        const statsByDeck: Record<string, any> = {};
+        
+        for (const deckId of deckIds) {
+          const deckCardStates = cardStates.filter(cs => cs.card.deck_id === deckId);
+          const deckTodayReviews = todayReviews.filter(r => r.card.deck_id === deckId);
+
+          // Calculate due cards
+          const dueCards = deckCardStates.filter(cs => 
+            cs.state !== "SUSPENDED" && cs.due_date <= now
+          ).length;
+
+          // Calculate card state breakdown
+          const newCards = deckCardStates.filter(cs => cs.state === "NEW" && cs.due_date <= now).length;
+          const learningCards = deckCardStates.filter(cs => cs.state === "LEARNING" && cs.due_date <= now).length;
+          const reviewCards = deckCardStates.filter(cs => cs.state === "REVIEW" && cs.due_date <= now).length;
+
+          // Calculate today's activity
+          const reviewedToday = deckTodayReviews.length;
+          const successfulToday = deckTodayReviews.filter(r => 
+            r.rating === "GOOD" || r.rating === "EASY"
+          ).length;
+          const todayAccuracy = reviewedToday > 0 
+            ? Math.round((successfulToday / reviewedToday) * 100) 
+            : 0;
+
+          statsByDeck[deckId] = {
+            due: dueCards,
+            new: newCards,
+            learning: learningCards,
+            review: reviewCards,
+            reviewedToday,
+            todayAccuracy,
+          };
+        }
+
+        return statsByDeck;
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch quick statistics",
           cause: error,
         });
       }

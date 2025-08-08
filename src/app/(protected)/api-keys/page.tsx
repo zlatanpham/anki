@@ -35,6 +35,7 @@ import { format } from "date-fns";
 import { Copy, Key, RotateCw, Trash2, AlertCircle, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ApiExamples } from "@/components/api-examples";
 
 export default function ApiKeysPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -42,6 +43,7 @@ export default function ApiKeysPage() {
   const [newKeyName, setNewKeyName] = useState("");
   const [generatedKey, setGeneratedKey] = useState("");
   const [keyToCopy, setKeyToCopy] = useState("");
+  const [activeApiKey, setActiveApiKey] = useState<string | undefined>(undefined);
 
   const utils = api.useUtils();
   const { data: apiKeys, isLoading } = api.apiKey.list.useQuery();
@@ -51,6 +53,7 @@ export default function ApiKeysPage() {
     onSuccess: (data) => {
       setGeneratedKey(data.key);
       setKeyToCopy(data.key);
+      setActiveApiKey(data.key);
       setShowCreateDialog(false);
       setShowKeyDialog(true);
       setNewKeyName("");
@@ -79,6 +82,7 @@ export default function ApiKeysPage() {
     onSuccess: (data) => {
       setGeneratedKey(data.key);
       setKeyToCopy(data.key);
+      setActiveApiKey(data.key);
       setShowKeyDialog(true);
       void utils.apiKey.list.invalidate();
     },
@@ -248,6 +252,8 @@ export default function ApiKeysPage() {
         </CardContent>
       </Card>
 
+      {/* API Examples */}
+      <ApiExamples apiKey={activeApiKey} />
 
       {/* Create Key Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>

@@ -591,7 +591,10 @@ export default function StudyPage() {
                     </div>
                     <div className="mt-4">
                       <AnswerExplanation
-                        card={currentCard.card}
+                        cardId={currentCard.card.id}
+                        front={currentCard.card.front || ""}
+                        back={currentCard.card.back || ""}
+                        clozeText={currentCard.card.cloze_text}
                         key={`${currentCard.card.id}-${session.currentIndex}`}
                       />
                     </div>
@@ -630,7 +633,10 @@ export default function StudyPage() {
                   {session.showAnswer && (
                     <div className="mt-4">
                       <AnswerExplanation
-                        card={currentCard.card}
+                        cardId={currentCard.card.id}
+                        front={currentCard.card.front || ""}
+                        back={currentCard.card.back || ""}
+                        clozeText={currentCard.card.cloze_text}
                         key={`${currentCard.card.id}-${session.currentIndex}`}
                       />
                     </div>

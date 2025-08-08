@@ -23,7 +23,12 @@ interface AnswerExplanationProps {
   onClose?: () => void;
 }
 
-export type QuestionType = "eli5" | "example" | "importance" | "breakdown" | "custom";
+export type QuestionType =
+  | "eli5"
+  | "example"
+  | "importance"
+  | "breakdown"
+  | "custom";
 
 export interface ConversationItem {
   question: string;
@@ -43,9 +48,15 @@ export function AnswerExplanation({
   const isMobile = useIsMobile();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
-  const [currentExplanation, setCurrentExplanation] = useState<string | null>(null);
-  const [currentExplanationId, setCurrentExplanationId] = useState<string | null>(null);
-  const [conversationHistory, setConversationHistory] = useState<ConversationItem[]>([]);
+  const [currentExplanation, setCurrentExplanation] = useState<string | null>(
+    null,
+  );
+  const [currentExplanationId, setCurrentExplanationId] = useState<
+    string | null
+  >(null);
+  const [conversationHistory, setConversationHistory] = useState<
+    ConversationItem[]
+  >([]);
   const [suggestedFollowUps, setSuggestedFollowUps] = useState<string[]>([]);
 
   const explainMutation = api.ai.explainAnswer.useMutation({
@@ -53,19 +64,23 @@ export function AnswerExplanation({
       setCurrentExplanation(data.explanation);
       setCurrentExplanationId(data.id);
       setSuggestedFollowUps(data.suggestedFollowUps || []);
-      
+
       // Add to conversation history
-      const question = conversationHistory.length > 0 
-        ? conversationHistory[conversationHistory.length - 1].question 
-        : "Initial explanation";
-      
-      setConversationHistory(prev => [...prev, {
-        question,
-        answer: data.explanation,
-        questionType: "custom" as QuestionType,
-        id: data.id,
-        createdAt: new Date(),
-      }]);
+      const question =
+        conversationHistory.length > 0
+          ? conversationHistory[conversationHistory.length - 1].question
+          : "Initial explanation";
+
+      setConversationHistory((prev) => [
+        ...prev,
+        {
+          question,
+          answer: data.explanation,
+          questionType: "custom" as QuestionType,
+          id: data.id,
+          createdAt: new Date(),
+        },
+      ]);
     },
     onError: (error) => {
       toast.error(error.message || "Failed to generate explanation");
@@ -92,36 +107,42 @@ export function AnswerExplanation({
     }
   }, [isExpanded]);
 
-  const handlePresetSelect = useCallback((questionType: QuestionType) => {
-    const conversationContext = conversationHistory.map(item => ({
-      question: item.question,
-      answer: item.answer,
-    }));
+  const handlePresetSelect = useCallback(
+    (questionType: QuestionType) => {
+      const conversationContext = conversationHistory.map((item) => ({
+        question: item.question,
+        answer: item.answer,
+      }));
 
-    explainMutation.mutate({
-      cardId,
-      questionType,
-      conversationHistory: conversationContext,
-    });
+      explainMutation.mutate({
+        cardId,
+        questionType,
+        conversationHistory: conversationContext,
+      });
 
-    setShowOptions(false);
-  }, [cardId, conversationHistory, explainMutation]);
+      setShowOptions(false);
+    },
+    [cardId, conversationHistory, explainMutation],
+  );
 
-  const handleCustomQuestion = useCallback((question: string) => {
-    const conversationContext = conversationHistory.map(item => ({
-      question: item.question,
-      answer: item.answer,
-    }));
+  const handleCustomQuestion = useCallback(
+    (question: string) => {
+      const conversationContext = conversationHistory.map((item) => ({
+        question: item.question,
+        answer: item.answer,
+      }));
 
-    explainMutation.mutate({
-      cardId,
-      questionType: "custom",
-      customQuestion: question,
-      conversationHistory: conversationContext,
-    });
+      explainMutation.mutate({
+        cardId,
+        questionType: "custom",
+        customQuestion: question,
+        conversationHistory: conversationContext,
+      });
 
-    setShowOptions(false);
-  }, [cardId, conversationHistory, explainMutation]);
+      setShowOptions(false);
+    },
+    [cardId, conversationHistory, explainMutation],
+  );
 
   const handleSaveExplanation = useCallback(() => {
     if (currentExplanationId) {
@@ -131,25 +152,29 @@ export function AnswerExplanation({
     }
   }, [currentExplanationId, saveExplanationMutation]);
 
-  const handleFollowUpClick = useCallback((question: string) => {
-    handleCustomQuestion(question);
-  }, [handleCustomQuestion]);
+  const handleFollowUpClick = useCallback(
+    (question: string) => {
+      handleCustomQuestion(question);
+    },
+    [handleCustomQuestion],
+  );
 
   return (
     <div className={cn("mt-4", isMobile && "mt-3")}>
-      <ExplanationTrigger 
+      <ExplanationTrigger
         onClick={handleTriggerClick}
         isExpanded={isExpanded}
         isLoading={explainMutation.isPending}
       />
 
       {isExpanded && (
-        <Card className={cn(
-          "mt-3 overflow-hidden border-2",
-          explainMutation.isPending && "border-blue-200",
-          currentExplanation && "border-green-200"
-        )}>
-          <CardContent className={cn("p-4", isMobile && "p-3")}>
+        <Card
+          className={cn(
+            "mt-5 overflow-hidden border-none !p-0",
+            explainMutation.isPending && "border-blue-200",
+          )}
+        >
+          <CardContent className={cn("p-0")}>
             {showOptions && !currentExplanation && (
               <div className="space-y-4">
                 <PresetOptions onSelect={handlePresetSelect} />
@@ -158,12 +183,12 @@ export function AnswerExplanation({
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
+                    <span className="bg-background text-muted-foreground px-2">
                       Or ask a specific question
                     </span>
                   </div>
                 </div>
-                <CustomQuestionInput 
+                <CustomQuestionInput
                   onSubmit={handleCustomQuestion}
                   isLoading={explainMutation.isPending}
                 />
@@ -172,13 +197,13 @@ export function AnswerExplanation({
 
             {currentExplanation && (
               <div className="space-y-4">
-                <ExplanationDisplay 
+                <ExplanationDisplay
                   explanation={currentExplanation}
                   isLoading={explainMutation.isPending}
                 />
 
                 {conversationHistory.length > 1 && (
-                  <ConversationThread 
+                  <ConversationThread
                     history={conversationHistory}
                     onQuestionClick={handleFollowUpClick}
                   />
@@ -186,32 +211,30 @@ export function AnswerExplanation({
 
                 {suggestedFollowUps.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-muted-foreground">
+                    <p className="text-muted-foreground text-sm font-medium">
                       Suggested follow-up questions:
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {suggestedFollowUps.map((question, index) => (
-                        <Button
+                        <div
                           key={index}
-                          variant="outline"
-                          size="sm"
                           onClick={() => handleFollowUpClick(question)}
-                          className="text-xs"
+                          className="border-muted bg-muted hover:text-foreground cursor-pointer rounded-md border p-3 text-xs transition-colors"
                         >
                           {question}
-                        </Button>
+                        </div>
                       ))}
                     </div>
                   </div>
                 )}
 
-                <CustomQuestionInput 
+                <CustomQuestionInput
                   onSubmit={handleCustomQuestion}
                   isLoading={explainMutation.isPending}
                   placeholder="Ask a follow-up question..."
                 />
 
-                <ExplanationActions 
+                <ExplanationActions
                   onSave={handleSaveExplanation}
                   onNewExplanation={() => {
                     setCurrentExplanation(null);
@@ -227,8 +250,8 @@ export function AnswerExplanation({
             {explainMutation.isPending && !currentExplanation && (
               <div className="flex items-center justify-center py-8">
                 <div className="flex flex-col items-center space-y-3">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                  <p className="text-sm text-muted-foreground">
+                  <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
+                  <p className="text-muted-foreground text-sm">
                     Generating explanation...
                   </p>
                 </div>

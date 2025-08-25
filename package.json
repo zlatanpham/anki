@@ -1,5 +1,5 @@
 {
-  "name": "next-starter",
+  "name": "anki",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -12,7 +12,7 @@
     "db:pull": "prisma db pull",
     "db:studio": "prisma studio",
     "ui:add": "npx shadcn@latest add",
-    "dev": "next dev --turbo",
+    "dev": "next dev --turbo --port=3006",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "postinstall": "prisma generate && prisma migrate deploy",

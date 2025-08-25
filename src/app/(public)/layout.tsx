@@ -13,7 +13,7 @@ export default function RootLayout({
           <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
             <ComponentIcon className="size-4" />
           </div>
-          Anki AI
+          Anki
         </a>
         <Suspense fallback={null}>{children}</Suspense>
       </div>

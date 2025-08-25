@@ -118,7 +118,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Brain className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Anki AI</span>
+                  <span className="truncate font-medium">Anki</span>
                   <span className="truncate text-xs">Flashcard Learning</span>
                 </div>
               </Link>

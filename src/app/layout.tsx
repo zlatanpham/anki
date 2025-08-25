@@ -10,8 +10,8 @@ import { HydrateClient } from "@/trpc/server";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "Anki AI",
-  description: "Anki AI - Intelligent Flashcards for Effective Learning",
+  title: "Anki",
+  description: "Anki - Intelligent Flashcards for Effective Learning",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 

@@ -1,61 +1,73 @@
 {
-  "name": "Anki Flashcards",
-  "short_name": "Anki Flashcards",
+  "name": "Anki - Intelligent Flashcards",
+  "short_name": "Anki",
+  "description": "Intelligent spaced repetition flashcard learning with offline support and smart notifications",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/android-chrome-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icon-48x48.png",
       "sizes": "48x48",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icon-72x72.png",
       "sizes": "72x72",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icon-96x96.png",
       "sizes": "96x96",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icon-144x144.png",
       "sizes": "144x144",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icon-256x256.png",
       "sizes": "256x256",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icon-384x384.png",
       "sizes": "384x384",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icon-1024x1024.png",
       "sizes": "1024x1024",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/maskable-icon-192x192.png",
@@ -70,9 +82,96 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#000000",
-  "background_color": "#000000",
+  "theme_color": "#2563eb",
+  "background_color": "#ffffff",
   "display": "standalone",
   "start_url": "/",
-  "scope": "/"
+  "scope": "/",
+  "orientation": "portrait-primary",
+  "lang": "en-US",
+  "dir": "ltr",
+  
+  "shortcuts": [
+    {
+      "name": "Start Study Session",
+      "short_name": "Study",
+      "description": "Begin reviewing due cards",
+      "url": "/study",
+      "icons": [
+        {
+          "src": "/icon-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "View Decks",
+      "short_name": "Decks",
+      "description": "Browse your flashcard decks",
+      "url": "/decks",
+      "icons": [
+        {
+          "src": "/icon-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Statistics",
+      "short_name": "Stats",
+      "description": "View learning progress and statistics",
+      "url": "/stats",
+      "icons": [
+        {
+          "src": "/icon-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  
+  "categories": ["education", "productivity", "learning"],
+  
+  "prefer_related_applications": false,
+  
+  "display_override": ["window-controls-overlay", "standalone", "browser"],
+  
+  "protocol_handlers": [
+    {
+      "protocol": "anki",
+      "url": "/import?url=%s"
+    }
+  ],
+  
+  "share_target": {
+    "action": "/import",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "deck_file",
+          "accept": [".apkg", ".txt", ".csv", ".json"]
+        }
+      ]
+    }
+  },
+  
+  "file_handlers": [
+    {
+      "action": "/import",
+      "accept": {
+        "application/vnd.anki": [".apkg"],
+        "text/plain": [".txt"],
+        "text/csv": [".csv"],
+        "application/json": [".json"]
+      }
+    }
+  ]
 }

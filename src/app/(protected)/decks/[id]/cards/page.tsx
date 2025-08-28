@@ -116,7 +116,7 @@ export default function DeckCardsPage() {
     clozeText: "",
     tags: "",
   });
-  const [selectedCard, setSelectedCard] = useState<(typeof cardsData)["cards"][0] | null>(null);
+  const [selectedCard, setSelectedCard] = useState<(NonNullable<typeof cardsData>["cards"][0]) | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // Get deck details
@@ -201,7 +201,7 @@ export default function DeckCardsPage() {
 
   // Get card with reviews query
   const { data: cardWithReviews } = api.card.getByIdWithReviews.useQuery(
-    { id: selectedCard?.id || "" },
+    { id: selectedCard?.id ?? "" },
     { enabled: !!selectedCard?.id }
   );
 
@@ -321,7 +321,7 @@ export default function DeckCardsPage() {
         <div className="text-center py-12">
           <h2 className="text-2xl font-bold mb-2">Deck not found</h2>
           <p className="text-muted-foreground mb-4">
-            The deck you're looking for doesn't exist or you don't have access to it.
+            The deck you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.
           </p>
           <Link href="/decks">
             <Button>Back to Decks</Button>

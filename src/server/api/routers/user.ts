@@ -10,6 +10,15 @@ import { sendPasswordResetEmail } from "@/lib/email";
 import { env } from "@/env.js";
 
 export const userRouter = createTRPCRouter({
+  // Debug endpoint to check authentication status
+  me: protectedProcedure
+    .query(async ({ ctx }) => {
+      return {
+        user: ctx.session.user,
+        isAuthenticated: true
+      };
+    }),
+
   updateName: protectedProcedure
     .input(z.object({ name: z.string().min(2) }))
     .mutation(async ({ ctx, input }) => {

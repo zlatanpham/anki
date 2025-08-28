@@ -1,7 +1,7 @@
 import { google } from "@ai-sdk/google";
 import { openai } from "@ai-sdk/openai";
 import { anthropic } from "@ai-sdk/anthropic";
-import { generateText, generateObject, type LanguageModel } from "ai";
+import { generateText, generateObject } from "ai";
 import { z } from "zod";
 import { env } from "@/env";
 import { TRPCError } from "@trpc/server";
@@ -106,7 +106,7 @@ export interface GrammarCorrection {
 }
 
 export class AICardService {
-  private model: LanguageModel;
+  private model: any;
   private maxCards: number;
   private userId?: string;
   private organizationId?: string | null;

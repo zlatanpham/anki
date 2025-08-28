@@ -82,6 +82,15 @@ model User {
     AIUsageAnalytics       AIUsageAnalytics[]
     CardExplanation        CardExplanation[]
     ApiKey                 ApiKey[]
+    
+    // PWA and Push Notification relationships
+    pushSubscriptions      PushSubscription[]
+    notificationPreferences NotificationPreferences?
+    notificationSchedules  NotificationSchedule[]
+    notificationLogs       NotificationLog[]
+    pwaInstallPrompts      PWAInstallPrompt[]
+    studyStreak            StudyStreak?
+    notificationAnalytics  NotificationAnalytics[]
 }
 
 model VerificationToken {
@@ -128,6 +137,10 @@ model Deck {
     organization    Organization? @relation(fields: [organization_id], references: [id], onDelete: SetNull)
     cards           Card[]
     AIGeneration    AIGeneration[]
+    
+    // PWA and Push Notification relationships
+    notificationSchedules NotificationSchedule[]
+    notificationLogs      NotificationLog[]
     
     @@index([user_id])
     @@index([organization_id])
@@ -339,4 +352,203 @@ model ApiUsageLog {
     
     @@index([apiKeyId, createdAt])
     @@index([endpoint, createdAt])
+}
+
+// PWA and Push Notification Models
+
+enum NotificationType {
+    DUE_CARDS
+    STREAK_PROTECTION
+    MILESTONE
+    DECK_SPECIFIC
+}
+
+enum NotificationStatus {
+    PENDING
+    SENT
+    DELIVERED
+    FAILED
+    CANCELLED
+}
+
+model PushSubscription {
+    id              String    @id @default(cuid())
+    userId          String
+    endpoint        String    @unique @db.Text
+    auth            String    @db.Text
+    p256dh          String    @db.Text
+    userAgent       String?   @db.Text
+    isActive        Boolean   @default(true)
+    createdAt       DateTime  @default(now())
+    lastUsedAt      DateTime  @default(now())
+    
+    user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    notifications   NotificationLog[]
+    
+    @@index([userId])
+    @@index([isActive])
+}
+
+model NotificationPreferences {
+    id                      String    @id @default(cuid())
+    userId                  String    @unique
+    isEnabled               Boolean   @default(true)
+    
+    // Notification types
+    dueCardsEnabled         Boolean   @default(true)
+    streakProtectionEnabled Boolean   @default(true)
+    milestoneEnabled        Boolean   @default(true)
+    deckSpecificEnabled     Boolean   @default(false)
+    
+    // Timing preferences
+    preferredTime           String?   @db.VarChar(5) // HH:MM format
+    timeZone                String    @default("UTC") @db.VarChar(50)
+    quietHoursStart         String?   @db.VarChar(5) // HH:MM format
+    quietHoursEnd           String?   @db.VarChar(5) // HH:MM format
+    
+    // Frequency limits
+    maxDailyNotifications   Int       @default(1)
+    minIntervalMinutes      Int       @default(60) // Minimum interval between notifications
+    
+    // Deck-specific preferences
+    deckNotifications       Json?     // {deckId: {enabled: boolean, threshold: number}}
+    
+    createdAt               DateTime  @default(now())
+    updatedAt               DateTime  @updatedAt
+    
+    user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    
+    @@index([userId])
+}
+
+model NotificationSchedule {
+    id              String            @id @default(cuid())
+    userId          String
+    type            NotificationType
+    scheduledFor    DateTime          @db.Timestamptz(6)
+    isProcessed     Boolean           @default(false)
+    isActive        Boolean           @default(true)
+    
+    // Context data
+    deckId          String?           @db.Uuid
+    cardCount       Int?
+    streakDays      Int?
+    milestoneData   Json?             // Flexible milestone information
+    
+    // Scheduling metadata
+    createdAt       DateTime          @default(now())
+    processedAt     DateTime?
+    cancelledAt     DateTime?
+    
+    user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+    deck            Deck?             @relation(fields: [deckId], references: [id], onDelete: SetNull)
+    logs            NotificationLog[]  // Reverse relation
+    
+    @@index([userId, scheduledFor])
+    @@index([scheduledFor, isProcessed])
+    @@index([type, scheduledFor])
+}
+
+model NotificationLog {
+    id                  String              @id @default(cuid())
+    userId              String
+    subscriptionId      String
+    type                NotificationType
+    status              NotificationStatus  @default(PENDING)
+    
+    // Notification content
+    title               String              @db.VarChar(255)
+    body                String              @db.Text
+    data                Json?               // Additional payload data
+    
+    // Delivery tracking
+    sentAt              DateTime?
+    deliveredAt         DateTime?
+    failedAt            DateTime?
+    errorMessage        String?             @db.Text
+    
+    // Context
+    deckId              String?             @db.Uuid
+    scheduleId          String?
+    
+    createdAt           DateTime            @default(now())
+    
+    user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+    subscription        PushSubscription    @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+    deck                Deck?               @relation(fields: [deckId], references: [id], onDelete: SetNull)
+    schedule            NotificationSchedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+    
+    @@index([userId, createdAt])
+    @@index([subscriptionId, createdAt])
+    @@index([type, createdAt])
+    @@index([status, createdAt])
+}
+
+model PWAInstallPrompt {
+    id              String    @id @default(cuid())
+    userId          String
+    prompted        Boolean   @default(false)
+    installed       Boolean   @default(false)
+    dismissed       Boolean   @default(false)
+    userAgent       String?   @db.Text
+    platform        String?   @db.VarChar(50)
+    
+    promptedAt      DateTime?
+    installedAt     DateTime?
+    dismissedAt     DateTime?
+    createdAt       DateTime  @default(now())
+    
+    user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    
+    @@index([userId])
+    @@index([installed])
+}
+
+model StudyStreak {
+    id              String    @id @default(cuid())
+    userId          String
+    currentStreak   Int       @default(0)
+    longestStreak   Int       @default(0)
+    lastStudyDate   DateTime?
+    streakStartDate DateTime?
+    
+    // Milestone tracking
+    lastMilestone   Int       @default(0) // Last milestone achieved (days)
+    totalStudyDays  Int       @default(0)
+    
+    createdAt       DateTime  @default(now())
+    updatedAt       DateTime  @updatedAt
+    
+    user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    
+    @@unique([userId])
+    @@index([currentStreak])
+    @@index([longestStreak])
+}
+
+model NotificationAnalytics {
+    id                  String              @id @default(cuid())
+    userId              String
+    type                NotificationType
+    period              String              @db.VarChar(10) // daily, weekly, monthly
+    periodStart         DateTime            @db.Timestamptz(6)
+    periodEnd           DateTime            @db.Timestamptz(6)
+    
+    // Metrics
+    totalSent           Int                 @default(0)
+    totalDelivered      Int                 @default(0)
+    totalFailed         Int                 @default(0)
+    totalClicked        Int                 @default(0)
+    
+    // Effectiveness metrics
+    studySessionsAfter  Int                 @default(0) // Study sessions within 1 hour of notification
+    cardsReviewedAfter  Int                 @default(0) // Cards reviewed within 1 hour
+    
+    createdAt           DateTime            @default(now())
+    
+    user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+    
+    @@unique([userId, type, period, periodStart])
+    @@index([userId, periodStart])
+    @@index([type, periodStart])
 }

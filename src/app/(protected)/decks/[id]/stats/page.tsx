@@ -17,7 +17,6 @@ import { api } from "@/trpc/react";
 import Link from "next/link";
 import {
   ArrowLeft,
-  TrendingUp,
   Clock,
   Target,
   Calendar,
@@ -42,13 +41,9 @@ import {
   Cell,
   BarChart,
   Bar,
-  LineChart,
-  Line,
 } from "recharts";
 
 type TimePeriod = "today" | "week" | "month" | "all";
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 export default function DeckStatsPage() {
   const params = useParams();
@@ -72,9 +67,9 @@ export default function DeckStatsPage() {
   });
 
   // Get card performance data
-  const { data: cardPerformance } = api.study.getDeckCardPerformance.useQuery({
-    deckId,
-  });
+  // const { data: cardPerformance } = api.study.getDeckCardPerformance.useQuery({
+  //   deckId,
+  // });
 
   // Get review distribution
   const { data: reviewDistribution } = api.study.getDeckReviewDistribution.useQuery({
@@ -89,7 +84,7 @@ export default function DeckStatsPage() {
           <CardContent className="p-6 text-center">
             <h2 className="text-xl font-semibold mb-2">Deck Not Found</h2>
             <p className="text-muted-foreground mb-4">
-              The deck you're looking for doesn't exist or you don't have access to it.
+              The deck you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.
             </p>
             <Button onClick={() => router.push("/decks")}>
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -118,18 +113,18 @@ export default function DeckStatsPage() {
     if (!reviewDistribution) return [];
     
     return [
-      { name: 'Again', value: reviewDistribution.again || 0, color: '#FF6B6B' },
-      { name: 'Hard', value: reviewDistribution.hard || 0, color: '#FFA726' },
-      { name: 'Good', value: reviewDistribution.good || 0, color: '#66BB6A' },
-      { name: 'Easy', value: reviewDistribution.easy || 0, color: '#42A5F5' },
+      { name: 'Again', value: reviewDistribution.again ?? 0, color: '#FF6B6B' },
+      { name: 'Hard', value: reviewDistribution.hard ?? 0, color: '#FFA726' },
+      { name: 'Good', value: reviewDistribution.good ?? 0, color: '#66BB6A' },
+      { name: 'Easy', value: reviewDistribution.easy ?? 0, color: '#42A5F5' },
     ].filter(item => item.value > 0);
   };
 
   const prepareCardTypeData = () => {
     if (!deck.cards) return [];
     
-    const basicCards = deck.cards.filter((card: any) => card.card_type === 'BASIC').length;
-    const clozeCards = deck.cards.filter((card: any) => card.card_type === 'CLOZE').length;
+    const basicCards = deck.cards.filter((card: { card_type: string }) => card.card_type === 'BASIC').length;
+    const clozeCards = deck.cards.filter((card: { card_type: string }) => card.card_type === 'CLOZE').length;
     
     return [
       { name: 'Basic Cards', value: basicCards, color: '#0088FE' },
@@ -186,7 +181,7 @@ export default function DeckStatsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Cards</p>
-                <p className="text-2xl font-bold">{deck.cards?.length || 0}</p>
+                <p className="text-2xl font-bold">{deck.cards?.length ?? 0}</p>
               </div>
               <FileText className="w-8 h-8 text-blue-600" />
             </div>
@@ -199,7 +194,7 @@ export default function DeckStatsPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Reviews</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {deckStats?.totalReviews || 0}
+                  {deckStats?.totalReviews ?? 0}
                 </p>
               </div>
               <CheckCircle className="w-8 h-8 text-green-600" />
@@ -325,7 +320,7 @@ export default function DeckStatsPage() {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Description</label>
-                    <p className="text-sm">{deck.description || 'No description provided'}</p>
+                    <p className="text-sm">{deck.description ?? 'No description provided'}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Visibility</label>
@@ -345,7 +340,7 @@ export default function DeckStatsPage() {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Total Cards</label>
-                    <p className="text-lg font-semibold">{deck.cards?.length || 0}</p>
+                    <p className="text-lg font-semibold">{deck.cards?.length ?? 0}</p>
                   </div>
                 </div>
               </div>
@@ -397,7 +392,7 @@ export default function DeckStatsPage() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" />
                     <YAxis />
-                    <Tooltip formatter={(value) => [`${value} minutes`, 'Study Time']} />
+                    <Tooltip formatter={(value: number) => [`${value} minutes`, 'Study Time']} />
                     <Bar dataKey="timeSpent" fill="#82ca9d" name="Study Time (minutes)" />
                   </BarChart>
                 </ResponsiveContainer>
@@ -428,13 +423,13 @@ export default function DeckStatsPage() {
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Cards Mastered</span>
                   <Badge variant="outline">
-                    {deckStats?.masteredCards || 0}
+                    {deckStats?.masteredCards ?? 0}
                   </Badge>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Cards Learning</span>
                   <Badge variant="outline">
-                    {deckStats?.learningCards || 0}
+                    {deckStats?.learningCards ?? 0}
                   </Badge>
                 </div>
               </CardContent>
@@ -449,7 +444,7 @@ export default function DeckStatsPage() {
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <Flame className="w-8 h-8 text-orange-500" />
                     <span className="text-3xl font-bold text-orange-500">
-                      {deckStats?.currentStreak || 0}
+                      {deckStats?.currentStreak ?? 0}
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground">Current Streak (days)</p>
@@ -457,11 +452,11 @@ export default function DeckStatsPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-sm">Best Streak</span>
-                    <span className="text-sm font-medium">{deckStats?.bestStreak || 0} days</span>
+                    <span className="text-sm font-medium">{deckStats?.bestStreak ?? 0} days</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Study Days</span>
-                    <span className="text-sm font-medium">{deckStats?.studyDays || 0} days</span>
+                    <span className="text-sm font-medium">{deckStats?.studyDays ?? 0} days</span>
                   </div>
                 </div>
               </CardContent>
@@ -480,7 +475,7 @@ export default function DeckStatsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
-                  {(deckStats?.totalReviews || 0) >= 100 && (
+                  {(deckStats?.totalReviews ?? 0) >= 100 && (
                     <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg">
                       <Award className="w-6 h-6 text-yellow-600" />
                       <div>
@@ -489,7 +484,7 @@ export default function DeckStatsPage() {
                       </div>
                     </div>
                   )}
-                  {(deckStats?.currentStreak || 0) >= 7 && (
+                  {(deckStats?.currentStreak ?? 0) >= 7 && (
                     <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
                       <Flame className="w-6 h-6 text-orange-600" />
                       <div>
@@ -498,7 +493,7 @@ export default function DeckStatsPage() {
                       </div>
                     </div>
                   )}
-                  {(deckStats?.accuracy || 0) >= 90 && (
+                  {(deckStats?.accuracy ?? 0) >= 90 && (
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
                       <Target className="w-6 h-6 text-green-600" />
                       <div>
@@ -522,7 +517,7 @@ export default function DeckStatsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
-                  {(deckStats?.accuracy || 0) < 70 && (
+                  {(deckStats?.accuracy ?? 0) < 70 && (
                     <div className="p-3 bg-red-50 rounded-lg">
                       <p className="font-medium text-red-900">Focus on Accuracy</p>
                       <p className="text-sm text-red-700">
@@ -530,7 +525,7 @@ export default function DeckStatsPage() {
                       </p>
                     </div>
                   )}
-                  {(deckStats?.currentStreak || 0) === 0 && (
+                  {(deckStats?.currentStreak ?? 0) === 0 && (
                     <div className="p-3 bg-blue-50 rounded-lg">
                       <p className="font-medium text-blue-900">Build a Study Habit</p>
                       <p className="text-sm text-blue-700">
@@ -538,19 +533,19 @@ export default function DeckStatsPage() {
                       </p>
                     </div>
                   )}
-                  {(deckStats?.totalReviews || 0) < 10 && (
+                  {(deckStats?.totalReviews ?? 0) < 10 && (
                     <div className="p-3 bg-purple-50 rounded-lg">
                       <p className="font-medium text-purple-900">Get Started</p>
                       <p className="text-sm text-purple-700">
-                        You're just getting started! Try to complete at least 10 reviews to see your progress.
+                        You&apos;re just getting started! Try to complete at least 10 reviews to see your progress.
                       </p>
                     </div>
                   )}
-                  {(deckStats?.accuracy || 0) >= 90 && (deckStats?.currentStreak || 0) >= 7 && (
+                  {(deckStats?.accuracy ?? 0) >= 90 && (deckStats?.currentStreak ?? 0) >= 7 && (
                     <div className="p-3 bg-green-50 rounded-lg">
                       <p className="font-medium text-green-900">Excellent Progress!</p>
                       <p className="text-sm text-green-700">
-                        You're doing great! Keep up the consistent study habit.
+                        You&apos;re doing great! Keep up the consistent study habit.
                       </p>
                     </div>
                   )}

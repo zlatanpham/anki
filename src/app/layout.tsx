@@ -8,6 +8,7 @@ import { SessionProvider } from "next-auth/react";
 
 import { HydrateClient } from "@/trpc/server";
 import { Toaster } from "@/components/ui/sonner";
+import { PWAProvider } from "@/components/pwa/PWAProvider";
 
 export const metadata: Metadata = {
   title: "Anki",
@@ -61,12 +62,20 @@ export default function RootLayout({
 
         <link rel="manifest" href="/manifest.json" />
 
-        <meta name="theme-color" content="#000000" />
+        <meta name="theme-color" content="#2563eb" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Anki" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="msapplication-config" content="/browserconfig.xml" />
+        <meta name="msapplication-TileColor" content="#2563eb" />
       </head>
       <body>
         <SessionProvider>
           <TRPCReactProvider>
-            <HydrateClient>{children}</HydrateClient>
+            <PWAProvider>
+              <HydrateClient>{children}</HydrateClient>
+            </PWAProvider>
           </TRPCReactProvider>
         </SessionProvider>
         <Toaster />

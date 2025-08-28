@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - Anki</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 500px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px 30px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 30px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+
+    p {
+      font-size: 1.1rem;
+      margin-bottom: 30px;
+      opacity: 0.9;
+      line-height: 1.6;
+    }
+
+    .features {
+      text-align: left;
+      margin: 30px 0;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 25px;
+    }
+
+    .features h3 {
+      font-size: 1.3rem;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .features ul {
+      list-style: none;
+    }
+
+    .features li {
+      margin: 10px 0;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+    }
+
+    .features li:last-child {
+      border-bottom: none;
+    }
+
+    .features li::before {
+      content: "✓";
+      margin-right: 10px;
+      color: #4ade80;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 25px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: #fff;
+      color: #667eea;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .status {
+      margin-top: 30px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      font-size: 0.9rem;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+
+    .offline {
+      background: #ef4444;
+      animation: pulse 2s infinite;
+    }
+
+    .online {
+      background: #4ade80;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 30px 20px;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">📚</div>
+    <h1>You're Offline</h1>
+    <p>Don't worry! Anki works offline too. You can still review your cached flashcards and continue learning.</p>
+    
+    <div class="features">
+      <h3>Available Offline Features:</h3>
+      <ul>
+        <li>Review previously loaded flashcards</li>
+        <li>Study with cached decks</li>
+        <li>Progress tracking (syncs when online)</li>
+        <li>Browse your study statistics</li>
+      </ul>
+    </div>
+
+    <div class="button-group">
+      <a href="/study" class="btn btn-primary">Continue Studying</a>
+      <a href="/decks" class="btn btn-secondary">View Decks</a>
+    </div>
+
+    <div class="status">
+      <span class="status-dot offline" id="statusDot"></span>
+      <span id="statusText">You are currently offline</span>
+    </div>
+  </div>
+
+  <script>
+    // Monitor online/offline status
+    function updateConnectionStatus() {
+      const statusDot = document.getElementById('statusDot');
+      const statusText = document.getElementById('statusText');
+      
+      if (navigator.onLine) {
+        statusDot.className = 'status-dot online';
+        statusText.textContent = 'Connection restored! Redirecting...';
+        
+        // Redirect to main app when back online
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 2000);
+      } else {
+        statusDot.className = 'status-dot offline';
+        statusText.textContent = 'You are currently offline';
+      }
+    }
+
+    // Check connection status on page load
+    updateConnectionStatus();
+
+    // Listen for online/offline events
+    window.addEventListener('online', updateConnectionStatus);
+    window.addEventListener('offline', updateConnectionStatus);
+
+    // Retry connection periodically
+    setInterval(() => {
+      if (!navigator.onLine) {
+        // Try to fetch a small resource to check real connectivity
+        fetch('/favicon.ico', { 
+          method: 'HEAD',
+          cache: 'no-cache'
+        }).then(() => {
+          // If successful, we're actually online
+          if (!navigator.onLine) {
+            window.dispatchEvent(new Event('online'));
+          }
+        }).catch(() => {
+          // Still offline
+        });
+      }
+    }, 30000); // Check every 30 seconds
+  </script>
+</body>
+</html>

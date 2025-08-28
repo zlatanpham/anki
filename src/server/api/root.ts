@@ -13,6 +13,8 @@ import { studyRouter } from "./routers/study";
 import { importRouter } from "./routers/import";
 import { aiRouter } from "./routers/ai";
 import { apiKeyRouter } from "./routers/apiKey";
+import { pwaRouter } from "./routers/pwa";
+import { notificationsRouter } from "./routers/notifications";
 
 export const appRouter = createTRPCRouter({
   organization: organizationRouter,
@@ -23,6 +25,8 @@ export const appRouter = createTRPCRouter({
   import: importRouter,
   ai: aiRouter,
   apiKey: apiKeyRouter,
+  pwa: pwaRouter,
+  notifications: notificationsRouter,
 });
 
 // export type definition of API

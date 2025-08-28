@@ -36,7 +36,14 @@ import { cn } from "@/lib/utils";
 import { AnswerExplanation } from "@/components/study/AnswerExplanation";
 
 interface StudySession {
-  cards: any[];
+  cards: Array<{
+    id: string;
+    card_type: string;
+    front: string;
+    back?: string | null;
+    cloze_text?: string | null;
+    tags?: string[];
+  }>;
   currentIndex: number;
   showAnswer: boolean;
   startTime: Date;
@@ -79,7 +86,7 @@ export default function DeckStudyPage() {
   // Submit review mutation
   const submitReview = api.study.submitReview.useMutation({
     onError: (error, variables) => {
-      toast.error(error.message || "Failed to submit review");
+      toast.error(error.message ?? "Failed to submit review");
 
       // Rollback on error: go back to previous card
       if (session) {
@@ -155,7 +162,7 @@ export default function DeckStudyPage() {
     setSession((prev) => (prev ? { ...prev, showAnswer: true } : null));
   }, []);
 
-  const submitCardReview = (rating: ReviewRating) => {
+  const submitCardReview = useCallback((rating: ReviewRating) => {
     if (!session || !responseStartTime) return;
 
     const currentCard = session.cards[session.currentIndex];
@@ -198,11 +205,11 @@ export default function DeckStudyPage() {
       rating,
       responseTime,
     });
-  };
+  }, [session, responseStartTime, submitReview]);
 
-  const togglePause = () => {
+  const togglePause = useCallback(() => {
     setIsPaused(!isPaused);
-  };
+  }, [isPaused]);
 
   const resetSession = () => {
     // Set a flag to indicate study session was reset/ended
@@ -296,7 +303,7 @@ export default function DeckStudyPage() {
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
                   <Link href={`/decks/${deckId}/cards`}>
-                    {deck?.name || "Deck"}
+                    {deck?.name ?? "Deck"}
                   </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -564,7 +571,7 @@ export default function DeckStudyPage() {
             <Pause className="text-muted-foreground mx-auto mb-4 h-16 w-16" />
             <h2 className="mb-2 text-xl font-semibold">Study Paused</h2>
             <p className="text-muted-foreground mb-4">
-              Take a break and resume when you're ready.
+              Take a break and resume when you&apos;re ready.
             </p>
             <Button onClick={togglePause}>
               <Play className="mr-2 h-4 w-4" />
@@ -593,9 +600,9 @@ export default function DeckStudyPage() {
           <CardContent className="min-h-[300px]">
             {currentCard.card_type === "CLOZE" ? (
               <ClozeDisplay
-                clozeText={currentCard.cloze_text || ""}
+                clozeText={currentCard.cloze_text ?? ""}
                 front={currentCard.front}
-                back={currentCard.back || ""}
+                back={currentCard.back ?? ""}
                 showAnswer={session.showAnswer}
                 onShowAnswer={showAnswer}
               />
@@ -657,7 +664,7 @@ export default function DeckStudyPage() {
               <AnswerExplanation
                 cardId={currentCard.id}
                 front={currentCard.front}
-                back={currentCard.back || ""}
+                back={currentCard.back ?? ""}
                 clozeText={currentCard.cloze_text}
               />
             )}

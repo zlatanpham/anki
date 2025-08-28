@@ -12,6 +12,7 @@ import {
   Play,
   Search,
   Key,
+  Settings,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -53,6 +54,11 @@ const data = {
           title: "API Keys",
           url: "/api-keys",
           icon: Key,
+        },
+        {
+          title: "Settings",
+          url: "/settings",
+          icon: Settings,
         },
       ],
     },

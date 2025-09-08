@@ -42,6 +42,7 @@ import {
   Bar,
 } from "recharts";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 type TimePeriod = "today" | "week" | "month" | "all";
 
@@ -197,11 +198,19 @@ export default function StatisticsPage() {
       )}
 
       {/* Filters - Responsive layout */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground">Period:</span>
+      <div className={cn(
+        "flex gap-3 mb-6",
+        isMobile ? "flex-col" : "flex-row sm:gap-4"
+      )}>
+        <div className={cn(
+          "flex items-center gap-2",
+          isMobile && "flex-1"
+        )}>
+          <span className="text-sm font-medium text-muted-foreground shrink-0">Period:</span>
           <Select value={selectedPeriod} onValueChange={(value: TimePeriod) => setSelectedPeriod(value)}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className={cn(
+              isMobile ? "flex-1 min-w-0" : "w-32"
+            )}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -213,10 +222,15 @@ export default function StatisticsPage() {
           </Select>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground">Deck:</span>
+        <div className={cn(
+          "flex items-center gap-2",
+          isMobile && "flex-1"
+        )}>
+          <span className="text-sm font-medium text-muted-foreground shrink-0">Deck:</span>
           <Select value={selectedDeck} onValueChange={setSelectedDeck}>
-            <SelectTrigger className="w-full sm:w-48">
+            <SelectTrigger className={cn(
+              isMobile ? "flex-1 min-w-0" : "w-48"
+            )}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -302,12 +316,52 @@ export default function StatisticsPage() {
       <Tabs defaultValue="activity" className={`space-y-6 transition-opacity duration-200 ${
         isFetchingStats || isFetchingDue ? 'opacity-50' : 'opacity-100'
       }`}>
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
-          <TabsTrigger value="activity" className="text-xs sm:text-sm">Activity</TabsTrigger>
-          <TabsTrigger value="performance" className="text-xs sm:text-sm">Performance</TabsTrigger>
-          <TabsTrigger value="cards" className="text-xs sm:text-sm">Cards</TabsTrigger>
-          <TabsTrigger value="insights" className="text-xs sm:text-sm">Insights</TabsTrigger>
-        </TabsList>
+        <div className={cn(
+          "overflow-x-auto",
+          isMobile && "-mx-4 px-4"
+        )}>
+          <TabsList className={cn(
+            "inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground",
+            isMobile ? "w-max min-w-full" : "grid w-full grid-cols-4"
+          )}>
+            <TabsTrigger 
+              value="activity" 
+              className={cn(
+                "text-xs sm:text-sm",
+                isMobile && "px-3 whitespace-nowrap"
+              )}
+            >
+              Activity
+            </TabsTrigger>
+            <TabsTrigger 
+              value="performance" 
+              className={cn(
+                "text-xs sm:text-sm",
+                isMobile && "px-3 whitespace-nowrap"
+              )}
+            >
+              Performance
+            </TabsTrigger>
+            <TabsTrigger 
+              value="cards" 
+              className={cn(
+                "text-xs sm:text-sm",
+                isMobile && "px-3 whitespace-nowrap"
+              )}
+            >
+              Cards
+            </TabsTrigger>
+            <TabsTrigger 
+              value="insights" 
+              className={cn(
+                "text-xs sm:text-sm",
+                isMobile && "px-3 whitespace-nowrap"
+              )}
+            >
+              Insights
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="activity" className="space-y-6">
           <div className="grid gap-6 lg:grid-cols-2">
@@ -315,12 +369,32 @@ export default function StatisticsPage() {
               <CardHeader>
                 <CardTitle>Daily Activity</CardTitle>
               </CardHeader>
-              <CardContent className="px-2 sm:px-6">
+              <CardContent className={cn(
+                isMobile ? "px-1 sm:px-6" : "px-2 sm:px-6"
+              )}>
                 <ResponsiveContainer width="100%" height={isMobile ? 200 : 300}>
-                  <AreaChart data={activityData}>
+                  <AreaChart 
+                    data={activityData}
+                    margin={{
+                      top: 5,
+                      right: isMobile ? 5 : 30,
+                      left: isMobile ? 0 : 20,
+                      bottom: 5
+                    }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" tick={{ fontSize: isMobile ? 10 : 12 }} />
-                    <YAxis tick={{ fontSize: isMobile ? 10 : 12 }} />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fontSize: isMobile ? 10 : 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis 
+                      tick={{ fontSize: isMobile ? 10 : 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                      width={isMobile ? 25 : 40}
+                    />
                     <Tooltip />
                     <Area
                       type="monotone"
@@ -338,12 +412,33 @@ export default function StatisticsPage() {
               <CardHeader>
                 <CardTitle>Daily Accuracy</CardTitle>
               </CardHeader>
-              <CardContent className="px-2 sm:px-6">
+              <CardContent className={cn(
+                isMobile ? "px-1 sm:px-6" : "px-2 sm:px-6"
+              )}>
                 <ResponsiveContainer width="100%" height={isMobile ? 200 : 300}>
-                  <AreaChart data={activityData}>
+                  <AreaChart 
+                    data={activityData}
+                    margin={{
+                      top: 5,
+                      right: isMobile ? 5 : 30,
+                      left: isMobile ? 0 : 20,
+                      bottom: 5
+                    }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" tick={{ fontSize: isMobile ? 10 : 12 }} />
-                    <YAxis domain={[0, 100]} tick={{ fontSize: isMobile ? 10 : 12 }} />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fontSize: isMobile ? 10 : 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis 
+                      domain={[0, 100]} 
+                      tick={{ fontSize: isMobile ? 10 : 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                      width={isMobile ? 25 : 40}
+                    />
                     <Tooltip formatter={(value) => [`${value}%`, "Accuracy"]} />
                     <Area
                       type="monotone"
@@ -365,9 +460,18 @@ export default function StatisticsPage() {
               <CardHeader>
                 <CardTitle>Review Ratings Distribution</CardTitle>
               </CardHeader>
-              <CardContent className="px-2 sm:px-6">
+              <CardContent className={cn(
+                isMobile ? "px-1 sm:px-6" : "px-2 sm:px-6"
+              )}>
                 <ResponsiveContainer width="100%" height={isMobile ? 200 : 300}>
-                  <RechartsPieChart>
+                  <RechartsPieChart
+                    margin={{
+                      top: 5,
+                      right: 5,
+                      left: 5,
+                      bottom: 5
+                    }}
+                  >
                     <Pie
                       data={performanceData}
                       cx="50%"
@@ -433,12 +537,32 @@ export default function StatisticsPage() {
               <CardHeader>
                 <CardTitle>Card States</CardTitle>
               </CardHeader>
-              <CardContent className="px-2 sm:px-6">
+              <CardContent className={cn(
+                isMobile ? "px-1 sm:px-6" : "px-2 sm:px-6"
+              )}>
                 <ResponsiveContainer width="100%" height={isMobile ? 200 : 300}>
-                  <BarChart data={cardStateData}>
+                  <BarChart 
+                    data={cardStateData}
+                    margin={{
+                      top: 5,
+                      right: isMobile ? 5 : 30,
+                      left: isMobile ? 0 : 20,
+                      bottom: 5
+                    }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" tick={{ fontSize: isMobile ? 10 : 12 }} />
-                    <YAxis tick={{ fontSize: isMobile ? 10 : 12 }} />
+                    <XAxis 
+                      dataKey="name" 
+                      tick={{ fontSize: isMobile ? 10 : 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis 
+                      tick={{ fontSize: isMobile ? 10 : 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                      width={isMobile ? 25 : 40}
+                    />
                     <Tooltip />
                     <Bar dataKey="value" fill="#8884d8" />
                   </BarChart>

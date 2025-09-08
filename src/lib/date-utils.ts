@@ -1,4 +1,10 @@
-import { formatDistanceToNow, format, isToday, isTomorrow, isBefore } from "date-fns";
+import {
+  formatDistanceToNow,
+  format,
+  isToday,
+  isTomorrow,
+  isBefore,
+} from "date-fns";
 
 /**
  * Formats a date for due date display following the requirements:
@@ -8,7 +14,11 @@ import { formatDistanceToNow, format, isToday, isTomorrow, isBefore } from "date
  * - Standard date format for others
  * - Include time if due today
  */
-export function formatDueDate(date: Date | string): { text: string; isOverdue: boolean; isDueToday: boolean } {
+export function formatDueDate(date: Date | string): {
+  text: string;
+  isOverdue: boolean;
+  isDueToday: boolean;
+} {
   const dueDate = typeof date === "string" ? new Date(date) : date;
   const now = new Date();
 
@@ -96,14 +106,14 @@ export function formatRelativeTime(date: Date | string): string {
  */
 export function getDueDateColorClass(dueDate: Date | string): string {
   const { isOverdue, isDueToday } = formatDueDate(dueDate);
-  
+
   if (isOverdue) {
     return "text-red-600 dark:text-red-400";
   }
-  
+
   if (isDueToday) {
     return "text-orange-600 dark:text-orange-400";
   }
-  
+
   return "text-muted-foreground";
 }

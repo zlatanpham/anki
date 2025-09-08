@@ -1,7 +1,10 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { SuperMemo2Algorithm, createCardStateFromPrisma } from "@/server/services/spacedRepetition";
+import {
+  SuperMemo2Algorithm,
+  createCardStateFromPrisma,
+} from "@/server/services/spacedRepetition";
 import { type ReviewRating } from "@prisma/client";
 
 const reviewCardSchema = z.object({
@@ -33,7 +36,8 @@ export const studyRouter = createTRPCRouter({
     .input(reviewQueueSchema)
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const { deckId, limit, includeNew, includeLearning, includeReview } = input;
+      const { deckId, limit, includeNew, includeLearning, includeReview } =
+        input;
       const now = new Date();
 
       try {
@@ -52,10 +56,7 @@ export const studyRouter = createTRPCRouter({
           // Ensure user has access to the deck
           whereConditions.card = {
             deck: {
-              OR: [
-                { user_id: userId },
-                { is_public: true },
-              ],
+              OR: [{ user_id: userId }, { is_public: true }],
             },
           };
         }
@@ -98,7 +99,8 @@ export const studyRouter = createTRPCRouter({
             ...cardState,
             card: cardState.card,
             isOverdue: SuperMemo2Algorithm.isCardDue(state, now),
-            stateDescription: SuperMemo2Algorithm.getCardStateDescription(state),
+            stateDescription:
+              SuperMemo2Algorithm.getCardStateDescription(state),
           };
         });
 
@@ -299,8 +301,8 @@ export const studyRouter = createTRPCRouter({
 
         // Calculate study streak
         let currentStreak = 0;
-        const reviewDates = studyStreak.map(r => 
-          new Date(r.reviewed_at).toDateString()
+        const reviewDates = studyStreak.map((r) =>
+          new Date(r.reviewed_at).toDateString(),
         );
         const uniqueDates = [...new Set(reviewDates)].sort().reverse();
 
@@ -330,7 +332,8 @@ export const studyRouter = createTRPCRouter({
 
         // Calculate accuracy (GOOD + EASY / total)
         const successfulReviews = ratingCounts.GOOD + ratingCounts.EASY;
-        const accuracy = totalReviews > 0 ? (successfulReviews / totalReviews) * 100 : 0;
+        const accuracy =
+          totalReviews > 0 ? (successfulReviews / totalReviews) * 100 : 0;
 
         return {
           totalReviews,
@@ -351,9 +354,11 @@ export const studyRouter = createTRPCRouter({
 
   // Get due cards count
   getDueCardsCount: protectedProcedure
-    .input(z.object({
-      deckId: z.string().uuid().optional(),
-    }))
+    .input(
+      z.object({
+        deckId: z.string().uuid().optional(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
       const now = new Date();
@@ -372,10 +377,7 @@ export const studyRouter = createTRPCRouter({
         } else {
           whereConditions.card = {
             deck: {
-              OR: [
-                { user_id: userId },
-                { is_public: true },
-              ],
+              OR: [{ user_id: userId }, { is_public: true }],
             },
           };
         }
@@ -500,10 +502,12 @@ export const studyRouter = createTRPCRouter({
 
   // Get review queue for a specific deck
   getDeckReviewQueue: protectedProcedure
-    .input(z.object({
-      deckId: z.string().uuid(),
-      limit: z.number().min(1).max(50).default(20),
-    }))
+    .input(
+      z.object({
+        deckId: z.string().uuid(),
+        limit: z.number().min(1).max(50).default(20),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
       const { deckId, limit } = input;
@@ -554,7 +558,7 @@ export const studyRouter = createTRPCRouter({
           take: limit,
         });
 
-        return cardStates.map(cardState => ({
+        return cardStates.map((cardState) => ({
           ...cardState.card,
           cardState,
         }));
@@ -569,9 +573,11 @@ export const studyRouter = createTRPCRouter({
 
   // Get due cards count for a specific deck
   getDeckDueCardsCount: protectedProcedure
-    .input(z.object({
-      deckId: z.string().uuid(),
-    }))
+    .input(
+      z.object({
+        deckId: z.string().uuid(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
       const { deckId } = input;
@@ -629,19 +635,25 @@ export const studyRouter = createTRPCRouter({
 
   // Get comprehensive deck statistics
   getDeckStats: protectedProcedure
-    .input(z.object({
-      deckId: z.string().uuid(),
-      period: z.enum(["today", "week", "month", "all"]).default("week"),
-    }))
+    .input(
+      z.object({
+        deckId: z.string().uuid(),
+        period: z.enum(["today", "week", "month", "all"]).default("week"),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
       const { deckId, period } = input;
       const now = new Date();
-      
+
       let startDate: Date;
       switch (period) {
         case "today":
-          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          startDate = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+          );
           break;
         case "week":
           startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -702,19 +714,32 @@ export const studyRouter = createTRPCRouter({
         ]);
 
         const totalReviews = reviews.length;
-        const totalTimeMs = reviews.reduce((sum, review) => sum + (review.response_time || 0), 0);
+        const totalTimeMs = reviews.reduce(
+          (sum, review) => sum + (review.response_time || 0),
+          0,
+        );
         const totalTimeMinutes = totalTimeMs / (1000 * 60);
-        const averageResponseTime = totalReviews > 0 ? totalTimeMs / totalReviews : 0;
+        const averageResponseTime =
+          totalReviews > 0 ? totalTimeMs / totalReviews : 0;
 
-        const successfulReviews = reviews.filter(r => r.rating === "GOOD" || r.rating === "EASY").length;
-        const accuracy = totalReviews > 0 ? (successfulReviews / totalReviews) * 100 : 0;
+        const successfulReviews = reviews.filter(
+          (r) => r.rating === "GOOD" || r.rating === "EASY",
+        ).length;
+        const accuracy =
+          totalReviews > 0 ? (successfulReviews / totalReviews) * 100 : 0;
 
-        const masteredCards = cardStates.filter(cs => cs.state === "REVIEW" && cs.interval >= 21).length;
-        const learningCards = cardStates.filter(cs => cs.state === "LEARNING" || cs.state === "NEW").length;
+        const masteredCards = cardStates.filter(
+          (cs) => cs.state === "REVIEW" && cs.interval >= 21,
+        ).length;
+        const learningCards = cardStates.filter(
+          (cs) => cs.state === "LEARNING" || cs.state === "NEW",
+        ).length;
 
         // Calculate streak (simplified - just days with reviews)
-        const reviewDays = new Set(reviews.map(r => r.reviewed_at.toDateString())).size;
-        
+        const reviewDays = new Set(
+          reviews.map((r) => r.reviewed_at.toDateString()),
+        ).size;
+
         return {
           totalReviews,
           totalTimeMinutes,
@@ -737,20 +762,26 @@ export const studyRouter = createTRPCRouter({
 
   // Get deck activity data for charts
   getDeckActivity: protectedProcedure
-    .input(z.object({
-      deckId: z.string().uuid(),
-      period: z.enum(["today", "week", "month", "all"]).default("week"),
-    }))
+    .input(
+      z.object({
+        deckId: z.string().uuid(),
+        period: z.enum(["today", "week", "month", "all"]).default("week"),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
       const { deckId, period } = input;
       const now = new Date();
-      
+
       let startDate: Date;
       let days: number;
       switch (period) {
         case "today":
-          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          startDate = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+          );
           days = 1;
           break;
         case "week":
@@ -792,16 +823,19 @@ export const studyRouter = createTRPCRouter({
         });
 
         // Group reviews by date
-        const dailyData: Record<string, { reviews: number; totalTime: number }> = {};
-        
+        const dailyData: Record<
+          string,
+          { reviews: number; totalTime: number }
+        > = {};
+
         for (let i = 0; i < days; i++) {
           const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
-          const dateKey = date.toISOString().split('T')[0]!;
+          const dateKey = date.toISOString().split("T")[0]!;
           dailyData[dateKey] = { reviews: 0, totalTime: 0 };
         }
 
-        reviews.forEach(review => {
-          const dateKey = review.reviewed_at.toISOString().split('T')[0]!;
+        reviews.forEach((review) => {
+          const dateKey = review.reviewed_at.toISOString().split("T")[0]!;
           if (dailyData[dateKey]) {
             dailyData[dateKey].reviews++;
             dailyData[dateKey].totalTime += review.response_time || 0;
@@ -824,19 +858,25 @@ export const studyRouter = createTRPCRouter({
 
   // Get deck review distribution (Again, Hard, Good, Easy)
   getDeckReviewDistribution: protectedProcedure
-    .input(z.object({
-      deckId: z.string().uuid(),
-      period: z.enum(["today", "week", "month", "all"]).default("week"),
-    }))
+    .input(
+      z.object({
+        deckId: z.string().uuid(),
+        period: z.enum(["today", "week", "month", "all"]).default("week"),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
       const { deckId, period } = input;
       const now = new Date();
-      
+
       let startDate: Date;
       switch (period) {
         case "today":
-          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          startDate = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+          );
           break;
         case "week":
           startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -874,10 +914,10 @@ export const studyRouter = createTRPCRouter({
         });
 
         const distribution = {
-          again: reviews.filter(r => r.rating === "AGAIN").length,
-          hard: reviews.filter(r => r.rating === "HARD").length,
-          good: reviews.filter(r => r.rating === "GOOD").length,
-          easy: reviews.filter(r => r.rating === "EASY").length,
+          again: reviews.filter((r) => r.rating === "AGAIN").length,
+          hard: reviews.filter((r) => r.rating === "HARD").length,
+          good: reviews.filter((r) => r.rating === "GOOD").length,
+          easy: reviews.filter((r) => r.rating === "EASY").length,
         };
 
         return distribution;
@@ -892,9 +932,11 @@ export const studyRouter = createTRPCRouter({
 
   // Get card performance data (placeholder for future enhancement)
   getDeckCardPerformance: protectedProcedure
-    .input(z.object({
-      deckId: z.string().uuid(),
-    }))
+    .input(
+      z.object({
+        deckId: z.string().uuid(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
       const { deckId } = input;
@@ -932,7 +974,7 @@ export const studyRouter = createTRPCRouter({
           },
         });
 
-        return cardStates.map(cs => ({
+        return cardStates.map((cs) => ({
           cardId: cs.card.id,
           cardType: cs.card.card_type,
           state: cs.state,

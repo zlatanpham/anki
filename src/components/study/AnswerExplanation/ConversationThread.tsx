@@ -12,64 +12,69 @@ interface ConversationThreadProps {
   onQuestionClick?: (question: string) => void;
 }
 
-export function ConversationThread({ 
-  history, 
-  onQuestionClick 
+export function ConversationThread({
+  history,
+  onQuestionClick,
 }: ConversationThreadProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   // Only show previous conversations (exclude the current one)
   const previousConversations = history.slice(0, -1);
-  
+
   if (previousConversations.length === 0) {
     return null;
   }
 
   return (
-    <div className="rounded-lg border bg-muted/30 p-3">
+    <div className="bg-muted/30 rounded-lg border p-3">
       <Button
         variant="ghost"
         size="sm"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="mb-2 h-auto w-full justify-between p-2 hover:bg-muted/50"
+        className="hover:bg-muted/50 mb-2 h-auto w-full justify-between p-2"
       >
         <div className="flex items-center gap-2">
-          <MessageSquare className="h-4 w-4 text-muted-foreground" />
+          <MessageSquare className="text-muted-foreground h-4 w-4" />
           <span className="text-sm font-medium">
             Conversation History ({previousConversations.length})
           </span>
         </div>
         {isExpanded ? (
-          <ChevronUp className="h-4 w-4 text-muted-foreground" />
+          <ChevronUp className="text-muted-foreground h-4 w-4" />
         ) : (
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          <ChevronDown className="text-muted-foreground h-4 w-4" />
         )}
       </Button>
 
       {isExpanded && (
         <div className="space-y-3">
           {previousConversations.map((item, _index) => (
-            <div key={item.id} className="space-y-2 rounded-md bg-background p-3">
+            <div
+              key={item.id}
+              className="bg-background space-y-2 rounded-md p-3"
+            >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1">
-                  <p className="text-xs font-medium text-muted-foreground">
-                    {item.questionType === "custom" ? "Your question" : `Preset: ${item.questionType}`}
+                  <p className="text-muted-foreground text-xs font-medium">
+                    {item.questionType === "custom"
+                      ? "Your question"
+                      : `Preset: ${item.questionType}`}
                   </p>
-                  <p className="text-sm font-medium text-foreground">
+                  <p className="text-foreground text-sm font-medium">
                     {item.question}
                   </p>
                 </div>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-muted-foreground text-xs">
                   {formatDistanceToNow(item.createdAt, { addSuffix: true })}
                 </span>
               </div>
-              
-              <div className="rounded bg-muted/50 p-2">
-                <p className="text-sm text-muted-foreground line-clamp-3">
+
+              <div className="bg-muted/50 rounded p-2">
+                <p className="text-muted-foreground line-clamp-3 text-sm">
                   {item.answer}
                 </p>
               </div>
-              
+
               {onQuestionClick && (
                 <Button
                   variant="ghost"

@@ -10,10 +10,10 @@ interface DueDateBadgeProps {
   showIcon?: boolean;
 }
 
-export function DueDateBadge({ 
-  dueDate, 
+export function DueDateBadge({
+  dueDate,
   className,
-  showIcon = true 
+  showIcon = true,
 }: DueDateBadgeProps) {
   const { text, isOverdue, isDueToday } = formatDueDate(dueDate);
   const colorClass = getDueDateColorClass(dueDate);
@@ -22,13 +22,13 @@ export function DueDateBadge({
   const Icon = isOverdue ? AlertCircle : Calendar;
 
   return (
-    <Badge 
+    <Badge
       variant={isOverdue ? "destructive" : isDueToday ? "default" : "outline"}
       className={cn(
         "font-medium",
         isOverdue && "bg-red-100 dark:bg-red-900/30",
         isDueToday && !isOverdue && "bg-orange-100 dark:bg-orange-900/30",
-        className
+        className,
       )}
     >
       <span className={cn("flex items-center gap-1", colorClass)}>

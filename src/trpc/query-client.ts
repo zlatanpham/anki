@@ -25,7 +25,11 @@ export const createQueryClient = () =>
         refetchOnWindowFocus: (query) => {
           const queryKey = query.queryKey;
           // Refetch study-related queries when window regains focus
-          if (queryKey.includes('study') || queryKey.includes('review') || queryKey.includes('due')) {
+          if (
+            queryKey.includes("study") ||
+            queryKey.includes("review") ||
+            queryKey.includes("due")
+          ) {
             return true;
           }
           return false;

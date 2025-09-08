@@ -6,13 +6,13 @@ export function SkeletonCard() {
     <Card>
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
         <div className="flex-1">
-          <Skeleton className="h-6 w-3/4 mb-2" />
+          <Skeleton className="mb-2 h-6 w-3/4" />
           <Skeleton className="h-4 w-full" />
         </div>
         <Skeleton className="h-8 w-8 rounded" />
       </CardHeader>
       <CardContent>
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Skeleton className="h-6 w-20" />
             <Skeleton className="h-6 w-16" />
@@ -48,25 +48,25 @@ export function SkeletonCardPreview() {
               <Skeleton className="h-5 w-16" />
               <Skeleton className="h-5 w-20" />
             </div>
-            
-            <div className="grid md:grid-cols-2 gap-4">
+
+            <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <Skeleton className="h-4 w-12 mb-1" />
-                <div className="bg-muted/50 p-3 rounded border-l-2 border-blue-200">
-                  <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="mb-1 h-4 w-12" />
+                <div className="bg-muted/50 rounded border-l-2 border-blue-200 p-3">
+                  <Skeleton className="mb-2 h-4 w-full" />
                   <Skeleton className="h-4 w-3/4" />
                 </div>
               </div>
               <div>
-                <Skeleton className="h-4 w-12 mb-1" />
-                <div className="bg-muted/50 p-3 rounded border-l-2 border-green-200">
-                  <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="mb-1 h-4 w-12" />
+                <div className="bg-muted/50 rounded border-l-2 border-green-200 p-3">
+                  <Skeleton className="mb-2 h-4 w-full" />
                   <Skeleton className="h-4 w-5/6" />
                 </div>
               </div>
             </div>
           </div>
-          
+
           <Skeleton className="h-8 w-8 rounded" />
         </div>
       </CardContent>
@@ -86,9 +86,9 @@ export function SkeletonStudyCard() {
       <CardContent>
         <div className="space-y-6">
           <div>
-            <Skeleton className="h-4 w-16 mb-2" />
-            <div className="p-4 bg-muted/50 rounded-lg">
-              <Skeleton className="h-6 w-full mb-2" />
+            <Skeleton className="mb-2 h-4 w-16" />
+            <div className="bg-muted/50 rounded-lg p-4">
+              <Skeleton className="mb-2 h-6 w-full" />
               <Skeleton className="h-6 w-3/4" />
             </div>
           </div>
@@ -106,7 +106,7 @@ export function SkeletonStatCard() {
         <Skeleton className="h-4 w-4 rounded" />
       </CardHeader>
       <CardContent>
-        <Skeleton className="h-8 w-16 mb-1" />
+        <Skeleton className="mb-1 h-8 w-16" />
         <Skeleton className="h-3 w-24" />
       </CardContent>
     </Card>
@@ -115,21 +115,21 @@ export function SkeletonStatCard() {
 
 export function SkeletonActionCard() {
   return (
-    <Card className="flex flex-col h-full">
+    <Card className="flex h-full flex-col">
       <CardHeader>
         <div className="flex items-center gap-2">
           <Skeleton className="h-5 w-5 rounded" />
           <Skeleton className="h-5 w-32" />
         </div>
-        <Skeleton className="h-4 w-48 mt-2" />
+        <Skeleton className="mt-2 h-4 w-48" />
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col space-y-3">
+      <CardContent className="flex flex-1 flex-col space-y-3">
         <div className="flex-1 space-y-3">
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-3/4" />
         </div>
-        <Skeleton className="h-10 w-full rounded mt-4" />
+        <Skeleton className="mt-4 h-10 w-full rounded" />
       </CardContent>
     </Card>
   );
@@ -164,14 +164,14 @@ export function SkeletonDashboard() {
       <Card>
         <CardHeader>
           <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-64 mt-2" />
+          <Skeleton className="mt-2 h-4 w-64" />
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="text-center">
-                <Skeleton className="h-8 w-12 mx-auto mb-1" />
-                <Skeleton className="h-3 w-12 mx-auto" />
+                <Skeleton className="mx-auto mb-1 h-8 w-12" />
+                <Skeleton className="mx-auto h-3 w-12" />
               </div>
             ))}
           </div>

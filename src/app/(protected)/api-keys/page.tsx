@@ -31,7 +31,14 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
-import { Copy, Key, RotateCw, Trash2, AlertCircle, CheckCircle } from "lucide-react";
+import {
+  Copy,
+  Key,
+  RotateCw,
+  Trash2,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ApiExamples } from "@/components/api-examples";
@@ -42,7 +49,9 @@ export default function ApiKeysPage() {
   const [newKeyName, setNewKeyName] = useState("");
   const [generatedKey, setGeneratedKey] = useState("");
   const [keyToCopy, setKeyToCopy] = useState("");
-  const [activeApiKey, setActiveApiKey] = useState<string | undefined>(undefined);
+  const [activeApiKey, setActiveApiKey] = useState<string | undefined>(
+    undefined,
+  );
 
   const utils = api.useUtils();
   const { data: apiKeys, isLoading } = api.apiKey.list.useQuery();
@@ -112,13 +121,14 @@ export default function ApiKeysPage() {
   if (isLoading) {
     return (
       <div className="container mx-auto p-6">
-        <Skeleton className="h-8 w-48 mb-6" />
+        <Skeleton className="mb-6 h-8 w-48" />
         <Skeleton className="h-96 w-full" />
       </div>
     );
   }
 
-  const activeKeys = apiKeys?.filter(key => key.isActive && !key.isExpired) ?? [];
+  const activeKeys =
+    apiKeys?.filter((key) => key.isActive && !key.isExpired) ?? [];
 
   return (
     <div className="container mx-auto p-6">
@@ -140,26 +150,36 @@ export default function ApiKeysPage() {
         <CardContent>
           <div className="space-y-4">
             <div>
-              <h4 className="font-semibold mb-2">Authentication</h4>
-              <code className="block p-2 bg-muted rounded text-sm">
+              <h4 className="mb-2 font-semibold">Authentication</h4>
+              <code className="bg-muted block rounded p-2 text-sm">
                 Authorization: Bearer YOUR_API_KEY
               </code>
             </div>
             <div>
-              <h4 className="font-semibold mb-2">Available Endpoints</h4>
+              <h4 className="mb-2 font-semibold">Available Endpoints</h4>
               <ul className="space-y-1 text-sm">
-                <li>• <code>GET /api/v1/decks</code> - List your decks</li>
-                <li>• <code>POST /api/v1/decks</code> - Create a new deck</li>
-                <li>• <code>POST /api/v1/decks/{'{deckId}'}/cards/batch</code> - Add multiple cards</li>
-                <li>• <code>GET /api/v1/study/queue</code> - Get cards due for review</li>
+                <li>
+                  • <code>GET /api/v1/decks</code> - List your decks
+                </li>
+                <li>
+                  • <code>POST /api/v1/decks</code> - Create a new deck
+                </li>
+                <li>
+                  • <code>POST /api/v1/decks/{"{deckId}"}/cards/batch</code> -
+                  Add multiple cards
+                </li>
+                <li>
+                  • <code>GET /api/v1/study/queue</code> - Get cards due for
+                  review
+                </li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-2">Rate Limits</h4>
-              <p className="text-sm text-muted-foreground">
+              <h4 className="mb-2 font-semibold">Rate Limits</h4>
+              <p className="text-muted-foreground text-sm">
                 • Default endpoints: 1000 requests/hour
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 • Batch endpoints: 100 requests/hour
               </p>
             </div>
@@ -173,7 +193,8 @@ export default function ApiKeysPage() {
           <div>
             <CardTitle>Active API Keys</CardTitle>
             <CardDescription>
-              {activeKeys.length} active {activeKeys.length === 1 ? 'key' : 'keys'}
+              {activeKeys.length} active{" "}
+              {activeKeys.length === 1 ? "key" : "keys"}
             </CardDescription>
           </div>
           <Button onClick={() => setShowCreateDialog(true)}>
@@ -183,10 +204,12 @@ export default function ApiKeysPage() {
         </CardHeader>
         <CardContent>
           {activeKeys.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Key className="mx-auto h-12 w-12 mb-4 opacity-50" />
+            <div className="text-muted-foreground py-12 text-center">
+              <Key className="mx-auto mb-4 h-12 w-12 opacity-50" />
               <p>No active API keys</p>
-              <p className="text-sm mt-2">Generate your first API key to get started</p>
+              <p className="mt-2 text-sm">
+                Generate your first API key to get started
+              </p>
             </div>
           ) : (
             <Table>
@@ -202,15 +225,17 @@ export default function ApiKeysPage() {
               </TableHeader>
               <TableBody>
                 {activeKeys.map((key) => {
-                  const stats = usageStats?.find(s => s.id === key.id);
+                  const stats = usageStats?.find((s) => s.id === key.id);
                   return (
                     <TableRow key={key.id}>
                       <TableCell className="font-medium">{key.name}</TableCell>
-                      <TableCell>{format(new Date(key.createdAt), 'MMM d, yyyy')}</TableCell>
+                      <TableCell>
+                        {format(new Date(key.createdAt), "MMM d, yyyy")}
+                      </TableCell>
                       <TableCell>
                         {key.lastUsedAt
-                          ? format(new Date(key.lastUsedAt), 'MMM d, yyyy')
-                          : 'Never'}
+                          ? format(new Date(key.lastUsedAt), "MMM d, yyyy")
+                          : "Never"}
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">
@@ -219,11 +244,11 @@ export default function ApiKeysPage() {
                       </TableCell>
                       <TableCell>
                         {key.expiresAt
-                          ? format(new Date(key.expiresAt), 'MMM d, yyyy')
-                          : 'Never'}
+                          ? format(new Date(key.expiresAt), "MMM d, yyyy")
+                          : "Never"}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex gap-2 justify-end">
+                        <div className="flex justify-end gap-2">
                           <Button
                             size="sm"
                             variant="outline"
@@ -272,12 +297,12 @@ export default function ApiKeysPage() {
                 value={newKeyName}
                 onChange={(e) => setNewKeyName(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     handleCreateKey();
                   }
                 }}
               />
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-muted-foreground mt-1 text-sm">
                 A descriptive name to help you identify this key
               </p>
             </div>
@@ -315,7 +340,8 @@ export default function ApiKeysPage() {
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                Store this key securely. It has full access to your account data.
+                Store this key securely. It has full access to your account
+                data.
               </AlertDescription>
             </Alert>
             <div className="space-y-2">
@@ -326,11 +352,7 @@ export default function ApiKeysPage() {
                   readOnly
                   className="font-mono text-sm"
                 />
-                <Button
-                  size="icon"
-                  variant="outline"
-                  onClick={copyToClipboard}
-                >
+                <Button size="icon" variant="outline" onClick={copyToClipboard}>
                   <Copy className="h-4 w-4" />
                 </Button>
               </div>

@@ -12,10 +12,10 @@ interface CustomQuestionInputProps {
   placeholder?: string;
 }
 
-export function CustomQuestionInput({ 
-  onSubmit, 
+export function CustomQuestionInput({
+  onSubmit,
   isLoading = false,
-  placeholder = "Ask a specific question about this answer..."
+  placeholder = "Ask a specific question about this answer...",
 }: CustomQuestionInputProps) {
   const [question, setQuestion] = useState("");
 
@@ -37,13 +37,13 @@ export function CustomQuestionInput({
         maxLength={500}
         className="flex-1"
       />
-      <Button 
-        type="submit" 
+      <Button
+        type="submit"
         size="icon"
         disabled={!question.trim() || isLoading}
         className={cn(
           "shrink-0",
-          question.trim() && !isLoading && "hover:bg-primary/90"
+          question.trim() && !isLoading && "hover:bg-primary/90",
         )}
       >
         <Send className="h-4 w-4" />

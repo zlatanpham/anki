@@ -18,12 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/trpc/react";
 import { toast } from "sonner";
 import Link from "next/link";
-import {
-  Plus,
-  Search,
-  BookOpen,
-  Play,
-} from "lucide-react";
+import { Plus, Search, BookOpen, Play } from "lucide-react";
 import { ImportWizard } from "@/components/ImportWizard";
 import { SkeletonCardList } from "@/components/ui/skeleton-card";
 import { DeckCard } from "@/components/DeckCard";
@@ -109,7 +104,8 @@ export default function DecksPage() {
     decksData?.decks.filter(
       (deck) =>
         deck.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (deck.description?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false),
+        (deck.description?.toLowerCase().includes(searchQuery.toLowerCase()) ??
+          false),
     ) ?? [];
 
   if (isLoading) {
@@ -129,11 +125,13 @@ export default function DecksPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-4 sm:py-6 sm:px-6 lg:px-8">
-      <div className={cn(
-        "flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between",
-        !isMobile && "mb-4 sm:mb-6"
-      )}>
+    <div className="container mx-auto px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+      <div
+        className={cn(
+          "flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between",
+          !isMobile && "mb-4 sm:mb-6",
+        )}
+      >
         {!isMobile && (
           <div>
             <h1 className="text-lg font-semibold tracking-tight sm:text-xl lg:text-2xl">
@@ -181,7 +179,9 @@ export default function DecksPage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="description">Description (Optional)</Label>
+                      <Label htmlFor="description">
+                        Description (Optional)
+                      </Label>
                       <Textarea
                         id="description"
                         value={createForm.description}
@@ -247,7 +247,7 @@ export default function DecksPage() {
                 <BookOpen className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
                 <h3 className="mb-2 text-lg font-semibold">No decks yet</h3>
                 <p className="text-muted-foreground mb-4">
-                  {isMobile 
+                  {isMobile
                     ? "Ask someone to share a deck with you to start learning."
                     : "Create your first deck to start learning with spaced repetition."}
                 </p>

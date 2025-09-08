@@ -32,15 +32,30 @@ const cardQuerySchema = z.object({
   cardType: z.enum(["BASIC", "CLOZE"]).optional(),
   tags: z.array(z.string()).optional(),
   search: z.string().optional(),
-  searchFields: z.array(z.enum(["front", "back", "cloze_text", "tags"])).optional(),
+  searchFields: z
+    .array(z.enum(["front", "back", "cloze_text", "tags"]))
+    .optional(),
   createdAfter: z.date().optional(),
   createdBefore: z.date().optional(),
-  sortBy: z.enum(["created_at", "updated_at", "front", "due_date", "interval", "difficulty", "lapses", "repetitions"]).default("created_at"),
+  sortBy: z
+    .enum([
+      "created_at",
+      "updated_at",
+      "front",
+      "due_date",
+      "interval",
+      "difficulty",
+      "lapses",
+      "repetitions",
+    ])
+    .default("created_at"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
   limit: z.number().min(1).max(100).default(20),
   offset: z.number().min(0).default(0),
   // New SR-based filters
-  stateFilter: z.array(z.enum(["NEW", "LEARNING", "REVIEW", "SUSPENDED"])).optional(),
+  stateFilter: z
+    .array(z.enum(["NEW", "LEARNING", "REVIEW", "SUSPENDED"]))
+    .optional(),
   dueFilter: z.enum(["overdue", "today", "tomorrow", "week", "all"]).optional(),
   intervalRange: z.tuple([z.number(), z.number()]).optional(),
   difficultyRange: z.tuple([z.number(), z.number()]).optional(),
@@ -52,20 +67,27 @@ const globalSearchSchema = z.object({
   cardType: z.enum(["BASIC", "CLOZE"]).optional(),
   tags: z.array(z.string()).optional(),
   deckIds: z.array(z.string().uuid()).optional(),
-  searchFields: z.array(z.enum(["front", "back", "cloze_text", "tags"])).optional(),
+  searchFields: z
+    .array(z.enum(["front", "back", "cloze_text", "tags"]))
+    .optional(),
   limit: z.number().min(1).max(100).default(20),
   offset: z.number().min(0).default(0),
 });
 
 const bulkCreateCardsSchema = z.object({
   deckId: z.string().uuid(),
-  cards: z.array(z.object({
-    front: z.string().min(1),
-    back: z.string().min(1),
-    cardType: z.enum(["BASIC", "CLOZE"]).default("BASIC"),
-    clozeText: z.string().optional(),
-    tags: z.array(z.string()).default([]),
-  })).min(1).max(100), // Limit bulk creation to 100 cards at once
+  cards: z
+    .array(
+      z.object({
+        front: z.string().min(1),
+        back: z.string().min(1),
+        cardType: z.enum(["BASIC", "CLOZE"]).default("BASIC"),
+        clozeText: z.string().optional(),
+        tags: z.array(z.string()).default([]),
+      }),
+    )
+    .min(1)
+    .max(100), // Limit bulk creation to 100 cards at once
 });
 
 export const cardRouter = createTRPCRouter({
@@ -74,18 +96,18 @@ export const cardRouter = createTRPCRouter({
     .input(cardQuerySchema)
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const { 
-        deckId, 
-        cardType, 
-        tags, 
-        search, 
+      const {
+        deckId,
+        cardType,
+        tags,
+        search,
         searchFields,
         createdAfter,
         createdBefore,
         sortBy,
         sortOrder,
-        limit, 
-        offset 
+        limit,
+        offset,
       } = input;
 
       try {
@@ -93,10 +115,7 @@ export const cardRouter = createTRPCRouter({
         const deck = await ctx.db.deck.findFirst({
           where: {
             id: deckId,
-            OR: [
-              { user_id: userId },
-              { is_public: true },
-            ],
+            OR: [{ user_id: userId }, { is_public: true }],
           },
         });
 
@@ -124,21 +143,32 @@ export const cardRouter = createTRPCRouter({
         // Enhanced search functionality
         if (search) {
           const searchConditions = [];
-          const fieldsToSearch = searchFields || ["front", "back", "cloze_text", "tags"];
-          
+          const fieldsToSearch = searchFields || [
+            "front",
+            "back",
+            "cloze_text",
+            "tags",
+          ];
+
           if (fieldsToSearch.includes("front")) {
-            searchConditions.push({ front: { contains: search, mode: "insensitive" } });
+            searchConditions.push({
+              front: { contains: search, mode: "insensitive" },
+            });
           }
           if (fieldsToSearch.includes("back")) {
-            searchConditions.push({ back: { contains: search, mode: "insensitive" } });
+            searchConditions.push({
+              back: { contains: search, mode: "insensitive" },
+            });
           }
           if (fieldsToSearch.includes("cloze_text")) {
-            searchConditions.push({ cloze_text: { contains: search, mode: "insensitive" } });
+            searchConditions.push({
+              cloze_text: { contains: search, mode: "insensitive" },
+            });
           }
           if (fieldsToSearch.includes("tags")) {
             searchConditions.push({ tags: { hasSome: [search] } });
           }
-          
+
           whereConditions.OR = searchConditions;
         }
 
@@ -211,10 +241,7 @@ export const cardRouter = createTRPCRouter({
           where: {
             id: input.id,
             deck: {
-              OR: [
-                { user_id: userId },
-                { is_public: true },
-              ],
+              OR: [{ user_id: userId }, { is_public: true }],
             },
           },
           include: {
@@ -265,10 +292,7 @@ export const cardRouter = createTRPCRouter({
           where: {
             id: input.id,
             deck: {
-              OR: [
-                { user_id: userId },
-                { is_public: true },
-              ],
+              OR: [{ user_id: userId }, { is_public: true }],
             },
           },
           include: {
@@ -290,7 +314,7 @@ export const cardRouter = createTRPCRouter({
                 user_id: userId,
               },
               orderBy: {
-                reviewed_at: 'desc',
+                reviewed_at: "desc",
               },
             },
           },
@@ -437,66 +461,69 @@ export const cardRouter = createTRPCRouter({
         }
 
         // Use createMany for better performance in serverless
-        const createdCards = await ctx.db.$transaction(async (tx) => {
-          // Prepare card data for bulk creation
-          const cardsToCreate = input.cards.map(cardData => ({
-            deck_id: input.deckId,
-            card_type: cardData.cardType as CardType,
-            front: cardData.front,
-            back: cardData.back,
-            cloze_text: cardData.clozeText,
-            tags: cardData.tags,
-          }));
-
-          // Bulk create all cards at once
-          await tx.card.createMany({
-            data: cardsToCreate,
-          });
-
-          // Fetch the created cards to get their IDs
-          const cards = await tx.card.findMany({
-            where: {
+        const createdCards = await ctx.db.$transaction(
+          async (tx) => {
+            // Prepare card data for bulk creation
+            const cardsToCreate = input.cards.map((cardData) => ({
               deck_id: input.deckId,
-              created_at: {
-                gte: new Date(Date.now() - 1000), // Cards created in the last second
+              card_type: cardData.cardType as CardType,
+              front: cardData.front,
+              back: cardData.back,
+              cloze_text: cardData.clozeText,
+              tags: cardData.tags,
+            }));
+
+            // Bulk create all cards at once
+            await tx.card.createMany({
+              data: cardsToCreate,
+            });
+
+            // Fetch the created cards to get their IDs
+            const cards = await tx.card.findMany({
+              where: {
+                deck_id: input.deckId,
+                created_at: {
+                  gte: new Date(Date.now() - 1000), // Cards created in the last second
+                },
               },
-            },
-            orderBy: {
-              created_at: 'desc',
-            },
-            take: input.cards.length,
-          });
+              orderBy: {
+                created_at: "desc",
+              },
+              take: input.cards.length,
+            });
 
-          // Prepare card states for bulk creation
-          const cardStates = cards.map(card => {
-            const initialState = SuperMemo2Algorithm.createInitialCardState(
-              card.id,
-              userId,
-            );
-            
-            return {
-              card_id: initialState.cardId,
-              user_id: initialState.userId,
-              state: initialState.state,
-              due_date: initialState.dueDate,
-              interval: initialState.interval,
-              repetitions: initialState.repetitions,
-              easiness_factor: initialState.easinessFactor,
-              lapses: initialState.lapses,
-              last_reviewed: initialState.lastReviewed,
-            };
-          });
+            // Prepare card states for bulk creation
+            const cardStates = cards.map((card) => {
+              const initialState = SuperMemo2Algorithm.createInitialCardState(
+                card.id,
+                userId,
+              );
 
-          // Bulk create all card states at once
-          await tx.cardState.createMany({
-            data: cardStates,
-          });
+              return {
+                card_id: initialState.cardId,
+                user_id: initialState.userId,
+                state: initialState.state,
+                due_date: initialState.dueDate,
+                interval: initialState.interval,
+                repetitions: initialState.repetitions,
+                easiness_factor: initialState.easinessFactor,
+                lapses: initialState.lapses,
+                last_reviewed: initialState.lastReviewed,
+              };
+            });
 
-          return cards;
-        }, {
-          maxWait: 50000, // 50 seconds max wait
-          timeout: 60000, // 60 seconds timeout
-        });
+            // Bulk create all card states at once
+            await tx.cardState.createMany({
+              data: cardStates,
+            });
+
+            return cards;
+          },
+          {
+            maxWait: 50000, // 50 seconds max wait
+            timeout: 60000, // 60 seconds timeout
+          },
+        );
 
         return {
           success: true,
@@ -562,7 +589,8 @@ export const cardRouter = createTRPCRouter({
         if (input.cardType !== undefined) updateData.card_type = input.cardType;
         if (input.front !== undefined) updateData.front = input.front;
         if (input.back !== undefined) updateData.back = input.back;
-        if (input.clozeText !== undefined) updateData.cloze_text = input.clozeText;
+        if (input.clozeText !== undefined)
+          updateData.cloze_text = input.clozeText;
         if (input.tags !== undefined) updateData.tags = input.tags;
 
         const card = await ctx.db.card.update({
@@ -644,14 +672,16 @@ export const cardRouter = createTRPCRouter({
 
   // Search cards across all user's decks
   search: protectedProcedure
-    .input(z.object({
-      query: z.string().min(1, "Search query is required"),
-      deckIds: z.array(z.string().uuid()).optional(),
-      cardType: z.enum(["BASIC", "CLOZE"]).optional(),
-      tags: z.array(z.string()).optional(),
-      limit: z.number().min(1).max(100).default(20),
-      offset: z.number().min(0).default(0),
-    }))
+    .input(
+      z.object({
+        query: z.string().min(1, "Search query is required"),
+        deckIds: z.array(z.string().uuid()).optional(),
+        cardType: z.enum(["BASIC", "CLOZE"]).optional(),
+        tags: z.array(z.string()).optional(),
+        limit: z.number().min(1).max(100).default(20),
+        offset: z.number().min(0).default(0),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
       const { query, deckIds, cardType, tags, limit, offset } = input;
@@ -659,10 +689,7 @@ export const cardRouter = createTRPCRouter({
       try {
         const whereConditions: any = {
           deck: {
-            OR: [
-              { user_id: userId },
-              { is_public: true },
-            ],
+            OR: [{ user_id: userId }, { is_public: true }],
           },
           OR: [
             { front: { contains: query, mode: "insensitive" } },
@@ -702,10 +729,7 @@ export const cardRouter = createTRPCRouter({
                 take: 1,
               },
             },
-            orderBy: [
-              { updated_at: "desc" },
-              { created_at: "desc" },
-            ],
+            orderBy: [{ updated_at: "desc" }, { created_at: "desc" }],
             take: limit,
             skip: offset,
           }),
@@ -733,7 +757,8 @@ export const cardRouter = createTRPCRouter({
     .input(globalSearchSchema)
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const { search, cardType, tags, deckIds, searchFields, limit, offset } = input;
+      const { search, cardType, tags, deckIds, searchFields, limit, offset } =
+        input;
 
       try {
         const whereConditions: any = {
@@ -773,21 +798,32 @@ export const cardRouter = createTRPCRouter({
 
         // Enhanced search functionality
         const searchConditions = [];
-        const fieldsToSearch = searchFields || ["front", "back", "cloze_text", "tags"];
-        
+        const fieldsToSearch = searchFields || [
+          "front",
+          "back",
+          "cloze_text",
+          "tags",
+        ];
+
         if (fieldsToSearch.includes("front")) {
-          searchConditions.push({ front: { contains: search, mode: "insensitive" } });
+          searchConditions.push({
+            front: { contains: search, mode: "insensitive" },
+          });
         }
         if (fieldsToSearch.includes("back")) {
-          searchConditions.push({ back: { contains: search, mode: "insensitive" } });
+          searchConditions.push({
+            back: { contains: search, mode: "insensitive" },
+          });
         }
         if (fieldsToSearch.includes("cloze_text")) {
-          searchConditions.push({ cloze_text: { contains: search, mode: "insensitive" } });
+          searchConditions.push({
+            cloze_text: { contains: search, mode: "insensitive" },
+          });
         }
         if (fieldsToSearch.includes("tags")) {
           searchConditions.push({ tags: { hasSome: [search] } });
         }
-        
+
         whereConditions.OR = searchConditions;
 
         const [cards, totalCount] = await Promise.all([
@@ -825,7 +861,7 @@ export const cardRouter = createTRPCRouter({
         };
       } catch (error) {
         throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR", 
+          code: "INTERNAL_SERVER_ERROR",
           message: "Failed to perform global search",
           cause: error,
         });
@@ -834,10 +870,12 @@ export const cardRouter = createTRPCRouter({
 
   // Get popular tags across user's cards
   getPopularTags: protectedProcedure
-    .input(z.object({
-      deckId: z.string().uuid().optional(),
-      limit: z.number().min(1).max(50).default(20),
-    }))
+    .input(
+      z.object({
+        deckId: z.string().uuid().optional(),
+        limit: z.number().min(1).max(50).default(20),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
       const { deckId, limit } = input;
@@ -874,8 +912,8 @@ export const cardRouter = createTRPCRouter({
 
         // Count tag frequency
         const tagCounts: Record<string, number> = {};
-        cards.forEach(card => {
-          card.tags.forEach(tag => {
+        cards.forEach((card) => {
+          card.tags.forEach((tag) => {
             tagCounts[tag] = (tagCounts[tag] || 0) + 1;
           });
         });

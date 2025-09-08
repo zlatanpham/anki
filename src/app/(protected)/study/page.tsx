@@ -304,12 +304,7 @@ export default function StudyPage() {
         {/* Header for mobile */}
         {isMobile && (
           <div className={cn("mb-4")}>
-            <h1
-              className={cn(
-                "flex items-center gap-2 font-bold",
-                "text-lg",
-              )}
-            >
+            <h1 className={cn("flex items-center gap-2 font-bold", "text-lg")}>
               <BookOpen className="h-5 w-5" />
               Study All Decks
             </h1>
@@ -418,7 +413,11 @@ export default function StudyPage() {
                   You have {reviewQueue.cards.length} cards ready for review
                   from all your decks.
                 </p>
-                <Button onClick={startStudySession} size="lg" className="w-full">
+                <Button
+                  onClick={startStudySession}
+                  size="lg"
+                  className="w-full"
+                >
                   Start Study Session
                 </Button>
                 {!isMobile && (
@@ -545,7 +544,6 @@ export default function StudyPage() {
         </div>
       </div>
 
-
       {isPaused ? (
         <Card>
           <CardContent className="p-8 text-center">
@@ -605,7 +603,9 @@ export default function StudyPage() {
                     <div className="bg-muted/50 rounded-lg border p-6">
                       <div
                         className="prose prose-sm max-w-none"
-                        dangerouslySetInnerHTML={{ __html: currentCard.card.back }}
+                        dangerouslySetInnerHTML={{
+                          __html: currentCard.card.back,
+                        }}
                       />
                     </div>
                     <div className="mt-4">
@@ -634,7 +634,9 @@ export default function StudyPage() {
                       </h4>
                       <div
                         className="prose prose-sm max-w-none text-blue-800"
-                        dangerouslySetInnerHTML={{ __html: currentCard.card.front }}
+                        dangerouslySetInnerHTML={{
+                          __html: currentCard.card.front,
+                        }}
                       />
                     </div>
                   )}
@@ -645,7 +647,9 @@ export default function StudyPage() {
                       </h4>
                       <div
                         className="prose prose-sm max-w-none text-green-800"
-                        dangerouslySetInnerHTML={{ __html: currentCard.card.back }}
+                        dangerouslySetInnerHTML={{
+                          __html: currentCard.card.back,
+                        }}
                       />
                     </div>
                   )}

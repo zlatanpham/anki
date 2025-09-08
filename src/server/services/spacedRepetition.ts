@@ -25,7 +25,7 @@ export interface ReviewResult {
 /**
  * SuperMemo 2 Spaced Repetition Algorithm Implementation
  * Based on the original algorithm by Piotr Wozniak
- * 
+ *
  * This implementation handles the core spaced repetition calculations
  * for optimizing long-term memory retention.
  */
@@ -43,7 +43,7 @@ export class SuperMemo2Algorithm {
     currentState: CardState,
   ): ReviewResult {
     const now = new Date();
-    
+
     switch (currentState.state) {
       case "NEW":
         return this.handleNewCard(rating, currentState, now);
@@ -118,7 +118,7 @@ export class SuperMemo2Algorithm {
       currentState.repetitions,
       this.LEARNING_STEPS.length - 1,
     );
-    
+
     if (currentStepIndex >= this.LEARNING_STEPS.length - 1) {
       // Graduate to review
       const interval = rating === "EASY" ? 4 : 1;
@@ -178,7 +178,7 @@ export class SuperMemo2Algorithm {
 
     // Calculate new interval using SuperMemo 2 formula
     let newInterval: number;
-    
+
     if (currentState.repetitions === 0) {
       newInterval = 1;
     } else if (currentState.repetitions === 1) {
@@ -230,7 +230,7 @@ export class SuperMemo2Algorithm {
     rating: ReviewRating,
   ): number {
     let q: number;
-    
+
     switch (rating) {
       case "AGAIN":
         q = 0;
@@ -247,14 +247,17 @@ export class SuperMemo2Algorithm {
     }
 
     const newEF = currentEF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
-    
+
     return Math.max(newEF, this.MIN_EASINESS_FACTOR);
   }
 
   /**
    * Create initial card state for a new card
    */
-  static createInitialCardState(cardId: string, userId: string): Omit<CardState, 'id'> {
+  static createInitialCardState(
+    cardId: string,
+    userId: string,
+  ): Omit<CardState, "id"> {
     return {
       cardId,
       userId,
@@ -289,13 +292,13 @@ export class SuperMemo2Algorithm {
    */
   static getCardStateDescription(cardState: CardState): string {
     const now = new Date();
-    
+
     switch (cardState.state) {
       case "NEW":
         return "New";
       case "LEARNING":
         const minutesUntilDue = Math.ceil(
-          (cardState.dueDate.getTime() - now.getTime()) / (1000 * 60)
+          (cardState.dueDate.getTime() - now.getTime()) / (1000 * 60),
         );
         return `Learning (${minutesUntilDue}m)`;
       case "REVIEW":
@@ -336,10 +339,10 @@ export class SuperMemo2Algorithm {
   static scheduleNewCard(): CardState {
     const now = new Date();
     return {
-      id: '',
-      cardId: '',
-      userId: '',
-      state: 'NEW',
+      id: "",
+      cardId: "",
+      userId: "",
+      state: "NEW",
       dueDate: now,
       interval: 0,
       repetitions: 0,
@@ -352,9 +355,12 @@ export class SuperMemo2Algorithm {
   /**
    * Calculate next review based on rating and return updated card state
    */
-  static calculateNextReview(rating: ReviewRating, currentState: CardState): CardState {
+  static calculateNextReview(
+    rating: ReviewRating,
+    currentState: CardState,
+  ): CardState {
     const result = this.calculateNextReviewResult(rating, currentState);
-    
+
     return {
       ...currentState,
       state: result.newState,

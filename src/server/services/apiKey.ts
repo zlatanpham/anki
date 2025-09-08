@@ -1,9 +1,9 @@
-import { randomBytes } from 'crypto';
-import bcrypt from 'bcryptjs';
-import { db } from '@/server/db';
-import type { ApiKey } from '@prisma/client';
+import { randomBytes } from "crypto";
+import bcrypt from "bcryptjs";
+import { db } from "@/server/db";
+import type { ApiKey } from "@prisma/client";
 
-const API_KEY_PREFIX = 'ank_';
+const API_KEY_PREFIX = "ank_";
 const API_KEY_LENGTH = 32;
 const SALT_ROUNDS = 10;
 
@@ -19,15 +19,15 @@ export class ApiKeyService {
   static async generateApiKey(
     userId: string,
     name: string,
-    expiresAt?: Date
+    expiresAt?: Date,
   ): Promise<GenerateApiKeyResult> {
     // Generate a cryptographically secure random key
-    const randomPart = randomBytes(API_KEY_LENGTH).toString('base64url');
+    const randomPart = randomBytes(API_KEY_LENGTH).toString("base64url");
     const plainKey = `${API_KEY_PREFIX}${randomPart}`;
-    
+
     // Hash the key before storing
     const keyHash = await bcrypt.hash(plainKey, SALT_ROUNDS);
-    
+
     // Create the API key record
     const apiKey = await db.apiKey.create({
       data: {
@@ -37,13 +37,13 @@ export class ApiKeyService {
         expiresAt,
       },
     });
-    
+
     return {
       apiKey,
       plainKey,
     };
   }
-  
+
   /**
    * Validates an API key and returns the associated API key record
    */
@@ -52,13 +52,10 @@ export class ApiKeyService {
     const apiKeys = await db.apiKey.findMany({
       where: {
         isActive: true,
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } },
-        ],
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
       },
     });
-    
+
     // Check each key hash
     for (const apiKey of apiKeys) {
       const isValid = await bcrypt.compare(plainKey, apiKey.keyHash);
@@ -66,19 +63,19 @@ export class ApiKeyService {
         // Update last used timestamp
         await db.apiKey.update({
           where: { id: apiKey.id },
-          data: { 
+          data: {
             lastUsedAt: new Date(),
             usageCount: { increment: 1 },
           },
         });
-        
+
         return apiKey;
       }
     }
-    
+
     return null;
   }
-  
+
   /**
    * Lists all API keys for a user (without exposing the actual keys)
    */
@@ -95,14 +92,17 @@ export class ApiKeyService {
         usageCount: true,
         revokedAt: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
-  
+
   /**
    * Revokes an API key
    */
-  static async revokeApiKey(userId: string, apiKeyId: string): Promise<boolean> {
+  static async revokeApiKey(
+    userId: string,
+    apiKeyId: string,
+  ): Promise<boolean> {
     const result = await db.apiKey.updateMany({
       where: {
         id: apiKeyId,
@@ -114,10 +114,10 @@ export class ApiKeyService {
         revokedAt: new Date(),
       },
     });
-    
+
     return result.count > 0;
   }
-  
+
   /**
    * Logs API usage
    */
@@ -128,7 +128,7 @@ export class ApiKeyService {
     statusCode: number,
     responseTimeMs: number,
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
   ) {
     await db.apiUsageLog.create({
       data: {
@@ -142,14 +142,14 @@ export class ApiKeyService {
       },
     });
   }
-  
+
   /**
    * Gets API usage statistics for a user
    */
   static async getUserApiUsageStats(userId: string, days = 30) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
-    
+
     const apiKeys = await db.apiKey.findMany({
       where: { userId },
       include: {
@@ -166,19 +166,25 @@ export class ApiKeyService {
         },
       },
     });
-    
-    return apiKeys.map(key => ({
+
+    return apiKeys.map((key) => ({
       id: key.id,
       name: key.name,
       totalRequests: key.apiUsageLogs.length,
-      successfulRequests: key.apiUsageLogs.filter(log => log.statusCode < 400).length,
-      averageResponseTime: key.apiUsageLogs.length > 0
-        ? key.apiUsageLogs.reduce((sum, log) => sum + log.responseTimeMs, 0) / key.apiUsageLogs.length
-        : 0,
-      endpointBreakdown: key.apiUsageLogs.reduce((acc, log) => {
-        acc[log.endpoint] = (acc[log.endpoint] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>),
+      successfulRequests: key.apiUsageLogs.filter((log) => log.statusCode < 400)
+        .length,
+      averageResponseTime:
+        key.apiUsageLogs.length > 0
+          ? key.apiUsageLogs.reduce((sum, log) => sum + log.responseTimeMs, 0) /
+            key.apiUsageLogs.length
+          : 0,
+      endpointBreakdown: key.apiUsageLogs.reduce(
+        (acc, log) => {
+          acc[log.endpoint] = (acc[log.endpoint] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      ),
     }));
   }
 }

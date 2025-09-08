@@ -18,9 +18,7 @@ export default async function RootLayout({
   return (
     <OrganizationProvider>
       <HydrateClient>
-        <MobileLayoutWrapper>
-          {children}
-        </MobileLayoutWrapper>
+        <MobileLayoutWrapper>{children}</MobileLayoutWrapper>
       </HydrateClient>
     </OrganizationProvider>
   );

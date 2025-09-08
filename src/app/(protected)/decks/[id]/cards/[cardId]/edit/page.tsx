@@ -8,7 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { X, Plus, ArrowLeft, Save } from "lucide-react";
 import { RichTextEditor } from "@/components/RichTextEditor";
@@ -78,7 +84,7 @@ export default function EditCardPage() {
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
+    setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
   const handleSubmit = async () => {
@@ -91,7 +97,7 @@ export default function EditCardPage() {
         front,
         back,
         tags,
-        ...(cardType === "CLOZE" ? { clozeText } : {})
+        ...(cardType === "CLOZE" ? { clozeText } : {}),
       };
 
       await updateCardMutation.mutateAsync(cardData);
@@ -104,7 +110,7 @@ export default function EditCardPage() {
 
   if (isLoadingCard) {
     return (
-      <div className="container mx-auto p-6 max-w-7xl">
+      <div className="container mx-auto max-w-7xl p-6">
         {/* Breadcrumb Navigation Skeleton */}
         <div className="mb-6 flex items-center gap-2">
           <Skeleton className="h-4 w-12" />
@@ -115,9 +121,9 @@ export default function EditCardPage() {
         </div>
 
         {/* Header with Action Buttons Skeleton */}
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <Skeleton className="h-8 w-32 mb-2" />
+            <Skeleton className="mb-2 h-8 w-32" />
             <Skeleton className="h-4 w-64" />
           </div>
           <div className="flex gap-2">
@@ -127,7 +133,7 @@ export default function EditCardPage() {
         </div>
 
         {/* Two Column Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Form Card Skeleton */}
           <Card>
             <CardHeader>
@@ -175,12 +181,12 @@ export default function EditCardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="p-4 border rounded-lg">
-                  <Skeleton className="h-4 w-16 mb-2" />
+                <div className="rounded-lg border p-4">
+                  <Skeleton className="mb-2 h-4 w-16" />
                   <Skeleton className="h-20 w-full" />
                 </div>
-                <div className="p-4 border rounded-lg">
-                  <Skeleton className="h-4 w-16 mb-2" />
+                <div className="rounded-lg border p-4">
+                  <Skeleton className="mb-2 h-4 w-16" />
                   <Skeleton className="h-20 w-full" />
                 </div>
               </div>
@@ -196,12 +202,13 @@ export default function EditCardPage() {
       <div className="container mx-auto p-6">
         <Card>
           <CardContent className="p-6 text-center">
-            <h2 className="text-xl font-semibold mb-2">Card Not Found</h2>
+            <h2 className="mb-2 text-xl font-semibold">Card Not Found</h2>
             <p className="text-muted-foreground mb-4">
-              The card you&apos;re looking for doesn&apos;t exist or you don&apos;t have permission to edit it.
+              The card you&apos;re looking for doesn&apos;t exist or you
+              don&apos;t have permission to edit it.
             </p>
             <Button onClick={() => router.push(`/decks/${deckId}/cards`)}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
+              <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Cards
             </Button>
           </CardContent>
@@ -211,7 +218,7 @@ export default function EditCardPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
+    <div className="container mx-auto max-w-7xl p-6">
       {/* Breadcrumb Navigation */}
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
@@ -232,10 +239,12 @@ export default function EditCardPage() {
       </Breadcrumb>
 
       {/* Header with Action Buttons */}
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold tracking-tight">Edit Card</h1>
-          <p className="text-sm sm:text-base text-muted-foreground mt-1">
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl lg:text-2xl">
+            Edit Card
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Modify your flashcard content and settings
           </p>
         </div>
@@ -244,11 +253,11 @@ export default function EditCardPage() {
             onClick={handleSubmit}
             disabled={isLoading || updateCardMutation.isPending}
           >
-            {(isLoading || updateCardMutation.isPending) ? (
+            {isLoading || updateCardMutation.isPending ? (
               "Updating..."
             ) : (
               <>
-                <Save className="w-4 h-4 mr-2" />
+                <Save className="mr-2 h-4 w-4" />
                 Update Card
               </>
             )}
@@ -262,7 +271,7 @@ export default function EditCardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Form */}
         <Card>
           <CardHeader>
@@ -317,7 +326,7 @@ export default function EditCardPage() {
                   <div className="space-y-2">
                     <Label htmlFor="clozeText">
                       Cloze Text
-                      <span className="text-sm text-muted-foreground ml-2">
+                      <span className="text-muted-foreground ml-2 text-sm">
                         Use {`{{c1::text}}`} for deletions
                       </span>
                     </Label>
@@ -355,16 +364,20 @@ export default function EditCardPage() {
               {/* Tags */}
               <div className="space-y-2">
                 <Label>Tags</Label>
-                <div className="flex flex-wrap gap-2 mb-2">
+                <div className="mb-2 flex flex-wrap gap-2">
                   {tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="flex items-center gap-1"
+                    >
                       {tag}
                       <button
                         type="button"
                         onClick={() => handleRemoveTag(tag)}
                         className="text-muted-foreground hover:text-foreground"
                       >
-                        <X className="w-3 h-3" />
+                        <X className="h-3 w-3" />
                       </button>
                     </Badge>
                   ))}
@@ -381,12 +394,15 @@ export default function EditCardPage() {
                       }
                     }}
                   />
-                  <Button type="button" onClick={handleAddTag} variant="outline">
-                    <Plus className="w-4 h-4" />
+                  <Button
+                    type="button"
+                    onClick={handleAddTag}
+                    variant="outline"
+                  >
+                    <Plus className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-
             </div>
           </CardContent>
         </Card>
@@ -399,59 +415,67 @@ export default function EditCardPage() {
           <CardContent>
             {cardType === "BASIC" ? (
               <div className="space-y-4">
-                <div className="p-4 border rounded-lg">
-                  <Label className="text-sm font-medium text-muted-foreground">
+                <div className="rounded-lg border p-4">
+                  <Label className="text-muted-foreground text-sm font-medium">
                     Front
                   </Label>
-                  <div 
-                    className="mt-2 prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{ __html: front || "<p class='text-muted-foreground'>Enter front content...</p>" }}
+                  <div
+                    className="prose prose-sm mt-2 max-w-none"
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        front ||
+                        "<p class='text-muted-foreground'>Enter front content...</p>",
+                    }}
                   />
                 </div>
-                <div className="p-4 border rounded-lg">
-                  <Label className="text-sm font-medium text-muted-foreground">
+                <div className="rounded-lg border p-4">
+                  <Label className="text-muted-foreground text-sm font-medium">
                     Back
                   </Label>
-                  <div 
-                    className="mt-2 prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{ __html: back || "<p class='text-muted-foreground'>Enter back content...</p>" }}
+                  <div
+                    className="prose prose-sm mt-2 max-w-none"
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        back ||
+                        "<p class='text-muted-foreground'>Enter back content...</p>",
+                    }}
                   />
                 </div>
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="p-4 border rounded-lg">
-                  <Label className="text-sm font-medium text-muted-foreground">
+                <div className="rounded-lg border p-4">
+                  <Label className="text-muted-foreground text-sm font-medium">
                     Cloze Preview
                   </Label>
                   <div className="mt-2">
                     {clozeText ? (
-                      <ClozePreview 
-                        clozeText={clozeText}
-                      />
+                      <ClozePreview clozeText={clozeText} />
                     ) : (
-                      <p className="text-muted-foreground">Enter cloze text...</p>
+                      <p className="text-muted-foreground">
+                        Enter cloze text...
+                      </p>
                     )}
                   </div>
                 </div>
                 {front && (
-                  <div className="p-4 border rounded-lg">
-                    <Label className="text-sm font-medium text-muted-foreground">
+                  <div className="rounded-lg border p-4">
+                    <Label className="text-muted-foreground text-sm font-medium">
                       Additional Context
                     </Label>
-                    <div 
-                      className="mt-2 prose prose-sm max-w-none"
+                    <div
+                      className="prose prose-sm mt-2 max-w-none"
                       dangerouslySetInnerHTML={{ __html: front }}
                     />
                   </div>
                 )}
                 {back && (
-                  <div className="p-4 border rounded-lg">
-                    <Label className="text-sm font-medium text-muted-foreground">
+                  <div className="rounded-lg border p-4">
+                    <Label className="text-muted-foreground text-sm font-medium">
                       Back Extra
                     </Label>
-                    <div 
-                      className="mt-2 prose prose-sm max-w-none"
+                    <div
+                      className="prose prose-sm mt-2 max-w-none"
                       dangerouslySetInnerHTML={{ __html: back }}
                     />
                   </div>
@@ -460,11 +484,11 @@ export default function EditCardPage() {
             )}
 
             {tags.length > 0 && (
-              <div className="mt-4 pt-4 border-t">
-                <Label className="text-sm font-medium text-muted-foreground">
+              <div className="mt-4 border-t pt-4">
+                <Label className="text-muted-foreground text-sm font-medium">
                   Tags
                 </Label>
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="mt-2 flex flex-wrap gap-2">
                   {tags.map((tag) => (
                     <Badge key={tag} variant="outline">
                       {tag}

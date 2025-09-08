@@ -13,15 +13,15 @@ interface ExplanationActionsProps {
   isLoading?: boolean;
 }
 
-export function ExplanationActions({ 
-  onSave, 
+export function ExplanationActions({
+  onSave,
   onNewExplanation,
   isSaved,
-  isLoading = false
+  isLoading = false,
 }: ExplanationActionsProps) {
   const isMobile = useIsMobile();
   const handleCopy = () => {
-    const explanationElement = document.querySelector('.prose');
+    const explanationElement = document.querySelector(".prose");
     if (explanationElement?.textContent) {
       void navigator.clipboard.writeText(explanationElement.textContent);
       toast.success("Explanation copied to clipboard");
@@ -29,14 +29,14 @@ export function ExplanationActions({
   };
 
   const handleShare = async () => {
-    const explanationElement = document.querySelector('.prose');
+    const explanationElement = document.querySelector(".prose");
     if (explanationElement?.textContent) {
       const shareText = explanationElement.textContent;
-      
+
       if (navigator.share) {
         try {
           await navigator.share({
-            title: 'Anki Card Explanation',
+            title: "Anki Card Explanation",
             text: shareText,
           });
         } catch {
@@ -51,10 +51,12 @@ export function ExplanationActions({
   };
 
   return (
-    <div className={cn(
-      "flex flex-wrap items-center gap-2 border-t pt-3",
-      isMobile && "justify-between"
-    )}>
+    <div
+      className={cn(
+        "flex flex-wrap items-center gap-2 border-t pt-3",
+        isMobile && "justify-between",
+      )}
+    >
       {isMobile ? (
         <>
           <div className="flex gap-1">
@@ -65,12 +67,16 @@ export function ExplanationActions({
               disabled={isLoading || isSaved}
               className={cn(
                 "h-9 w-9",
-                isSaved && "text-green-600 hover:text-green-600"
+                isSaved && "text-green-600 hover:text-green-600",
               )}
             >
-              {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+              {isSaved ? (
+                <BookmarkCheck className="h-4 w-4" />
+              ) : (
+                <Bookmark className="h-4 w-4" />
+              )}
             </Button>
-            
+
             <Button
               variant="outline"
               size="icon"
@@ -79,7 +85,7 @@ export function ExplanationActions({
             >
               <Copy className="h-4 w-4" />
             </Button>
-            
+
             <Button
               variant="outline"
               size="icon"
@@ -89,7 +95,7 @@ export function ExplanationActions({
               <Share2 className="h-4 w-4" />
             </Button>
           </div>
-          
+
           <Button
             variant="outline"
             size="sm"
@@ -109,7 +115,7 @@ export function ExplanationActions({
             disabled={isLoading || isSaved}
             className={cn(
               "gap-2",
-              isSaved && "text-green-600 hover:text-green-600"
+              isSaved && "text-green-600 hover:text-green-600",
             )}
           >
             {isSaved ? (
@@ -124,7 +130,7 @@ export function ExplanationActions({
               </>
             )}
           </Button>
-          
+
           <Button
             variant="outline"
             size="sm"
@@ -134,7 +140,7 @@ export function ExplanationActions({
             <Copy className="h-4 w-4" />
             Copy
           </Button>
-          
+
           <Button
             variant="outline"
             size="sm"
@@ -144,7 +150,7 @@ export function ExplanationActions({
             <Share2 className="h-4 w-4" />
             Share
           </Button>
-          
+
           <Button
             variant="outline"
             size="sm"

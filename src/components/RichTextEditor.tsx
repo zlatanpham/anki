@@ -1,14 +1,14 @@
 "use client";
 
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
-import { TextStyle } from '@tiptap/extension-text-style';
-import { Color } from '@tiptap/extension-color';
-import Highlight from '@tiptap/extension-highlight';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Toggle } from '@/components/ui/toggle';
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Link from "@tiptap/extension-link";
+import { TextStyle } from "@tiptap/extension-text-style";
+import { Color } from "@tiptap/extension-color";
+import Highlight from "@tiptap/extension-highlight";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Toggle } from "@/components/ui/toggle";
 import {
   Bold,
   Italic,
@@ -21,14 +21,14 @@ import {
   Undo,
   Redo,
   Palette,
-  Highlighter
-} from 'lucide-react';
-import { useCallback, useEffect } from 'react';
+  Highlighter,
+} from "lucide-react";
+import { useCallback, useEffect } from "react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
+} from "@/components/ui/popover";
 
 interface RichTextEditorProps {
   content: string;
@@ -40,17 +40,27 @@ interface RichTextEditorProps {
 }
 
 const colors = [
-  '#000000', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
-  '#DDA0DD', '#98D8C8', '#74B9FF', '#6C5CE7', '#FD79A8', '#FDCB6E'
+  "#000000",
+  "#FF6B6B",
+  "#4ECDC4",
+  "#45B7D1",
+  "#96CEB4",
+  "#FFEAA7",
+  "#DDA0DD",
+  "#98D8C8",
+  "#74B9FF",
+  "#6C5CE7",
+  "#FD79A8",
+  "#FDCB6E",
 ];
 
-export function RichTextEditor({ 
-  content, 
-  onChange, 
-  placeholder = "Start typing...", 
+export function RichTextEditor({
+  content,
+  onChange,
+  placeholder = "Start typing...",
   className = "",
   minHeight = "120px",
-  maxHeight
+  maxHeight,
 }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
@@ -67,7 +77,7 @@ export function RichTextEditor({
       Link.configure({
         openOnClick: false,
         autolink: true,
-        defaultProtocol: 'https',
+        defaultProtocol: "https",
       }),
       TextStyle,
       Color,
@@ -94,19 +104,26 @@ export function RichTextEditor({
   }, [content, editor]);
 
   const setLink = useCallback(() => {
-    const previousUrl = editor?.getAttributes('link').href as string | undefined;
-    const url = window.prompt('URL', previousUrl ?? '');
+    const previousUrl = editor?.getAttributes("link").href as
+      | string
+      | undefined;
+    const url = window.prompt("URL", previousUrl ?? "");
 
     if (url === null) {
       return;
     }
 
-    if (url === '') {
-      editor?.chain().focus().extendMarkRange('link').unsetLink().run();
+    if (url === "") {
+      editor?.chain().focus().extendMarkRange("link").unsetLink().run();
       return;
     }
 
-    editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+    editor
+      ?.chain()
+      .focus()
+      .extendMarkRange("link")
+      .setLink({ href: url })
+      .run();
   }, [editor]);
 
   if (!editor) {
@@ -114,38 +131,38 @@ export function RichTextEditor({
   }
 
   return (
-    <div className={`border border-input rounded-lg ${className}`}>
+    <div className={`border-input rounded-lg border ${className}`}>
       {/* Toolbar */}
-      <div className="border-b border-border p-2 flex flex-wrap gap-1 items-center">
+      <div className="border-border flex flex-wrap items-center gap-1 border-b p-2">
         <Toggle
-          pressed={editor.isActive('bold')}
+          pressed={editor.isActive("bold")}
           onPressedChange={() => editor.chain().focus().toggleBold().run()}
           size="sm"
           aria-label="Bold"
         >
           <Bold className="h-4 w-4" />
         </Toggle>
-        
+
         <Toggle
-          pressed={editor.isActive('italic')}
+          pressed={editor.isActive("italic")}
           onPressedChange={() => editor.chain().focus().toggleItalic().run()}
           size="sm"
           aria-label="Italic"
         >
           <Italic className="h-4 w-4" />
         </Toggle>
-        
+
         <Toggle
-          pressed={editor.isActive('strike')}
+          pressed={editor.isActive("strike")}
           onPressedChange={() => editor.chain().focus().toggleStrike().run()}
           size="sm"
           aria-label="Strikethrough"
         >
           <Strikethrough className="h-4 w-4" />
         </Toggle>
-        
+
         <Toggle
-          pressed={editor.isActive('code')}
+          pressed={editor.isActive("code")}
           onPressedChange={() => editor.chain().focus().toggleCode().run()}
           size="sm"
           aria-label="Code"
@@ -156,26 +173,32 @@ export function RichTextEditor({
         <Separator orientation="vertical" className="h-6" />
 
         <Toggle
-          pressed={editor.isActive('bulletList')}
-          onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
+          pressed={editor.isActive("bulletList")}
+          onPressedChange={() =>
+            editor.chain().focus().toggleBulletList().run()
+          }
           size="sm"
           aria-label="Bullet List"
         >
           <List className="h-4 w-4" />
         </Toggle>
-        
+
         <Toggle
-          pressed={editor.isActive('orderedList')}
-          onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}
+          pressed={editor.isActive("orderedList")}
+          onPressedChange={() =>
+            editor.chain().focus().toggleOrderedList().run()
+          }
           size="sm"
           aria-label="Numbered List"
         >
           <ListOrdered className="h-4 w-4" />
         </Toggle>
-        
+
         <Toggle
-          pressed={editor.isActive('blockquote')}
-          onPressedChange={() => editor.chain().focus().toggleBlockquote().run()}
+          pressed={editor.isActive("blockquote")}
+          onPressedChange={() =>
+            editor.chain().focus().toggleBlockquote().run()
+          }
           size="sm"
           aria-label="Quote"
         >
@@ -188,7 +211,7 @@ export function RichTextEditor({
           variant="ghost"
           size="sm"
           onClick={setLink}
-          className={editor.isActive('link') ? 'bg-muted' : ''}
+          className={editor.isActive("link") ? "bg-muted" : ""}
           aria-label="Link"
         >
           <LinkIcon className="h-4 w-4" />
@@ -206,7 +229,7 @@ export function RichTextEditor({
               {colors.map((color) => (
                 <button
                   key={color}
-                  className="w-6 h-6 rounded border-2 border-gray-200 hover:border-gray-400"
+                  className="h-6 w-6 rounded border-2 border-gray-200 hover:border-gray-400"
                   style={{ backgroundColor: color }}
                   onClick={() => editor.chain().focus().setColor(color).run()}
                 />
@@ -215,7 +238,7 @@ export function RichTextEditor({
             <Button
               variant="outline"
               size="sm"
-              className="w-full mt-2"
+              className="mt-2 w-full"
               onClick={() => editor.chain().focus().unsetColor().run()}
             >
               Clear Color
@@ -228,8 +251,8 @@ export function RichTextEditor({
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
-              size="sm" 
-              className={editor.isActive('highlight') ? 'bg-muted' : ''}
+              size="sm"
+              className={editor.isActive("highlight") ? "bg-muted" : ""}
               aria-label="Highlight"
             >
               <Highlighter className="h-4 w-4" />
@@ -240,16 +263,18 @@ export function RichTextEditor({
               {colors.slice(1).map((color) => (
                 <button
                   key={color}
-                  className="w-6 h-6 rounded border-2 border-gray-200 hover:border-gray-400"
+                  className="h-6 w-6 rounded border-2 border-gray-200 hover:border-gray-400"
                   style={{ backgroundColor: color }}
-                  onClick={() => editor.chain().focus().setHighlight({ color }).run()}
+                  onClick={() =>
+                    editor.chain().focus().setHighlight({ color }).run()
+                  }
                 />
               ))}
             </div>
             <Button
               variant="outline"
               size="sm"
-              className="w-full mt-2"
+              className="mt-2 w-full"
               onClick={() => editor.chain().focus().unsetHighlight().run()}
             >
               Clear Highlight
@@ -268,7 +293,7 @@ export function RichTextEditor({
         >
           <Undo className="h-4 w-4" />
         </Button>
-        
+
         <Button
           variant="ghost"
           size="sm"
@@ -281,13 +306,13 @@ export function RichTextEditor({
       </div>
 
       {/* Editor Content */}
-      <div className="relative" style={{ maxHeight, overflow: maxHeight ? 'auto' : undefined }}>
-        <EditorContent 
-          editor={editor} 
-          className="min-h-[120px]"
-        />
-        {(!content || content === '<p></p>') && (
-          <div className="absolute inset-0 p-3 text-muted-foreground pointer-events-none">
+      <div
+        className="relative"
+        style={{ maxHeight, overflow: maxHeight ? "auto" : undefined }}
+      >
+        <EditorContent editor={editor} className="min-h-[120px]" />
+        {(!content || content === "<p></p>") && (
+          <div className="text-muted-foreground pointer-events-none absolute inset-0 p-3">
             <div className="prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl mx-auto">
               <p>{placeholder}</p>
             </div>

@@ -33,7 +33,15 @@ interface SearchFilters {
   searchFields: string[];
   createdAfter?: Date;
   createdBefore?: Date;
-  sortBy: "created_at" | "updated_at" | "front" | "due_date" | "interval" | "difficulty" | "lapses" | "repetitions";
+  sortBy:
+    | "created_at"
+    | "updated_at"
+    | "front"
+    | "due_date"
+    | "interval"
+    | "difficulty"
+    | "lapses"
+    | "repetitions";
   sortOrder: "asc" | "desc";
 }
 
@@ -57,11 +65,11 @@ const SORT_OPTIONS = [
   { value: "front", label: "Front Text" },
 ];
 
-export function AdvancedSearch({ 
-  onSearch, 
-  initialFilters, 
-  deckId, 
-  className 
+export function AdvancedSearch({
+  onSearch,
+  initialFilters,
+  deckId,
+  className,
 }: AdvancedSearchProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>({
@@ -105,30 +113,30 @@ export function AdvancedSearch({
   };
 
   const toggleTag = (tag: string) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       tags: prev.tags.includes(tag)
-        ? prev.tags.filter(t => t !== tag)
-        : [...prev.tags, tag]
+        ? prev.tags.filter((t) => t !== tag)
+        : [...prev.tags, tag],
     }));
   };
 
   const toggleDeck = (deckIdToToggle: string) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       deckIds: prev.deckIds.includes(deckIdToToggle)
-        ? prev.deckIds.filter(id => id !== deckIdToToggle)
-        : [...prev.deckIds, deckIdToToggle]
+        ? prev.deckIds.filter((id) => id !== deckIdToToggle)
+        : [...prev.deckIds, deckIdToToggle],
     }));
   };
 
-  const hasActiveFilters = 
-    filters.search || 
-    !!(filters.cardType) || 
-    filters.tags.length > 0 || 
+  const hasActiveFilters =
+    filters.search ||
+    !!filters.cardType ||
+    filters.tags.length > 0 ||
     (filters.deckIds.length > 0 && !deckId) || // Only count deckIds as active filter if not in deck-specific mode
-    !!(filters.createdAfter) || 
-    !!(filters.createdBefore) ||
+    !!filters.createdAfter ||
+    !!filters.createdBefore ||
     filters.searchFields.length !== 4 ||
     filters.sortBy !== "created_at" ||
     filters.sortOrder !== "desc";
@@ -137,12 +145,14 @@ export function AdvancedSearch({
     <div className={className}>
       <div className="flex gap-2">
         {/* Quick Search Input */}
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <div className="relative flex-1">
+          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
           <Input
             placeholder="Search cards..."
             value={filters.search}
-            onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, search: e.target.value }))
+            }
             className="pl-10"
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -156,7 +166,7 @@ export function AdvancedSearch({
         <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
             <Button variant="outline" className="flex items-center gap-2">
-              <Filter className="w-4 h-4" />
+              <Filter className="h-4 w-4" />
               Advanced
               {hasActiveFilters && (
                 <Badge variant="secondary" className="ml-1 px-1 py-0 text-xs">
@@ -176,10 +186,13 @@ export function AdvancedSearch({
                   <Label>Card Type</Label>
                   <Select
                     value={filters.cardType ?? "all"}
-                    onValueChange={(value) => 
-                      setFilters(prev => ({ 
-                        ...prev, 
-                        cardType: value === "all" ? undefined : value as "BASIC" | "CLOZE"
+                    onValueChange={(value) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        cardType:
+                          value === "all"
+                            ? undefined
+                            : (value as "BASIC" | "CLOZE"),
                       }))
                     }
                   >
@@ -199,20 +212,25 @@ export function AdvancedSearch({
                   <Label>Search In</Label>
                   <div className="grid grid-cols-2 gap-2">
                     {SEARCH_FIELDS.map((field) => (
-                      <div key={field.id} className="flex items-center space-x-2">
+                      <div
+                        key={field.id}
+                        className="flex items-center space-x-2"
+                      >
                         <Checkbox
                           id={field.id}
                           checked={filters.searchFields.includes(field.id)}
                           onCheckedChange={(checked) => {
                             if (checked) {
-                              setFilters(prev => ({
+                              setFilters((prev) => ({
                                 ...prev,
-                                searchFields: [...prev.searchFields, field.id]
+                                searchFields: [...prev.searchFields, field.id],
                               }));
                             } else {
-                              setFilters(prev => ({
+                              setFilters((prev) => ({
                                 ...prev,
-                                searchFields: prev.searchFields.filter(f => f !== field.id)
+                                searchFields: prev.searchFields.filter(
+                                  (f) => f !== field.id,
+                                ),
                               }));
                             }
                           }}
@@ -229,11 +247,13 @@ export function AdvancedSearch({
                 {popularTags && popularTags.length > 0 && (
                   <div className="space-y-2">
                     <Label>Tags</Label>
-                    <div className="flex flex-wrap gap-1 max-h-32 overflow-y-auto">
+                    <div className="flex max-h-32 flex-wrap gap-1 overflow-y-auto">
                       {popularTags.map(({ tag, count }) => (
                         <Badge
                           key={tag}
-                          variant={filters.tags.includes(tag) ? "default" : "secondary"}
+                          variant={
+                            filters.tags.includes(tag) ? "default" : "secondary"
+                          }
                           className="cursor-pointer text-xs"
                           onClick={() => toggleTag(tag)}
                         >
@@ -243,12 +263,18 @@ export function AdvancedSearch({
                     </div>
                     {filters.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1">
-                        <span className="text-sm text-muted-foreground">Selected:</span>
-                        {filters.tags.map(tag => (
-                          <Badge key={tag} variant="default" className="text-xs">
+                        <span className="text-muted-foreground text-sm">
+                          Selected:
+                        </span>
+                        {filters.tags.map((tag) => (
+                          <Badge
+                            key={tag}
+                            variant="default"
+                            className="text-xs"
+                          >
                             {tag}
                             <X
-                              className="w-3 h-3 ml-1 cursor-pointer"
+                              className="ml-1 h-3 w-3 cursor-pointer"
                               onClick={() => toggleTag(tag)}
                             />
                           </Badge>
@@ -262,16 +288,22 @@ export function AdvancedSearch({
                 {!deckId && decks?.decks && decks.decks.length > 0 && (
                   <div className="space-y-2">
                     <Label>Decks</Label>
-                    <div className="max-h-32 overflow-y-auto space-y-1">
+                    <div className="max-h-32 space-y-1 overflow-y-auto">
                       {decks.decks.map((deck) => (
-                        <div key={deck.id} className="flex items-center space-x-2">
+                        <div
+                          key={deck.id}
+                          className="flex items-center space-x-2"
+                        >
                           <Checkbox
                             id={deck.id}
                             checked={filters.deckIds.includes(deck.id)}
                             onCheckedChange={() => toggleDeck(deck.id)}
                           />
-                          <Label htmlFor={deck.id} className="text-sm flex items-center gap-1">
-                            <BookOpen className="w-3 h-3" />
+                          <Label
+                            htmlFor={deck.id}
+                            className="flex items-center gap-1 text-sm"
+                          >
+                            <BookOpen className="h-3 w-3" />
                             {deck.name}
                           </Label>
                         </div>
@@ -290,7 +322,7 @@ export function AdvancedSearch({
                           variant="outline"
                           className={cn(
                             "justify-start text-left font-normal",
-                            !filters.createdAfter && "text-muted-foreground"
+                            !filters.createdAfter && "text-muted-foreground",
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
@@ -305,7 +337,12 @@ export function AdvancedSearch({
                         <Calendar
                           mode="single"
                           selected={filters.createdAfter}
-                          onSelect={(date) => setFilters(prev => ({ ...prev, createdAfter: date }))}
+                          onSelect={(date) =>
+                            setFilters((prev) => ({
+                              ...prev,
+                              createdAfter: date,
+                            }))
+                          }
                           initialFocus
                         />
                       </PopoverContent>
@@ -317,7 +354,7 @@ export function AdvancedSearch({
                           variant="outline"
                           className={cn(
                             "justify-start text-left font-normal",
-                            !filters.createdBefore && "text-muted-foreground"
+                            !filters.createdBefore && "text-muted-foreground",
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
@@ -332,7 +369,12 @@ export function AdvancedSearch({
                         <Calendar
                           mode="single"
                           selected={filters.createdBefore}
-                          onSelect={(date) => setFilters(prev => ({ ...prev, createdBefore: date }))}
+                          onSelect={(date) =>
+                            setFilters((prev) => ({
+                              ...prev,
+                              createdBefore: date,
+                            }))
+                          }
                           initialFocus
                         />
                       </PopoverContent>
@@ -346,10 +388,13 @@ export function AdvancedSearch({
                   <div className="grid grid-cols-2 gap-2">
                     <Select
                       value={filters.sortBy}
-                      onValueChange={(value) => 
-                        setFilters(prev => ({ 
-                          ...prev, 
-                          sortBy: value as "created_at" | "updated_at" | "front"
+                      onValueChange={(value) =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          sortBy: value as
+                            | "created_at"
+                            | "updated_at"
+                            | "front",
                         }))
                       }
                     >
@@ -357,7 +402,7 @@ export function AdvancedSearch({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {SORT_OPTIONS.map(option => (
+                        {SORT_OPTIONS.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
                           </SelectItem>
@@ -367,10 +412,10 @@ export function AdvancedSearch({
 
                     <Select
                       value={filters.sortOrder}
-                      onValueChange={(value) => 
-                        setFilters(prev => ({ 
-                          ...prev, 
-                          sortOrder: value as "asc" | "desc"
+                      onValueChange={(value) =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          sortOrder: value as "asc" | "desc",
                         }))
                       }
                     >
@@ -391,11 +436,15 @@ export function AdvancedSearch({
                     Clear All
                   </Button>
                   <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => setIsOpen(false)} size="sm">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsOpen(false)}
+                      size="sm"
+                    >
                       Cancel
                     </Button>
                     <Button onClick={handleSearch} size="sm">
-                      <Search className="w-4 h-4 mr-2" />
+                      <Search className="mr-2 h-4 w-4" />
                       Search
                     </Button>
                   </div>
@@ -407,27 +456,33 @@ export function AdvancedSearch({
 
         {/* Quick Search Button */}
         <Button onClick={handleSearch}>
-          <Search className="w-4 h-4" />
+          <Search className="h-4 w-4" />
         </Button>
       </div>
 
       {/* Active Filters Display */}
       {hasActiveFilters && (
-        <div className="flex flex-wrap gap-2 mt-2">
+        <div className="mt-2 flex flex-wrap gap-2">
           {filters.cardType && (
             <Badge variant="outline" className="flex items-center gap-1">
               Type: {filters.cardType}
               <X
-                className="w-3 h-3 cursor-pointer"
-                onClick={() => setFilters(prev => ({ ...prev, cardType: undefined }))}
+                className="h-3 w-3 cursor-pointer"
+                onClick={() =>
+                  setFilters((prev) => ({ ...prev, cardType: undefined }))
+                }
               />
             </Badge>
           )}
-          {filters.tags.map(tag => (
-            <Badge key={tag} variant="outline" className="flex items-center gap-1">
+          {filters.tags.map((tag) => (
+            <Badge
+              key={tag}
+              variant="outline"
+              className="flex items-center gap-1"
+            >
               #{tag}
               <X
-                className="w-3 h-3 cursor-pointer"
+                className="h-3 w-3 cursor-pointer"
                 onClick={() => toggleTag(tag)}
               />
             </Badge>
@@ -436,8 +491,10 @@ export function AdvancedSearch({
             <Badge variant="outline" className="flex items-center gap-1">
               From: {format(filters.createdAfter, "MMM d")}
               <X
-                className="w-3 h-3 cursor-pointer"
-                onClick={() => setFilters(prev => ({ ...prev, createdAfter: undefined }))}
+                className="h-3 w-3 cursor-pointer"
+                onClick={() =>
+                  setFilters((prev) => ({ ...prev, createdAfter: undefined }))
+                }
               />
             </Badge>
           )}
@@ -445,12 +502,19 @@ export function AdvancedSearch({
             <Badge variant="outline" className="flex items-center gap-1">
               To: {format(filters.createdBefore, "MMM d")}
               <X
-                className="w-3 h-3 cursor-pointer"
-                onClick={() => setFilters(prev => ({ ...prev, createdBefore: undefined }))}
+                className="h-3 w-3 cursor-pointer"
+                onClick={() =>
+                  setFilters((prev) => ({ ...prev, createdBefore: undefined }))
+                }
               />
             </Badge>
           )}
-          <Button variant="ghost" size="sm" onClick={clearFilters} className="h-6 px-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="h-6 px-2"
+          >
             Clear all
           </Button>
         </div>

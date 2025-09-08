@@ -229,12 +229,15 @@ export const userRouter = createTRPCRouter({
       // Get last study session date if any
       const lastReview = await ctx.db.review.findFirst({
         where: { user_id: userId },
-        orderBy: { reviewed_at: 'desc' },
+        orderBy: { reviewed_at: "desc" },
         select: { reviewed_at: true },
       });
 
       return {
-        isNewUser: totalReviewsCount === 0 && userDecksCount === 0 && userCardsCount === 0,
+        isNewUser:
+          totalReviewsCount === 0 &&
+          userDecksCount === 0 &&
+          userCardsCount === 0,
         hasEverStudied: totalReviewsCount > 0,
         totalReviews: totalReviewsCount,
         totalDecks: userDecksCount,
@@ -253,7 +256,7 @@ export const userRouter = createTRPCRouter({
     try {
       const lastReview = await ctx.db.review.findFirst({
         where: { user_id: userId },
-        orderBy: { reviewed_at: 'desc' },
+        orderBy: { reviewed_at: "desc" },
         include: {
           card: {
             include: {

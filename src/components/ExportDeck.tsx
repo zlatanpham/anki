@@ -61,10 +61,7 @@ export function ExportDeck({
   // When used as a dropdown item, render as DropdownMenuItem
   if (asDropdownItem) {
     return (
-      <DropdownMenuItem
-        onClick={handleExport}
-        disabled={exportDeck.isPending}
-      >
+      <DropdownMenuItem onClick={handleExport} disabled={exportDeck.isPending}>
         {exportDeck.isPending ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         ) : (

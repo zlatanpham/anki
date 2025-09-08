@@ -18,7 +18,14 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Copy, ChevronDown, ChevronRight, Code2, Terminal, Info } from "lucide-react";
+import {
+  Copy,
+  ChevronDown,
+  ChevronRight,
+  Code2,
+  Terminal,
+  Info,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface ApiExamplesProps {
@@ -35,13 +42,16 @@ interface Example {
   javascript?: string;
 }
 
-export function ApiExamples({ apiKey = "ank_YOUR_API_KEY_HERE" }: ApiExamplesProps) {
+export function ApiExamples({
+  apiKey = "ank_YOUR_API_KEY_HERE",
+}: ApiExamplesProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<string | null>(null);
 
-  const baseUrl = typeof window !== "undefined" 
-    ? `${window.location.protocol}//${window.location.host}`
-    : "http://localhost:3000";
+  const baseUrl =
+    typeof window !== "undefined"
+      ? `${window.location.protocol}//${window.location.host}`
+      : "http://localhost:3000";
 
   const examples: Example[] = [
     {
@@ -63,7 +73,7 @@ decks = response.json()`,
     "Authorization": "Bearer ${apiKey}"
   }
 });
-const decks = await response.json();`
+const decks = await response.json();`,
     },
     {
       title: "List Decks with Pagination",
@@ -85,7 +95,7 @@ decks = response.json()`,
     "Authorization": "Bearer ${apiKey}"
   }
 });
-const decks = await response.json();`
+const decks = await response.json();`,
     },
     {
       title: "Create a New Deck",
@@ -129,7 +139,7 @@ deck = response.json()`,
     isPublic: false
   })
 });
-const deck = await response.json();`
+const deck = await response.json();`,
     },
     {
       title: "Add Multiple Cards (Batch)",
@@ -206,7 +216,7 @@ result = response.json()`,
     ]
   })
 });
-const result = await response.json();`
+const result = await response.json();`,
     },
     {
       title: "Add Cloze Cards",
@@ -265,7 +275,7 @@ result = response.json()`,
     ]
   })
 });
-const result = await response.json();`
+const result = await response.json();`,
     },
     {
       title: "Get Review Queue",
@@ -286,7 +296,7 @@ queue = response.json()`,
     "Authorization": "Bearer ${apiKey}"
   }
 });
-const queue = await response.json();`
+const queue = await response.json();`,
     },
     {
       title: "Get Review Queue for Specific Deck",
@@ -308,13 +318,14 @@ queue = response.json()`,
     "Authorization": "Bearer ${apiKey}"
   }
 });
-const queue = await response.json();`
+const queue = await response.json();`,
     },
     {
       title: "Get Only New Cards",
       description: "Filter review queue to show only new cards",
       method: "GET",
-      endpoint: "/api/v1/study/queue?includeNew=true&includeLearning=false&includeReview=false",
+      endpoint:
+        "/api/v1/study/queue?includeNew=true&includeLearning=false&includeReview=false",
       curl: `curl -X GET "${baseUrl}/api/v1/study/queue?includeNew=true&includeLearning=false&includeReview=false" \\
   -H "Authorization: Bearer ${apiKey}"`,
       python: `import requests
@@ -334,8 +345,8 @@ queue = response.json()`,
     "Authorization": "Bearer ${apiKey}"
   }
 });
-const queue = await response.json();`
-    }
+const queue = await response.json();`,
+    },
   ];
 
   const copyToClipboard = async (text: string, id: string) => {
@@ -368,7 +379,7 @@ const queue = await response.json();`
     <Card>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
-          <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+          <CardHeader className="hover:bg-muted/50 cursor-pointer transition-colors">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Terminal className="h-5 w-5" />
@@ -397,132 +408,166 @@ const queue = await response.json();`
                 <Alert>
                   <Info className="h-4 w-4" />
                   <AlertDescription>
-                    Generate an API key above to see personalized examples with your actual key.
-                    The examples below use a placeholder key.
+                    Generate an API key above to see personalized examples with
+                    your actual key. The examples below use a placeholder key.
                   </AlertDescription>
                 </Alert>
               )}
-              
+
               <ScrollArea className="h-[700px] pr-4">
                 <div className="space-y-6">
-                {examples.map((example, index) => (
-                  <div
-                    key={index}
-                    className="border rounded-lg p-4 space-y-4 hover:border-primary/50 transition-colors"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="space-y-1 flex-1">
-                        <h4 className="font-semibold text-lg">{example.title}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {example.description}
-                        </p>
+                  {examples.map((example, index) => (
+                    <div
+                      key={index}
+                      className="hover:border-primary/50 space-y-4 rounded-lg border p-4 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 space-y-1">
+                          <h4 className="text-lg font-semibold">
+                            {example.title}
+                          </h4>
+                          <p className="text-muted-foreground text-sm">
+                            {example.description}
+                          </p>
+                        </div>
+                        <Badge
+                          variant="secondary"
+                          className={`${getMethodColor(example.method)} font-mono`}
+                        >
+                          {example.method}
+                        </Badge>
                       </div>
-                      <Badge
-                        variant="secondary"
-                        className={`${getMethodColor(example.method)} font-mono`}
-                      >
-                        {example.method}
-                      </Badge>
+
+                      <div className="flex items-center gap-2 text-sm">
+                        <Code2 className="text-muted-foreground h-4 w-4" />
+                        <code className="bg-muted rounded px-2 py-1 font-mono text-sm">
+                          {example.endpoint}
+                        </code>
+                      </div>
+
+                      <Tabs defaultValue="curl" className="w-full">
+                        <TabsList className="grid w-full grid-cols-3">
+                          <TabsTrigger value="curl">cURL</TabsTrigger>
+                          <TabsTrigger value="python">Python</TabsTrigger>
+                          <TabsTrigger value="javascript">
+                            JavaScript
+                          </TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="curl" className="space-y-2">
+                          <div className="group relative">
+                            <div className="text-muted-foreground absolute top-2 left-2 font-mono text-xs">
+                              bash
+                            </div>
+                            <pre className="bg-muted overflow-x-auto rounded-lg p-4 pt-8 text-sm">
+                              <code className="language-bash">
+                                {example.curl}
+                              </code>
+                            </pre>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100"
+                              onClick={() =>
+                                copyToClipboard(example.curl, `curl-${index}`)
+                              }
+                            >
+                              {copiedIndex === `curl-${index}` ? (
+                                <span className="text-green-500">Copied!</span>
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </TabsContent>
+
+                        {example.python && (
+                          <TabsContent value="python" className="space-y-2">
+                            <div className="group relative">
+                              <div className="text-muted-foreground absolute top-2 left-2 font-mono text-xs">
+                                python
+                              </div>
+                              <pre className="bg-muted overflow-x-auto rounded-lg p-4 pt-8 text-sm">
+                                <code className="language-python">
+                                  {example.python}
+                                </code>
+                              </pre>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100"
+                                onClick={() =>
+                                  copyToClipboard(
+                                    example.python!,
+                                    `python-${index}`,
+                                  )
+                                }
+                              >
+                                {copiedIndex === `python-${index}` ? (
+                                  <span className="text-green-500">
+                                    Copied!
+                                  </span>
+                                ) : (
+                                  <Copy className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </div>
+                          </TabsContent>
+                        )}
+
+                        {example.javascript && (
+                          <TabsContent value="javascript" className="space-y-2">
+                            <div className="group relative">
+                              <div className="text-muted-foreground absolute top-2 left-2 font-mono text-xs">
+                                javascript
+                              </div>
+                              <pre className="bg-muted overflow-x-auto rounded-lg p-4 pt-8 text-sm">
+                                <code className="language-javascript">
+                                  {example.javascript}
+                                </code>
+                              </pre>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100"
+                                onClick={() =>
+                                  copyToClipboard(
+                                    example.javascript!,
+                                    `js-${index}`,
+                                  )
+                                }
+                              >
+                                {copiedIndex === `js-${index}` ? (
+                                  <span className="text-green-500">
+                                    Copied!
+                                  </span>
+                                ) : (
+                                  <Copy className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </div>
+                          </TabsContent>
+                        )}
+                      </Tabs>
                     </div>
-                    
-                    <div className="flex items-center gap-2 text-sm">
-                      <Code2 className="h-4 w-4 text-muted-foreground" />
-                      <code className="font-mono text-sm bg-muted px-2 py-1 rounded">
-                        {example.endpoint}
-                      </code>
+                  ))}
+
+                  {/* Error Handling Section */}
+                  <div className="bg-destructive/5 border-destructive/20 space-y-4 rounded-lg border p-4">
+                    <div className="space-y-1">
+                      <h4 className="text-lg font-semibold">Error Handling</h4>
+                      <p className="text-muted-foreground text-sm">
+                        All API errors follow a consistent format
+                      </p>
                     </div>
 
-                    <Tabs defaultValue="curl" className="w-full">
-                      <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="curl">cURL</TabsTrigger>
-                        <TabsTrigger value="python">Python</TabsTrigger>
-                        <TabsTrigger value="javascript">JavaScript</TabsTrigger>
-                      </TabsList>
-                      
-                      <TabsContent value="curl" className="space-y-2">
-                        <div className="relative group">
-                          <div className="absolute top-2 left-2 text-xs text-muted-foreground font-mono">bash</div>
-                          <pre className="bg-muted p-4 pt-8 rounded-lg overflow-x-auto text-sm">
-                            <code className="language-bash">{example.curl}</code>
-                          </pre>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => copyToClipboard(example.curl, `curl-${index}`)}
-                          >
-                            {copiedIndex === `curl-${index}` ? (
-                              <span className="text-green-500">Copied!</span>
-                            ) : (
-                              <Copy className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
-                      </TabsContent>
-                      
-                      {example.python && (
-                        <TabsContent value="python" className="space-y-2">
-                          <div className="relative group">
-                            <div className="absolute top-2 left-2 text-xs text-muted-foreground font-mono">python</div>
-                            <pre className="bg-muted p-4 pt-8 rounded-lg overflow-x-auto text-sm">
-                              <code className="language-python">{example.python}</code>
-                            </pre>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={() => copyToClipboard(example.python!, `python-${index}`)}
-                            >
-                              {copiedIndex === `python-${index}` ? (
-                                <span className="text-green-500">Copied!</span>
-                              ) : (
-                                <Copy className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </TabsContent>
-                      )}
-                      
-                      {example.javascript && (
-                        <TabsContent value="javascript" className="space-y-2">
-                          <div className="relative group">
-                            <div className="absolute top-2 left-2 text-xs text-muted-foreground font-mono">javascript</div>
-                            <pre className="bg-muted p-4 pt-8 rounded-lg overflow-x-auto text-sm">
-                              <code className="language-javascript">{example.javascript}</code>
-                            </pre>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={() => copyToClipboard(example.javascript!, `js-${index}`)}
-                            >
-                              {copiedIndex === `js-${index}` ? (
-                                <span className="text-green-500">Copied!</span>
-                              ) : (
-                                <Copy className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </TabsContent>
-                      )}
-                    </Tabs>
-                  </div>
-                ))}
-                
-                {/* Error Handling Section */}
-                <div className="border rounded-lg p-4 space-y-4 bg-destructive/5 border-destructive/20">
-                  <div className="space-y-1">
-                    <h4 className="font-semibold text-lg">Error Handling</h4>
-                    <p className="text-sm text-muted-foreground">
-                      All API errors follow a consistent format
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm font-medium mb-2">Error Response Format:</p>
-                      <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
-                        <code>{`{
+                    <div className="space-y-4">
+                      <div>
+                        <p className="mb-2 text-sm font-medium">
+                          Error Response Format:
+                        </p>
+                        <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-sm">
+                          <code>{`{
   "error": {
     "code": "ERROR_CODE",
     "message": "Human readable error message",
@@ -531,64 +576,88 @@ const queue = await response.json();`
     }
   }
 }`}</code>
-                      </pre>
-                    </div>
-                    
-                    <div>
-                      <p className="text-sm font-medium mb-2">Common Error Codes:</p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                        <div className="flex items-start gap-2">
-                          <Badge variant="outline" className="mt-0.5">INVALID_API_KEY</Badge>
-                          <span className="text-muted-foreground">API key is invalid or revoked</span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <Badge variant="outline" className="mt-0.5">RATE_LIMIT_EXCEEDED</Badge>
-                          <span className="text-muted-foreground">Too many requests</span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <Badge variant="outline" className="mt-0.5">VALIDATION_ERROR</Badge>
-                          <span className="text-muted-foreground">Request data validation failed</span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <Badge variant="outline" className="mt-0.5">RESOURCE_NOT_FOUND</Badge>
-                          <span className="text-muted-foreground">Resource doesn&apos;t exist</span>
+                        </pre>
+                      </div>
+
+                      <div>
+                        <p className="mb-2 text-sm font-medium">
+                          Common Error Codes:
+                        </p>
+                        <div className="grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
+                          <div className="flex items-start gap-2">
+                            <Badge variant="outline" className="mt-0.5">
+                              INVALID_API_KEY
+                            </Badge>
+                            <span className="text-muted-foreground">
+                              API key is invalid or revoked
+                            </span>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <Badge variant="outline" className="mt-0.5">
+                              RATE_LIMIT_EXCEEDED
+                            </Badge>
+                            <span className="text-muted-foreground">
+                              Too many requests
+                            </span>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <Badge variant="outline" className="mt-0.5">
+                              VALIDATION_ERROR
+                            </Badge>
+                            <span className="text-muted-foreground">
+                              Request data validation failed
+                            </span>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <Badge variant="outline" className="mt-0.5">
+                              RESOURCE_NOT_FOUND
+                            </Badge>
+                            <span className="text-muted-foreground">
+                              Resource doesn&apos;t exist
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                
-                {/* Rate Limits Section */}
-                <div className="border rounded-lg p-4 space-y-4 bg-primary/5 border-primary/20">
-                  <div className="space-y-1">
-                    <h4 className="font-semibold text-lg">Rate Limits</h4>
-                    <p className="text-sm text-muted-foreground">
-                      API rate limits are included in response headers
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm font-medium mb-2">Response Headers:</p>
-                      <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
-                        <code>{`X-RateLimit-Limit: 1000
+
+                  {/* Rate Limits Section */}
+                  <div className="bg-primary/5 border-primary/20 space-y-4 rounded-lg border p-4">
+                    <div className="space-y-1">
+                      <h4 className="text-lg font-semibold">Rate Limits</h4>
+                      <p className="text-muted-foreground text-sm">
+                        API rate limits are included in response headers
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <p className="mb-2 text-sm font-medium">
+                          Response Headers:
+                        </p>
+                        <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-sm">
+                          <code>{`X-RateLimit-Limit: 1000
 X-RateLimit-Remaining: 999
 X-RateLimit-Reset: 2025-01-08T12:00:00.000Z`}</code>
-                      </pre>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                      <div className="space-y-1">
-                        <p className="font-medium">Default Endpoints</p>
-                        <p className="text-muted-foreground">1000 requests/hour</p>
+                        </pre>
                       </div>
-                      <div className="space-y-1">
-                        <p className="font-medium">Batch Endpoints</p>
-                        <p className="text-muted-foreground">100 requests/hour</p>
+
+                      <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
+                        <div className="space-y-1">
+                          <p className="font-medium">Default Endpoints</p>
+                          <p className="text-muted-foreground">
+                            1000 requests/hour
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-medium">Batch Endpoints</p>
+                          <p className="text-muted-foreground">
+                            100 requests/hour
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
                 </div>
               </ScrollArea>
             </div>

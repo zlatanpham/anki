@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { api } from "@/trpc/react";
 import { toast } from "sonner";
@@ -25,7 +25,7 @@ import {
   XCircle,
   AlertTriangle,
   Brain,
-  Tag
+  Tag,
 } from "lucide-react";
 
 interface ImportWizardProps {
@@ -55,7 +55,10 @@ interface ImportPreview {
   };
 }
 
-export function ImportWizard({ onImportSuccess, organizationId }: ImportWizardProps) {
+export function ImportWizard({
+  onImportSuccess,
+  organizationId,
+}: ImportWizardProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState<"upload" | "preview" | "import">("upload");
   const [jsonData, setJsonData] = useState<string>("");
@@ -78,7 +81,7 @@ export function ImportWizard({ onImportSuccess, organizationId }: ImportWizardPr
     onSuccess: (result) => {
       toast.success(`Successfully imported ${result.cardsImported} cards!`);
       if (result.warnings.length > 0) {
-        result.warnings.forEach(warning => toast.warning(warning));
+        result.warnings.forEach((warning) => toast.warning(warning));
       }
       if (onImportSuccess && result.deckId) {
         onImportSuccess(result.deckId);
@@ -94,7 +97,7 @@ export function ImportWizard({ onImportSuccess, organizationId }: ImportWizardPr
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!file.name.endsWith('.json')) {
+    if (!file.name.endsWith(".json")) {
       toast.error("Please select a JSON file");
       return;
     }
@@ -143,7 +146,7 @@ export function ImportWizard({ onImportSuccess, organizationId }: ImportWizardPr
           Import Deck
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-h-[80vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Import Deck from JSON</DialogTitle>
         </DialogHeader>
@@ -168,8 +171,9 @@ export function ImportWizard({ onImportSuccess, organizationId }: ImportWizardPr
                       onChange={handleFileUpload}
                       className="cursor-pointer"
                     />
-                    <p className="text-sm text-muted-foreground">
-                      Select a JSON file exported from this application or compatible formats.
+                    <p className="text-muted-foreground text-sm">
+                      Select a JSON file exported from this application or
+                      compatible formats.
                     </p>
                   </div>
                 </CardContent>
@@ -189,14 +193,16 @@ export function ImportWizard({ onImportSuccess, organizationId }: ImportWizardPr
                       placeholder="Paste your JSON data here..."
                       value={jsonData}
                       onChange={(e) => setJsonData(e.target.value)}
-                      className="w-full h-32 p-3 border rounded-md resize-none text-sm font-mono"
+                      className="h-32 w-full resize-none rounded-md border p-3 font-mono text-sm"
                     />
-                    <Button 
+                    <Button
                       onClick={handleTextImport}
                       disabled={!jsonData.trim() || validateImport.isPending}
                       className="w-full"
                     >
-                      {validateImport.isPending ? "Validating..." : "Validate JSON"}
+                      {validateImport.isPending
+                        ? "Validating..."
+                        : "Validate JSON"}
                     </Button>
                   </div>
                 </CardContent>
@@ -206,8 +212,9 @@ export function ImportWizard({ onImportSuccess, organizationId }: ImportWizardPr
             <Alert>
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                <strong>Supported formats:</strong> JSON files exported from this application.
-                The import will create a new deck with all cards from the JSON file.
+                <strong>Supported formats:</strong> JSON files exported from
+                this application. The import will create a new deck with all
+                cards from the JSON file.
               </AlertDescription>
             </Alert>
           </div>
@@ -234,9 +241,11 @@ export function ImportWizard({ onImportSuccess, organizationId }: ImportWizardPr
                 <AlertDescription>
                   <div className="space-y-1">
                     <strong>Errors found:</strong>
-                    <ul className="list-disc pl-4 space-y-1">
+                    <ul className="list-disc space-y-1 pl-4">
                       {preview.errors.map((error, index) => (
-                        <li key={index} className="text-sm">{error}</li>
+                        <li key={index} className="text-sm">
+                          {error}
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -251,9 +260,11 @@ export function ImportWizard({ onImportSuccess, organizationId }: ImportWizardPr
                 <AlertDescription>
                   <div className="space-y-1">
                     <strong>Warnings:</strong>
-                    <ul className="list-disc pl-4 space-y-1">
+                    <ul className="list-disc space-y-1 pl-4">
                       {preview.warnings.map((warning, index) => (
-                        <li key={index} className="text-sm">{warning}</li>
+                        <li key={index} className="text-sm">
+                          {warning}
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -271,48 +282,72 @@ export function ImportWizard({ onImportSuccess, organizationId }: ImportWizardPr
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
                       <Label className="text-sm font-medium">Deck Name</Label>
-                      <p className="text-sm text-muted-foreground">{preview.preview.deckInfo.name}</p>
+                      <p className="text-muted-foreground text-sm">
+                        {preview.preview.deckInfo.name}
+                      </p>
                     </div>
                     <div>
                       <Label className="text-sm font-medium">Card Count</Label>
-                      <p className="text-sm text-muted-foreground">{preview.preview.deckInfo.cardCount} cards</p>
+                      <p className="text-muted-foreground text-sm">
+                        {preview.preview.deckInfo.cardCount} cards
+                      </p>
                     </div>
                   </div>
 
                   {preview.preview.deckInfo.description && (
                     <div>
                       <Label className="text-sm font-medium">Description</Label>
-                      <p className="text-sm text-muted-foreground">{preview.preview.deckInfo.description}</p>
+                      <p className="text-muted-foreground text-sm">
+                        {preview.preview.deckInfo.description}
+                      </p>
                     </div>
                   )}
 
                   <Separator />
 
                   <div>
-                    <Label className="text-sm font-medium mb-3 block">Sample Cards</Label>
+                    <Label className="mb-3 block text-sm font-medium">
+                      Sample Cards
+                    </Label>
                     <div className="space-y-3">
                       {preview.preview.sampleCards.map((card) => (
-                        <div key={card.index} className="border rounded-lg p-3">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge variant={card.cardType === "BASIC" ? "default" : "secondary"}>
+                        <div key={card.index} className="rounded-lg border p-3">
+                          <div className="mb-2 flex items-center gap-2">
+                            <Badge
+                              variant={
+                                card.cardType === "BASIC"
+                                  ? "default"
+                                  : "secondary"
+                              }
+                            >
                               {card.cardType === "BASIC" ? (
-                                <><FileText className="h-3 w-3 mr-1" />Basic</>
+                                <>
+                                  <FileText className="mr-1 h-3 w-3" />
+                                  Basic
+                                </>
                               ) : (
-                                <><Brain className="h-3 w-3 mr-1" />Cloze</>
+                                <>
+                                  <Brain className="mr-1 h-3 w-3" />
+                                  Cloze
+                                </>
                               )}
                             </Badge>
                             {card.tags.length > 0 && (
                               <div className="flex gap-1">
                                 {card.tags.map((tag, index) => (
-                                  <Badge key={index} variant="outline" className="text-xs">
-                                    <Tag className="h-2 w-2 mr-1" />
+                                  <Badge
+                                    key={index}
+                                    variant="outline"
+                                    className="text-xs"
+                                  >
+                                    <Tag className="mr-1 h-2 w-2" />
                                     {tag}
                                   </Badge>
                                 ))}
                               </div>
                             )}
                           </div>
-                          <div className="grid gap-2 md:grid-cols-2 text-sm">
+                          <div className="grid gap-2 text-sm md:grid-cols-2">
                             <div>
                               <strong>Front:</strong> {card.front}
                             </div>
@@ -323,8 +358,9 @@ export function ImportWizard({ onImportSuccess, organizationId }: ImportWizardPr
                         </div>
                       ))}
                       {preview.preview.deckInfo.cardCount > 3 && (
-                        <p className="text-sm text-muted-foreground text-center">
-                          ... and {preview.preview.deckInfo.cardCount - 3} more cards
+                        <p className="text-muted-foreground text-center text-sm">
+                          ... and {preview.preview.deckInfo.cardCount - 3} more
+                          cards
                         </p>
                       )}
                     </div>
@@ -336,8 +372,8 @@ export function ImportWizard({ onImportSuccess, organizationId }: ImportWizardPr
         )}
 
         {step === "import" && (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="py-8 text-center">
+            <div className="border-primary mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2"></div>
             <p className="text-muted-foreground">Importing deck...</p>
           </div>
         )}

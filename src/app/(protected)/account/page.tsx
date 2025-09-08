@@ -26,7 +26,6 @@ export default function AccountPage() {
     refetch,
   } = api.user.getUser.useQuery();
 
-
   if (!isLoading && (isError || !user)) {
     router.push("/login");
     return null; // Or a loading spinner/message
@@ -44,12 +43,13 @@ export default function AccountPage() {
       ? user.email[0]?.toUpperCase()
       : "U"; // Default to 'U' for unknown
 
-
   return (
-    <div className={cn(
-      "mx-auto w-full max-w-lg space-y-6",
-      isMobile ? "px-4 py-4 pb-20" : "p-8 pb-16"
-    )}>
+    <div
+      className={cn(
+        "mx-auto w-full max-w-lg space-y-6",
+        isMobile ? "px-4 py-4 pb-20" : "p-8 pb-16",
+      )}
+    >
       {!isMobile && (
         <h2 className="text-xl font-medium tracking-tight">My Account</h2>
       )}
@@ -115,7 +115,6 @@ export default function AccountPage() {
                 }}
               />
             </div>
-
           </div>
 
           {/* Logout button for mobile */}

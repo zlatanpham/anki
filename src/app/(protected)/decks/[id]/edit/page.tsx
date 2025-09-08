@@ -102,10 +102,10 @@ export default function EditDeckPage() {
 
   if (isLoadingDeck) {
     return (
-      <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8 max-w-2xl">
+      <div className="container mx-auto max-w-2xl px-4 py-6 sm:px-6 lg:px-8">
         {/* Header skeleton */}
         <div className="mb-6 lg:mb-8">
-          <Skeleton className="h-4 w-24 mb-3" />
+          <Skeleton className="mb-3 h-4 w-24" />
           <div className="space-y-1">
             <Skeleton className="h-8 w-32" />
             <Skeleton className="h-4 w-64" />
@@ -141,7 +141,7 @@ export default function EditDeckPage() {
               <Skeleton className="h-6 w-36" />
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="mb-4 grid grid-cols-2 gap-4">
                 <Skeleton className="h-20 w-full" />
                 <Skeleton className="h-20 w-full" />
               </div>
@@ -155,7 +155,7 @@ export default function EditDeckPage() {
               <Skeleton className="h-6 w-28" />
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-12 w-full mb-4" />
+              <Skeleton className="mb-4 h-12 w-full" />
               <Skeleton className="h-10 w-32" />
             </CardContent>
           </Card>
@@ -169,12 +169,13 @@ export default function EditDeckPage() {
       <div className="container mx-auto p-6">
         <Card>
           <CardContent className="p-6 text-center">
-            <h2 className="text-xl font-semibold mb-2">Deck Not Found</h2>
+            <h2 className="mb-2 text-xl font-semibold">Deck Not Found</h2>
             <p className="text-muted-foreground mb-4">
-              The deck you&apos;re looking for doesn&apos;t exist or you don&apos;t have permission to edit it.
+              The deck you&apos;re looking for doesn&apos;t exist or you
+              don&apos;t have permission to edit it.
             </p>
             <Button onClick={() => router.push("/decks")}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
+              <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Decks
             </Button>
           </CardContent>
@@ -184,24 +185,24 @@ export default function EditDeckPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8 max-w-2xl">
+    <div className="container mx-auto max-w-2xl px-4 py-6 sm:px-6 lg:px-8">
       {/* Header - Mobile-first responsive design */}
       <div className="mb-6 lg:mb-8">
         {/* Back button - Better touch target on mobile */}
         <button
           onClick={() => router.push(`/decks/${deckId}/cards`)}
-          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors mb-3"
+          className="text-muted-foreground hover:text-foreground mb-3 inline-flex items-center text-sm transition-colors"
         >
-          <ArrowLeft className="h-4 w-4 mr-1.5" />
+          <ArrowLeft className="mr-1.5 h-4 w-4" />
           <span className="font-medium">Back to Cards</span>
         </button>
-        
+
         {/* Title section - Responsive sizing and spacing */}
         <div className="space-y-1">
-          <h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold tracking-tight">
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl lg:text-2xl">
             Edit Deck
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
+          <p className="text-muted-foreground max-w-2xl text-sm sm:text-base">
             Modify your deck settings and information
           </p>
         </div>
@@ -242,12 +243,12 @@ export default function EditDeckPage() {
               </div>
 
               {/* Public Setting */}
-              <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="flex items-center justify-between rounded-lg border p-4">
                 <div className="space-y-1">
                   <Label htmlFor="isPublic" className="text-base font-medium">
                     Public Deck
                   </Label>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Allow other users to view and study this deck
                   </p>
                 </div>
@@ -265,11 +266,11 @@ export default function EditDeckPage() {
                   disabled={isLoading || updateDeckMutation.isPending}
                   className="flex-1"
                 >
-                  {(isLoading || updateDeckMutation.isPending) ? (
+                  {isLoading || updateDeckMutation.isPending ? (
                     "Updating..."
                   ) : (
                     <>
-                      <Save className="w-4 h-4 mr-2" />
+                      <Save className="mr-2 h-4 w-4" />
                       Update Deck
                     </>
                   )}
@@ -293,25 +294,28 @@ export default function EditDeckPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-4 bg-muted rounded-lg">
-                <div className="text-2xl font-bold text-primary">
+              <div className="bg-muted rounded-lg p-4 text-center">
+                <div className="text-primary text-2xl font-bold">
                   {deck.cards?.length ?? 0}
                 </div>
-                <div className="text-sm text-muted-foreground">Total Cards</div>
+                <div className="text-muted-foreground text-sm">Total Cards</div>
               </div>
-              <div className="text-center p-4 bg-muted rounded-lg">
-                <div className="text-2xl font-bold text-primary">
-                  {deck.cards?.filter(card => card.card_type === "CLOZE").length ?? 0}
+              <div className="bg-muted rounded-lg p-4 text-center">
+                <div className="text-primary text-2xl font-bold">
+                  {deck.cards?.filter((card) => card.card_type === "CLOZE")
+                    .length ?? 0}
                 </div>
-                <div className="text-sm text-muted-foreground">Cloze Cards</div>
+                <div className="text-muted-foreground text-sm">Cloze Cards</div>
               </div>
             </div>
-            <div className="mt-4 p-3 bg-muted/50 rounded-lg">
-              <div className="text-sm text-muted-foreground">
-                <strong>Created:</strong> {new Date(deck.created_at).toLocaleDateString()}
+            <div className="bg-muted/50 mt-4 rounded-lg p-3">
+              <div className="text-muted-foreground text-sm">
+                <strong>Created:</strong>{" "}
+                {new Date(deck.created_at).toLocaleDateString()}
               </div>
-              <div className="text-sm text-muted-foreground">
-                <strong>Last Updated:</strong> {new Date(deck.updated_at).toLocaleDateString()}
+              <div className="text-muted-foreground text-sm">
+                <strong>Last Updated:</strong>{" "}
+                {new Date(deck.updated_at).toLocaleDateString()}
               </div>
             </div>
           </CardContent>
@@ -326,27 +330,31 @@ export default function EditDeckPage() {
             <div className="space-y-4">
               <div>
                 <h4 className="font-medium">Delete this deck</h4>
-                <p className="text-sm text-muted-foreground">
-                  This action cannot be undone. This will permanently delete the deck and all its cards.
+                <p className="text-muted-foreground text-sm">
+                  This action cannot be undone. This will permanently delete the
+                  deck and all its cards.
                 </p>
               </div>
-              
+
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button 
-                    variant="destructive" 
+                  <Button
+                    variant="destructive"
                     disabled={deleteDeckMutation.isPending}
                   >
-                    <Trash2 className="w-4 h-4 mr-2" />
+                    <Trash2 className="mr-2 h-4 w-4" />
                     Delete Deck
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogTitle>
+                      Are you absolutely sure?
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete the deck
-                      &quot;{deck.name}&quot; and all {deck.cards?.length ?? 0} cards in it.
+                      This action cannot be undone. This will permanently delete
+                      the deck &quot;{deck.name}&quot; and all{" "}
+                      {deck.cards?.length ?? 0} cards in it.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>

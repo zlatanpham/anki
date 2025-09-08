@@ -31,7 +31,15 @@ import {
 import { type CardStateEnum } from "@prisma/client";
 
 export interface SortingFilterOptions {
-  sortBy: "due_date" | "interval" | "difficulty" | "created_at" | "updated_at" | "front" | "lapses" | "repetitions";
+  sortBy:
+    | "due_date"
+    | "interval"
+    | "difficulty"
+    | "created_at"
+    | "updated_at"
+    | "front"
+    | "lapses"
+    | "repetitions";
   sortOrder: "asc" | "desc";
   stateFilter?: CardStateEnum[];
   dueFilter?: "overdue" | "today" | "tomorrow" | "week" | "all";
@@ -46,7 +54,11 @@ interface CardSortingFilterProps {
   cardCount?: number;
 }
 
-export function CardSortingFilter({ onApply, initialOptions, cardCount }: CardSortingFilterProps) {
+export function CardSortingFilter({
+  onApply,
+  initialOptions,
+  cardCount,
+}: CardSortingFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState<SortingFilterOptions>({
     sortBy: initialOptions?.sortBy ?? "due_date",
@@ -62,7 +74,8 @@ export function CardSortingFilter({ onApply, initialOptions, cardCount }: CardSo
     options.stateFilter && options.stateFilter.length > 0,
     options.dueFilter !== "all",
     options.intervalRange?.[0] !== 0 || options.intervalRange?.[1] !== 365,
-    options.difficultyRange?.[0] !== 1.3 || options.difficultyRange?.[1] !== 2.7,
+    options.difficultyRange?.[0] !== 1.3 ||
+      options.difficultyRange?.[1] !== 2.7,
     options.onlyWithLapses,
   ].filter(Boolean).length;
 
@@ -96,7 +109,9 @@ export function CardSortingFilter({ onApply, initialOptions, cardCount }: CardSo
     { value: "front", label: "Question (A-Z)", icon: ArrowUpDownIcon },
   ];
 
-  const selectedSortOption = sortOptions.find(opt => opt.value === options.sortBy);
+  const selectedSortOption = sortOptions.find(
+    (opt) => opt.value === options.sortBy,
+  );
   const SortIcon = selectedSortOption?.icon ?? ArrowUpDownIcon;
 
   return (
@@ -104,7 +119,10 @@ export function CardSortingFilter({ onApply, initialOptions, cardCount }: CardSo
       <Select
         value={`${options.sortBy}:${options.sortOrder}`}
         onValueChange={(value) => {
-          const [sortBy, sortOrder] = value.split(":") as [SortingFilterOptions["sortBy"], "asc" | "desc"];
+          const [sortBy, sortOrder] = value.split(":") as [
+            SortingFilterOptions["sortBy"],
+            "asc" | "desc",
+          ];
           setOptions({ ...options, sortBy, sortOrder });
           onApply({ ...options, sortBy, sortOrder });
         }}
@@ -155,7 +173,7 @@ export function CardSortingFilter({ onApply, initialOptions, cardCount }: CardSo
         <PopoverContent className="w-[400px]" align="end">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="font-medium text-sm">Filter Cards</h4>
+              <h4 className="text-sm font-medium">Filter Cards</h4>
               <Button variant="ghost" size="sm" onClick={handleReset}>
                 Reset
               </Button>
@@ -165,14 +183,20 @@ export function CardSortingFilter({ onApply, initialOptions, cardCount }: CardSo
             <div className="space-y-2">
               <Label className="text-xs">Card State</Label>
               <div className="flex flex-wrap gap-2">
-                {(["NEW", "LEARNING", "REVIEW", "SUSPENDED"] as CardStateEnum[]).map((state) => (
+                {(
+                  ["NEW", "LEARNING", "REVIEW", "SUSPENDED"] as CardStateEnum[]
+                ).map((state) => (
                   <Badge
                     key={state}
-                    variant={options.stateFilter?.includes(state) ? "default" : "outline"}
+                    variant={
+                      options.stateFilter?.includes(state)
+                        ? "default"
+                        : "outline"
+                    }
                     className="cursor-pointer"
                     onClick={() => {
                       const newStates = options.stateFilter?.includes(state)
-                        ? options.stateFilter.filter(s => s !== state)
+                        ? options.stateFilter.filter((s) => s !== state)
                         : [...(options.stateFilter ?? []), state];
                       setOptions({ ...options, stateFilter: newStates });
                     }}
@@ -188,7 +212,12 @@ export function CardSortingFilter({ onApply, initialOptions, cardCount }: CardSo
               <Label className="text-xs">Due Date</Label>
               <Select
                 value={options.dueFilter}
-                onValueChange={(value: string) => setOptions({ ...options, dueFilter: value as SortingFilterOptions["dueFilter"] })}
+                onValueChange={(value: string) =>
+                  setOptions({
+                    ...options,
+                    dueFilter: value as SortingFilterOptions["dueFilter"],
+                  })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -206,11 +235,17 @@ export function CardSortingFilter({ onApply, initialOptions, cardCount }: CardSo
             {/* Interval Range */}
             <div className="space-y-2">
               <Label className="text-xs">
-                Interval Range: {options.intervalRange?.[0]} - {options.intervalRange?.[1]} days
+                Interval Range: {options.intervalRange?.[0]} -{" "}
+                {options.intervalRange?.[1]} days
               </Label>
               <Slider
                 value={options.intervalRange}
-                onValueChange={(value: number[]) => setOptions({ ...options, intervalRange: value as [number, number] })}
+                onValueChange={(value: number[]) =>
+                  setOptions({
+                    ...options,
+                    intervalRange: value as [number, number],
+                  })
+                }
                 min={0}
                 max={365}
                 step={1}
@@ -221,11 +256,18 @@ export function CardSortingFilter({ onApply, initialOptions, cardCount }: CardSo
             {/* Difficulty Range */}
             <div className="space-y-2">
               <Label className="text-xs">
-                Difficulty (Easiness Factor): {options.difficultyRange?.[0].toFixed(1)} - {options.difficultyRange?.[1].toFixed(1)}
+                Difficulty (Easiness Factor):{" "}
+                {options.difficultyRange?.[0].toFixed(1)} -{" "}
+                {options.difficultyRange?.[1].toFixed(1)}
               </Label>
               <Slider
                 value={options.difficultyRange}
-                onValueChange={(value: number[]) => setOptions({ ...options, difficultyRange: value as [number, number] })}
+                onValueChange={(value: number[]) =>
+                  setOptions({
+                    ...options,
+                    difficultyRange: value as [number, number],
+                  })
+                }
                 min={1.3}
                 max={2.7}
                 step={0.1}
@@ -235,16 +277,24 @@ export function CardSortingFilter({ onApply, initialOptions, cardCount }: CardSo
 
             {/* Lapses Filter */}
             <div className="flex items-center justify-between">
-              <Label htmlFor="lapses-filter" className="text-xs">Only show cards with lapses</Label>
+              <Label htmlFor="lapses-filter" className="text-xs">
+                Only show cards with lapses
+              </Label>
               <Switch
                 id="lapses-filter"
                 checked={options.onlyWithLapses}
-                onCheckedChange={(checked) => setOptions({ ...options, onlyWithLapses: checked })}
+                onCheckedChange={(checked) =>
+                  setOptions({ ...options, onlyWithLapses: checked })
+                }
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t">
-              <Button variant="outline" size="sm" onClick={() => setIsOpen(false)}>
+            <div className="flex justify-end gap-2 border-t pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsOpen(false)}
+              >
                 Cancel
               </Button>
               <Button size="sm" onClick={handleApply}>
@@ -256,9 +306,7 @@ export function CardSortingFilter({ onApply, initialOptions, cardCount }: CardSo
       </Popover>
 
       {cardCount !== undefined && (
-        <span className="text-sm text-muted-foreground">
-          {cardCount} cards
-        </span>
+        <span className="text-muted-foreground text-sm">{cardCount} cards</span>
       )}
     </div>
   );

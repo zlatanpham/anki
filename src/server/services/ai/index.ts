@@ -111,9 +111,13 @@ export class AICardService {
   private organizationId?: string | null;
   private provider: string;
 
-  constructor(userId?: string, organizationId?: string | null, provider?: string) {
+  constructor(
+    userId?: string,
+    organizationId?: string | null,
+    provider?: string,
+  ) {
     this.provider = provider || env.AI_PROVIDER || "google";
-    
+
     // Initialize model based on provider
     switch (this.provider) {
       case "google":
@@ -125,7 +129,7 @@ export class AICardService {
         }
         this.model = google(env.AI_MODEL || "gemini-2.0-flash-experimental");
         break;
-        
+
       case "openai":
         if (!env.OPENAI_API_KEY) {
           throw new TRPCError({
@@ -135,7 +139,7 @@ export class AICardService {
         }
         this.model = openai(env.AI_MODEL || "gpt-4o-mini");
         break;
-        
+
       case "anthropic":
         if (!env.ANTHROPIC_API_KEY) {
           throw new TRPCError({
@@ -145,7 +149,7 @@ export class AICardService {
         }
         this.model = anthropic(env.AI_MODEL || "claude-3-haiku-20240307");
         break;
-        
+
       default:
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -211,7 +215,7 @@ Text to process:
 ${input}
 
 Generate diverse flashcards following the exact format specified above.`;
-    
+
     try {
       const { object, response } = await generateObject({
         model: this.model,
@@ -262,7 +266,7 @@ Generate diverse flashcards following the exact format specified above.`;
       return validatedCards;
     } catch (error: any) {
       console.error("Error generating cards:", error);
-      
+
       // Track failed AI usage
       if (this.userId) {
         // Request tracking removed prompt: input.substring(0, 200), model: this.getModelName() };
@@ -312,7 +316,7 @@ For each suggestion:
 Text: ${text}
 
 Use {{c1::text}} syntax for cloze deletions. Create variations that test different aspects of understanding.`;
-    
+
     try {
       const { object, response } = await generateObject({
         model: this.model,
@@ -326,7 +330,7 @@ Use {{c1::text}} syntax for cloze deletions. Create variations that test differe
       return object.suggestions;
     } catch (error: any) {
       console.error("Error suggesting clozes:", error);
-      
+
       // Track failed AI usage
       if (this.userId) {
         // Request tracking removed prompt: text.substring(0, 200), model: this.getModelName() };
@@ -359,14 +363,14 @@ Use {{c1::text}} syntax for cloze deletions. Create variations that test differe
 Text: ${text}
 
 Provide the corrected version and list all corrections made with explanations.`;
-    
+
     try {
       const { object, response } = await generateObject({
         model: this.model,
         schema: grammarCorrectionSchema,
         prompt,
       });
-      
+
       // AI usage tracking removed
 
       return {
@@ -376,7 +380,7 @@ Provide the corrected version and list all corrections made with explanations.`;
       };
     } catch (error: any) {
       console.error("Error correcting grammar:", error);
-      
+
       // Track failed AI usage
       if (this.userId) {
         // Request tracking removed prompt: text.substring(0, 200), model: this.getModelName() };
@@ -487,14 +491,14 @@ Return a JSON object with: estimatedCards (number), topics (array of strings), d
     card: { front: string; back: string; clozeText?: string },
     questionType: "eli5" | "example" | "importance" | "breakdown" | "custom",
     customQuestion?: string,
-    conversationHistory?: Array<{ question: string; answer: string }>
+    conversationHistory?: Array<{ question: string; answer: string }>,
   ): Promise<{
     explanation: string;
     suggestedFollowUps?: string[];
     confidence: number;
   }> {
     const startTime = Date.now();
-    
+
     // Prepare the prompt templates
     const promptTemplates = {
       eli5: `Explain this answer as if teaching a 5-year-old child. Use simple words, analogies, and examples they can understand. Be friendly and encouraging.
@@ -534,31 +538,34 @@ User's Question: {customQuestion}
 
 {conversationContext}
 
-Provide a helpful explanation:`
+Provide a helpful explanation:`,
     };
 
     // Get the question and answer from the card
     const question = card.clozeText || card.front;
-    const answer = card.clozeText 
-      ? card.clozeText.replace(/\{\{c\d+::([^}]+)\}\}/g, '$1') 
+    const answer = card.clozeText
+      ? card.clozeText.replace(/\{\{c\d+::([^}]+)\}\}/g, "$1")
       : card.back;
 
     // Build the prompt
     let prompt = promptTemplates[questionType]
-      .replace('{question}', question)
-      .replace('{answer}', answer);
+      .replace("{question}", question)
+      .replace("{answer}", answer);
 
-    if (questionType === 'custom' && customQuestion) {
-      prompt = prompt.replace('{customQuestion}', customQuestion);
-      
+    if (questionType === "custom" && customQuestion) {
+      prompt = prompt.replace("{customQuestion}", customQuestion);
+
       // Add conversation history if available
       if (conversationHistory && conversationHistory.length > 0) {
         const context = conversationHistory
           .map((qa) => `Previous Q: ${qa.question}\nPrevious A: ${qa.answer}`)
-          .join('\n\n');
-        prompt = prompt.replace('{conversationContext}', `Previous Context:\n${context}`);
+          .join("\n\n");
+        prompt = prompt.replace(
+          "{conversationContext}",
+          `Previous Context:\n${context}`,
+        );
       } else {
-        prompt = prompt.replace('{conversationContext}', '');
+        prompt = prompt.replace("{conversationContext}", "");
       }
     }
 
@@ -582,7 +589,7 @@ Provide a helpful explanation:`
       };
     } catch (error: any) {
       console.error("Error explaining answer:", error);
-      
+
       // Track failed AI usage
       if (this.userId) {
         // Request tracking removed prompt: prompt.substring(0, 200), model: this.getModelName() };
@@ -592,14 +599,16 @@ Provide a helpful explanation:`
       if (error.statusCode === 503 || error.message?.includes("overloaded")) {
         throw new TRPCError({
           code: "TOO_MANY_REQUESTS",
-          message: "The AI service is currently busy. Please try again in a few moments.",
+          message:
+            "The AI service is currently busy. Please try again in a few moments.",
         });
       }
 
       if (error.statusCode === 429) {
         throw new TRPCError({
           code: "TOO_MANY_REQUESTS",
-          message: "Rate limit exceeded. Please wait a moment before trying again.",
+          message:
+            "Rate limit exceeded. Please wait a moment before trying again.",
         });
       }
 
@@ -612,16 +621,21 @@ Provide a helpful explanation:`
 }
 
 // Export factory function instead of singleton to support user context
-export function getAIService(userId?: string, organizationId?: string | null, provider?: string): AICardService {
+export function getAIService(
+  userId?: string,
+  organizationId?: string | null,
+  provider?: string,
+): AICardService {
   const selectedProvider = provider || env.AI_PROVIDER || "google";
-  
+
   // Check if the selected provider has API key configured
   switch (selectedProvider) {
     case "google":
       if (!env.GOOGLE_GENERATIVE_AI_API_KEY) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "AI service not available. Please configure Google AI API key.",
+          message:
+            "AI service not available. Please configure Google AI API key.",
         });
       }
       break;
@@ -637,11 +651,12 @@ export function getAIService(userId?: string, organizationId?: string | null, pr
       if (!env.ANTHROPIC_API_KEY) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "AI service not available. Please configure Anthropic API key.",
+          message:
+            "AI service not available. Please configure Anthropic API key.",
         });
       }
       break;
   }
-  
+
   return new AICardService(userId, organizationId, selectedProvider);
 }

@@ -9,20 +9,24 @@ interface IntervalDisplayProps {
   showIcon?: boolean;
 }
 
-export function IntervalDisplay({ 
-  interval, 
+export function IntervalDisplay({
+  interval,
   className,
-  showIcon = true 
+  showIcon = true,
 }: IntervalDisplayProps) {
   const formattedInterval = formatInterval(interval);
   const isNewCard = interval === 0;
 
   return (
-    <div className={cn(
-      "flex items-center gap-1 text-sm",
-      isNewCard ? "text-blue-600 dark:text-blue-400" : "text-muted-foreground",
-      className
-    )}>
+    <div
+      className={cn(
+        "flex items-center gap-1 text-sm",
+        isNewCard
+          ? "text-blue-600 dark:text-blue-400"
+          : "text-muted-foreground",
+        className,
+      )}
+    >
       {showIcon && <Clock className="h-3 w-3" />}
       <span>{formattedInterval}</span>
     </div>

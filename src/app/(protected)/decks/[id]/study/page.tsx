@@ -162,51 +162,54 @@ export default function DeckStudyPage() {
     setSession((prev) => (prev ? { ...prev, showAnswer: true } : null));
   }, []);
 
-  const submitCardReview = useCallback((rating: ReviewRating) => {
-    if (!session || !responseStartTime) return;
+  const submitCardReview = useCallback(
+    (rating: ReviewRating) => {
+      if (!session || !responseStartTime) return;
 
-    const currentCard = session.cards[session.currentIndex];
-    if (!currentCard) return;
-    const responseTime = new Date().getTime() - responseStartTime.getTime();
+      const currentCard = session.cards[session.currentIndex];
+      if (!currentCard) return;
+      const responseTime = new Date().getTime() - responseStartTime.getTime();
 
-    // Optimistically update session stats and move to next card
-    setSession((prev) => {
-      if (!prev) return null;
+      // Optimistically update session stats and move to next card
+      setSession((prev) => {
+        if (!prev) return null;
 
-      const newStats = {
-        ...prev.sessionStats,
-        [rating.toLowerCase()]:
-          prev.sessionStats[
-            rating.toLowerCase() as keyof typeof prev.sessionStats
-          ] + 1,
-      };
+        const newStats = {
+          ...prev.sessionStats,
+          [rating.toLowerCase()]:
+            prev.sessionStats[
+              rating.toLowerCase() as keyof typeof prev.sessionStats
+            ] + 1,
+        };
 
-      // Check if this is the last card
-      if (prev.currentIndex >= prev.cards.length - 1) {
-        // Trigger finish session after a short delay to show completion
-        setTimeout(() => void finishSession(), 100);
-        return { ...prev, sessionStats: newStats };
-      }
+        // Check if this is the last card
+        if (prev.currentIndex >= prev.cards.length - 1) {
+          // Trigger finish session after a short delay to show completion
+          setTimeout(() => void finishSession(), 100);
+          return { ...prev, sessionStats: newStats };
+        }
 
-      // Move to next card immediately
-      return {
-        ...prev,
-        currentIndex: prev.currentIndex + 1,
-        showAnswer: false,
-        sessionStats: newStats,
-      };
-    });
+        // Move to next card immediately
+        return {
+          ...prev,
+          currentIndex: prev.currentIndex + 1,
+          showAnswer: false,
+          sessionStats: newStats,
+        };
+      });
 
-    // Reset response time for next card
-    setResponseStartTime(new Date());
+      // Reset response time for next card
+      setResponseStartTime(new Date());
 
-    // Submit review in background
-    submitReview.mutate({
-      cardId: currentCard.id,
-      rating,
-      responseTime,
-    });
-  }, [session, responseStartTime, submitReview, finishSession]);
+      // Submit review in background
+      submitReview.mutate({
+        cardId: currentCard.id,
+        rating,
+        responseTime,
+      });
+    },
+    [session, responseStartTime, submitReview, finishSession],
+  );
 
   const togglePause = () => {
     setIsPaused(!isPaused);
@@ -483,7 +486,7 @@ export default function DeckStudyPage() {
   if (!currentCard) {
     return <div>No more cards to study.</div>;
   }
-  
+
   // Calculate progress based on answered cards, not current position
   const totalAnswered = Object.values(session.sessionStats).reduce(
     (a, b) => a + b,
@@ -625,7 +628,9 @@ export default function DeckStudyPage() {
                     <div className="bg-muted/50 rounded-lg border p-6">
                       <div
                         className="prose prose-sm max-w-none"
-                        dangerouslySetInnerHTML={{ __html: currentCard.back ?? "" }}
+                        dangerouslySetInnerHTML={{
+                          __html: currentCard.back ?? "",
+                        }}
                       />
                     </div>
                   </>

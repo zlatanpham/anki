@@ -12,10 +12,7 @@ export interface GenerationSuggestion {
 
 export interface RequestValidation {
   isRealistic: boolean;
-  detectedPattern?:
-    | "numeric-quantity"
-    | "all-of-category"
-    | "minimal-input";
+  detectedPattern?: "numeric-quantity" | "all-of-category" | "minimal-input";
   estimatedCards: number;
   estimatedTime: number;
   estimatedCost: number;
@@ -53,7 +50,7 @@ export class RequestValidationService {
   async validateRequest(prompt: string): Promise<RequestValidation> {
     // Simple validation without LLM for performance
     const explicitNumber = this.detectExplicitNumberRequest(prompt);
-    
+
     const validation: RequestValidation = {
       isRealistic: true,
       estimatedCards: 50, // Default estimate
@@ -83,7 +80,6 @@ export class RequestValidationService {
 
     return validation;
   }
-
 
   async analyzeText(text: string): Promise<{
     wordCount: number;

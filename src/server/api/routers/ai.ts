@@ -5,7 +5,6 @@ import { TRPCError } from "@trpc/server";
 import { env } from "@/env";
 
 export const aiRouter = createTRPCRouter({
-
   // Check grammar and spelling
   checkGrammar: protectedProcedure
     .input(
@@ -24,10 +23,13 @@ export const aiRouter = createTRPCRouter({
       // Get user's organization
       const userOrg = await ctx.db.organizationMember.findFirst({
         where: { user_id: ctx.session.user.id },
-        select: { organization_id: true }
+        select: { organization_id: true },
       });
-      
-      const aiService = getAIService(ctx.session.user.id, userOrg?.organization_id);
+
+      const aiService = getAIService(
+        ctx.session.user.id,
+        userOrg?.organization_id,
+      );
       const result = await aiService.correctGrammar(input.text);
 
       return result;
@@ -70,10 +72,13 @@ export const aiRouter = createTRPCRouter({
       // Get user's organization
       const userOrg = await ctx.db.organizationMember.findFirst({
         where: { user_id: ctx.session.user.id },
-        select: { organization_id: true }
+        select: { organization_id: true },
       });
-      
-      const aiService = getAIService(ctx.session.user.id, userOrg?.organization_id);
+
+      const aiService = getAIService(
+        ctx.session.user.id,
+        userOrg?.organization_id,
+      );
       const result = await aiService.improveCard({
         front: input.front,
         back: input.back,
@@ -82,18 +87,28 @@ export const aiRouter = createTRPCRouter({
       return result;
     }),
 
-
   // Explain answer for a card
   explainAnswer: protectedProcedure
     .input(
       z.object({
         cardId: z.string().uuid(),
-        questionType: z.enum(["eli5", "example", "importance", "breakdown", "custom"]),
+        questionType: z.enum([
+          "eli5",
+          "example",
+          "importance",
+          "breakdown",
+          "custom",
+        ]),
         customQuestion: z.string().max(500).optional(),
-        conversationHistory: z.array(z.object({
-          question: z.string(),
-          answer: z.string(),
-        })).max(5).optional(),
+        conversationHistory: z
+          .array(
+            z.object({
+              question: z.string(),
+              answer: z.string(),
+            }),
+          )
+          .max(5)
+          .optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -101,7 +116,8 @@ export const aiRouter = createTRPCRouter({
       if (!env.GOOGLE_GENERATIVE_AI_API_KEY) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
-          message: "AI features are not configured. Please add your Google AI API key.",
+          message:
+            "AI features are not configured. Please add your Google AI API key.",
         });
       }
 
@@ -165,7 +181,10 @@ export const aiRouter = createTRPCRouter({
         select: { organization_id: true },
       });
 
-      const aiService = getAIService(ctx.session.user.id, userOrg?.organization_id);
+      const aiService = getAIService(
+        ctx.session.user.id,
+        userOrg?.organization_id,
+      );
       const result = await aiService.explainAnswer(
         {
           front: card.front,
@@ -321,7 +340,7 @@ export const aiRouter = createTRPCRouter({
   // Get available AI providers
   getAvailableProviders: protectedProcedure.query(async ({ ctx }) => {
     const providers = [];
-    
+
     if (env.GOOGLE_GENERATIVE_AI_API_KEY) {
       providers.push({
         id: "google",
@@ -330,7 +349,7 @@ export const aiRouter = createTRPCRouter({
         default: env.AI_PROVIDER === "google",
       });
     }
-    
+
     if (env.OPENAI_API_KEY) {
       providers.push({
         id: "openai",
@@ -339,16 +358,20 @@ export const aiRouter = createTRPCRouter({
         default: env.AI_PROVIDER === "openai",
       });
     }
-    
+
     if (env.ANTHROPIC_API_KEY) {
       providers.push({
         id: "anthropic",
         name: "Anthropic",
-        models: ["claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"],
+        models: [
+          "claude-3-opus-20240229",
+          "claude-3-sonnet-20240229",
+          "claude-3-haiku-20240307",
+        ],
         default: env.AI_PROVIDER === "anthropic",
       });
     }
-    
+
     return {
       providers,
       currentProvider: env.AI_PROVIDER || "google",
@@ -366,7 +389,11 @@ export const aiRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       // Check if AI is configured
-      if (!env.GOOGLE_GENERATIVE_AI_API_KEY && !env.OPENAI_API_KEY && !env.ANTHROPIC_API_KEY) {
+      if (
+        !env.GOOGLE_GENERATIVE_AI_API_KEY &&
+        !env.OPENAI_API_KEY &&
+        !env.ANTHROPIC_API_KEY
+      ) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
           message: "AI features are not configured.",
@@ -386,7 +413,7 @@ export const aiRouter = createTRPCRouter({
 
       const rateLimit = parseInt(env.AI_RATE_LIMIT || "100");
       const remainingQuota = rateLimit - recentExplanations;
-      
+
       if (remainingQuota <= 0) {
         throw new TRPCError({
           code: "TOO_MANY_REQUESTS",
@@ -432,7 +459,8 @@ export const aiRouter = createTRPCRouter({
       if (cards.length === 0) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "No cards found or you don't have permission to access them.",
+          message:
+            "No cards found or you don't have permission to access them.",
         });
       }
 
@@ -442,8 +470,11 @@ export const aiRouter = createTRPCRouter({
         select: { organization_id: true },
       });
 
-      const aiService = getAIService(ctx.session.user.id, userOrg?.organization_id);
-      
+      const aiService = getAIService(
+        ctx.session.user.id,
+        userOrg?.organization_id,
+      );
+
       // Process cards in parallel (but with a limit to avoid rate limiting)
       const results = await Promise.allSettled(
         cards.map(async (card) => {
@@ -485,24 +516,27 @@ export const aiRouter = createTRPCRouter({
       );
 
       // Process results
-      const successful = results.filter(
-        (r): r is PromiseFulfilledResult<any> => r.status === "fulfilled",
-      ).map(r => r.value);
-      
-      const failed = results.filter(
-        (r): r is PromiseRejectedResult => r.status === "rejected",
-      ).map((r, index) => ({
-        cardId: cards[index]?.id || "unknown",
-        status: "error" as const,
-        error: r.reason?.message || "Unknown error",
-      }));
+      const successful = results
+        .filter(
+          (r): r is PromiseFulfilledResult<any> => r.status === "fulfilled",
+        )
+        .map((r) => r.value);
+
+      const failed = results
+        .filter((r): r is PromiseRejectedResult => r.status === "rejected")
+        .map((r, index) => ({
+          cardId: cards[index]?.id || "unknown",
+          status: "error" as const,
+          error: r.reason?.message || "Unknown error",
+        }));
 
       return {
         successful,
         failed,
         totalProcessed: results.length,
-        successCount: successful.filter(s => s.status === "success").length,
-        failureCount: failed.length + successful.filter(s => s.status === "error").length,
+        successCount: successful.filter((s) => s.status === "success").length,
+        failureCount:
+          failed.length + successful.filter((s) => s.status === "error").length,
       };
     }),
 
@@ -520,11 +554,11 @@ export const aiRouter = createTRPCRouter({
       const where: any = {
         user_id: ctx.session.user.id,
       };
-      
+
       if (input.savedOnly) {
         where.is_saved = true;
       }
-      
+
       if (input.deckId) {
         where.card = {
           deck_id: input.deckId,
@@ -566,11 +600,11 @@ export const aiRouter = createTRPCRouter({
             format: "json",
             filename: `explanations-${new Date().toISOString().split("T")[0]}.json`,
             content: JSON.stringify(
-              explanations.map(e => ({
+              explanations.map((e) => ({
                 deck: e.card.deck.name,
                 question: e.card.cloze_text || e.card.front,
-                answer: e.card.cloze_text 
-                  ? e.card.cloze_text.replace(/\{\{c\d+::([^}]+)\}\}/g, '$1')
+                answer: e.card.cloze_text
+                  ? e.card.cloze_text.replace(/\{\{c\d+::([^}]+)\}\}/g, "$1")
                   : e.card.back,
                 questionType: e.question_type,
                 customQuestion: e.question,
@@ -586,12 +620,21 @@ export const aiRouter = createTRPCRouter({
         case "csv":
           // Create CSV content
           const csvRows = [
-            ["Deck", "Question", "Answer", "Question Type", "Custom Question", "Explanation", "Tags", "Created At"],
-            ...explanations.map(e => [
+            [
+              "Deck",
+              "Question",
+              "Answer",
+              "Question Type",
+              "Custom Question",
+              "Explanation",
+              "Tags",
+              "Created At",
+            ],
+            ...explanations.map((e) => [
               e.card.deck.name,
               e.card.cloze_text || e.card.front,
-              e.card.cloze_text 
-                ? e.card.cloze_text.replace(/\{\{c\d+::([^}]+)\}\}/g, '$1')
+              e.card.cloze_text
+                ? e.card.cloze_text.replace(/\{\{c\d+::([^}]+)\}\}/g, "$1")
                 : e.card.back,
               e.question_type,
               e.question || "",
@@ -600,11 +643,15 @@ export const aiRouter = createTRPCRouter({
               e.created_at.toISOString(),
             ]),
           ];
-          
+
           const csvContent = csvRows
-            .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+            .map((row) =>
+              row
+                .map((cell) => `"${String(cell).replace(/"/g, '""')}"`)
+                .join(","),
+            )
             .join("\n");
-            
+
           return {
             format: "csv",
             filename: `explanations-${new Date().toISOString().split("T")[0]}.csv`,
@@ -613,13 +660,14 @@ export const aiRouter = createTRPCRouter({
 
         case "markdown":
           // Create Markdown content
-          const mdContent = explanations.map(e => {
-            const question = e.card.cloze_text || e.card.front;
-            const answer = e.card.cloze_text 
-              ? e.card.cloze_text.replace(/\{\{c\d+::([^}]+)\}\}/g, '$1')
-              : e.card.back;
-              
-            return `## ${e.card.deck.name} - Card
+          const mdContent = explanations
+            .map((e) => {
+              const question = e.card.cloze_text || e.card.front;
+              const answer = e.card.cloze_text
+                ? e.card.cloze_text.replace(/\{\{c\d+::([^}]+)\}\}/g, "$1")
+                : e.card.back;
+
+              return `## ${e.card.deck.name} - Card
 
 **Question:** ${question}
 
@@ -634,8 +682,9 @@ ${e.tags.length > 0 ? `**Tags:** ${e.tags.join(", ")}\n\n` : ""}**Date:** ${e.cr
 
 ---
 `;
-          }).join("\n");
-          
+            })
+            .join("\n");
+
           return {
             format: "markdown",
             filename: `explanations-${new Date().toISOString().split("T")[0]}.md`,
@@ -668,7 +717,7 @@ ${mdContent}`,
     .query(async ({ ctx, input }) => {
       const now = new Date();
       let startDate: Date;
-      
+
       switch (input.period) {
         case "day":
           startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -734,32 +783,38 @@ ${mdContent}`,
       });
 
       // Calculate costs and tokens
-      const totalCost = usageLogs.reduce((sum, log) => 
-        sum + parseFloat(log.total_cost.toString()), 0
+      const totalCost = usageLogs.reduce(
+        (sum, log) => sum + parseFloat(log.total_cost.toString()),
+        0,
       );
-      const totalTokens = usageLogs.reduce((sum, log) => 
-        sum + log.total_tokens, 0
+      const totalTokens = usageLogs.reduce(
+        (sum, log) => sum + log.total_tokens,
+        0,
       );
-      const successfulRequests = usageLogs.filter(log => 
-        log.status === "success"
+      const successfulRequests = usageLogs.filter(
+        (log) => log.status === "success",
       ).length;
-      const failedRequests = usageLogs.filter(log => 
-        log.status === "error"
+      const failedRequests = usageLogs.filter(
+        (log) => log.status === "error",
       ).length;
 
       // Get average latency
-      const avgLatency = usageLogs.length > 0
-        ? usageLogs.reduce((sum, log) => sum + log.latency_ms, 0) / usageLogs.length
-        : 0;
+      const avgLatency =
+        usageLogs.length > 0
+          ? usageLogs.reduce((sum, log) => sum + log.latency_ms, 0) /
+            usageLogs.length
+          : 0;
 
       // Get daily usage for charts
-      const dailyUsage = await ctx.db.$queryRaw<Array<{
-        date: Date;
-        count: bigint;
-        tokens: bigint;
-        cost: number;
-      }>>`
-        SELECT 
+      const dailyUsage = await ctx.db.$queryRaw<
+        Array<{
+          date: Date;
+          count: bigint;
+          tokens: bigint;
+          cost: number;
+        }>
+      >`
+        SELECT
           DATE(created_at) as date,
           COUNT(*) as count,
           SUM(total_tokens) as tokens,
@@ -779,21 +834,23 @@ ${mdContent}`,
           totalRequests: usageLogs.length,
           successfulRequests,
           failedRequests,
-          successRate: usageLogs.length > 0 
-            ? (successfulRequests / usageLogs.length) * 100 
-            : 0,
+          successRate:
+            usageLogs.length > 0
+              ? (successfulRequests / usageLogs.length) * 100
+              : 0,
           totalCost,
           totalTokens,
           avgLatency: Math.round(avgLatency),
-          avgTokensPerRequest: usageLogs.length > 0 
-            ? Math.round(totalTokens / usageLogs.length)
-            : 0,
+          avgTokensPerRequest:
+            usageLogs.length > 0
+              ? Math.round(totalTokens / usageLogs.length)
+              : 0,
         },
-        questionTypes: questionTypeStats.map(stat => ({
+        questionTypes: questionTypeStats.map((stat) => ({
           type: stat.question_type,
           count: stat._count.id,
         })),
-        dailyUsage: dailyUsage.map(day => ({
+        dailyUsage: dailyUsage.map((day) => ({
           date: day.date,
           count: Number(day.count),
           tokens: Number(day.tokens),

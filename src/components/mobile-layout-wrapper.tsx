@@ -16,10 +16,8 @@ export function MobileLayoutWrapper({ children }: MobileLayoutWrapperProps) {
   if (isMobile) {
     return (
       <>
-        <div className="flex flex-col min-h-screen">
-          <main className="flex-1 pb-16">
-            {children}
-          </main>
+        <div className="flex min-h-screen flex-col">
+          <main className="flex-1 pb-16">{children}</main>
         </div>
         <MobileBottomNav />
       </>
@@ -29,9 +27,7 @@ export function MobileLayoutWrapper({ children }: MobileLayoutWrapperProps) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
-        {children}
-      </SidebarInset>
+      <SidebarInset>{children}</SidebarInset>
     </SidebarProvider>
   );
 }

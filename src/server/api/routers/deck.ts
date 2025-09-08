@@ -3,7 +3,10 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 
 const createDeckSchema = z.object({
-  name: z.string().min(1, "Deck name is required").max(255, "Deck name too long"),
+  name: z
+    .string()
+    .min(1, "Deck name is required")
+    .max(255, "Deck name too long"),
   description: z.string().optional(),
   organizationId: z.string().uuid().optional(),
   isPublic: z.boolean().default(false),
@@ -12,7 +15,11 @@ const createDeckSchema = z.object({
 
 const updateDeckSchema = z.object({
   id: z.string().uuid(),
-  name: z.string().min(1, "Deck name is required").max(255, "Deck name too long").optional(),
+  name: z
+    .string()
+    .min(1, "Deck name is required")
+    .max(255, "Deck name too long")
+    .optional(),
   description: z.string().optional(),
   isPublic: z.boolean().optional(),
   settings: z.record(z.any()).optional(),
@@ -36,7 +43,8 @@ export const deckRouter = createTRPCRouter({
     .input(deckQuerySchema)
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const { organizationId, includePublic, limit, offset, includeStats } = input;
+      const { organizationId, includePublic, limit, offset, includeStats } =
+        input;
 
       try {
         const whereConditions: any = {
@@ -91,39 +99,41 @@ export const deckRouter = createTRPCRouter({
           const todayStart = new Date(now);
           todayStart.setHours(0, 0, 0, 0);
 
-          const deckIds = decks.map(d => d.id);
-          
+          const deckIds = decks.map((d) => d.id);
+
           // Batch fetch all stats for performance
           const [cardStates, todayReviews] = await Promise.all([
             // Get card states for all decks
-            ctx.db.cardState.groupBy({
-              by: ['card_id'],
-              where: {
-                user_id: userId,
-                card: {
-                  deck_id: { in: deckIds },
-                },
-              },
-              _count: true,
-            }).then(async (groups) => {
-              // Get the actual card states with deck info
-              return ctx.db.cardState.findMany({
+            ctx.db.cardState
+              .groupBy({
+                by: ["card_id"],
                 where: {
                   user_id: userId,
                   card: {
                     deck_id: { in: deckIds },
                   },
                 },
-                include: {
-                  card: {
-                    select: {
-                      deck_id: true,
+                _count: true,
+              })
+              .then(async (groups) => {
+                // Get the actual card states with deck info
+                return ctx.db.cardState.findMany({
+                  where: {
+                    user_id: userId,
+                    card: {
+                      deck_id: { in: deckIds },
                     },
                   },
-                },
-              });
-            }),
-            
+                  include: {
+                    card: {
+                      select: {
+                        deck_id: true,
+                      },
+                    },
+                  },
+                });
+              }),
+
             // Get today's reviews for all decks
             ctx.db.review.findMany({
               where: {
@@ -144,34 +154,47 @@ export const deckRouter = createTRPCRouter({
           ]);
 
           // Process stats for each deck
-          decksWithStats = decks.map(deck => {
-            const deckCardStates = cardStates.filter(cs => cs.card.deck_id === deck.id);
-            const deckTodayReviews = todayReviews.filter(r => r.card.deck_id === deck.id);
+          decksWithStats = decks.map((deck) => {
+            const deckCardStates = cardStates.filter(
+              (cs) => cs.card.deck_id === deck.id,
+            );
+            const deckTodayReviews = todayReviews.filter(
+              (r) => r.card.deck_id === deck.id,
+            );
 
             // Calculate due cards
-            const dueCards = deckCardStates.filter(cs => 
-              cs.state !== "SUSPENDED" && cs.due_date <= now
+            const dueCards = deckCardStates.filter(
+              (cs) => cs.state !== "SUSPENDED" && cs.due_date <= now,
             ).length;
 
             // Calculate card state breakdown
-            const newCards = deckCardStates.filter(cs => cs.state === "NEW").length;
-            const learningCards = deckCardStates.filter(cs => cs.state === "LEARNING").length;
-            const reviewCards = deckCardStates.filter(cs => cs.state === "REVIEW").length;
-            const suspendedCards = deckCardStates.filter(cs => cs.state === "SUSPENDED").length;
+            const newCards = deckCardStates.filter(
+              (cs) => cs.state === "NEW",
+            ).length;
+            const learningCards = deckCardStates.filter(
+              (cs) => cs.state === "LEARNING",
+            ).length;
+            const reviewCards = deckCardStates.filter(
+              (cs) => cs.state === "REVIEW",
+            ).length;
+            const suspendedCards = deckCardStates.filter(
+              (cs) => cs.state === "SUSPENDED",
+            ).length;
 
             // Calculate today's activity
             const reviewedToday = deckTodayReviews.length;
-            const successfulToday = deckTodayReviews.filter(r => 
-              r.rating === "GOOD" || r.rating === "EASY"
+            const successfulToday = deckTodayReviews.filter(
+              (r) => r.rating === "GOOD" || r.rating === "EASY",
             ).length;
-            const todayAccuracy = reviewedToday > 0 
-              ? Math.round((successfulToday / reviewedToday) * 100) 
-              : 0;
+            const todayAccuracy =
+              reviewedToday > 0
+                ? Math.round((successfulToday / reviewedToday) * 100)
+                : 0;
 
             // Calculate 30-day retention rate
             const thirtyDaysAgo = new Date(now);
             thirtyDaysAgo.setDate(now.getDate() - 30);
-            
+
             return {
               ...deck,
               stats: {
@@ -214,10 +237,7 @@ export const deckRouter = createTRPCRouter({
         const deck = await ctx.db.deck.findFirst({
           where: {
             id: input.id,
-            OR: [
-              { user_id: userId },
-              { is_public: true },
-            ],
+            OR: [{ user_id: userId }, { is_public: true }],
           },
           include: {
             user: {
@@ -343,7 +363,8 @@ export const deckRouter = createTRPCRouter({
 
         const updateData: any = {};
         if (input.name !== undefined) updateData.name = input.name;
-        if (input.description !== undefined) updateData.description = input.description;
+        if (input.description !== undefined)
+          updateData.description = input.description;
         if (input.isPublic !== undefined) updateData.is_public = input.isPublic;
         if (input.settings !== undefined) updateData.settings = input.settings;
 
@@ -439,10 +460,7 @@ export const deckRouter = createTRPCRouter({
         const deck = await ctx.db.deck.findFirst({
           where: {
             id: input.id,
-            OR: [
-              { user_id: userId },
-              { is_public: true },
-            ],
+            OR: [{ user_id: userId }, { is_public: true }],
           },
         });
 
@@ -526,9 +544,11 @@ export const deckRouter = createTRPCRouter({
 
   // Get quick statistics for multiple decks
   getQuickStats: protectedProcedure
-    .input(z.object({
-      deckIds: z.array(z.string().uuid()),
-    }))
+    .input(
+      z.object({
+        deckIds: z.array(z.string().uuid()),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
       const { deckIds } = input;
@@ -575,29 +595,40 @@ export const deckRouter = createTRPCRouter({
 
         // Process stats by deck
         const statsByDeck: Record<string, any> = {};
-        
+
         for (const deckId of deckIds) {
-          const deckCardStates = cardStates.filter(cs => cs.card.deck_id === deckId);
-          const deckTodayReviews = todayReviews.filter(r => r.card.deck_id === deckId);
+          const deckCardStates = cardStates.filter(
+            (cs) => cs.card.deck_id === deckId,
+          );
+          const deckTodayReviews = todayReviews.filter(
+            (r) => r.card.deck_id === deckId,
+          );
 
           // Calculate due cards
-          const dueCards = deckCardStates.filter(cs => 
-            cs.state !== "SUSPENDED" && cs.due_date <= now
+          const dueCards = deckCardStates.filter(
+            (cs) => cs.state !== "SUSPENDED" && cs.due_date <= now,
           ).length;
 
           // Calculate card state breakdown
-          const newCards = deckCardStates.filter(cs => cs.state === "NEW" && cs.due_date <= now).length;
-          const learningCards = deckCardStates.filter(cs => cs.state === "LEARNING" && cs.due_date <= now).length;
-          const reviewCards = deckCardStates.filter(cs => cs.state === "REVIEW" && cs.due_date <= now).length;
+          const newCards = deckCardStates.filter(
+            (cs) => cs.state === "NEW" && cs.due_date <= now,
+          ).length;
+          const learningCards = deckCardStates.filter(
+            (cs) => cs.state === "LEARNING" && cs.due_date <= now,
+          ).length;
+          const reviewCards = deckCardStates.filter(
+            (cs) => cs.state === "REVIEW" && cs.due_date <= now,
+          ).length;
 
           // Calculate today's activity
           const reviewedToday = deckTodayReviews.length;
-          const successfulToday = deckTodayReviews.filter(r => 
-            r.rating === "GOOD" || r.rating === "EASY"
+          const successfulToday = deckTodayReviews.filter(
+            (r) => r.rating === "GOOD" || r.rating === "EASY",
           ).length;
-          const todayAccuracy = reviewedToday > 0 
-            ? Math.round((successfulToday / reviewedToday) * 100) 
-            : 0;
+          const todayAccuracy =
+            reviewedToday > 0
+              ? Math.round((successfulToday / reviewedToday) * 100)
+              : 0;
 
           statsByDeck[deckId] = {
             due: dueCards,

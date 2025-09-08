@@ -7,15 +7,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
   DialogTrigger,
-  DialogFooter 
+  DialogFooter,
 } from "@/components/ui/dialog";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -25,15 +25,15 @@ import {
 import { api } from "@/trpc/react";
 import { toast } from "sonner";
 import Link from "next/link";
-import { 
+import {
   ArrowLeft,
-  Plus, 
-  Search, 
+  Plus,
+  Search,
   Edit,
   Trash2,
   FileText,
   Brain,
-  MoreVertical
+  MoreVertical,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -61,7 +61,10 @@ import { CardStateIndicator } from "@/components/CardStateIndicator";
 import { IntervalDisplay } from "@/components/IntervalDisplay";
 import { DueDateBadge } from "@/components/DueDateBadge";
 import { CardDetailModal } from "@/components/CardDetailModal";
-import { CardSortingFilter, type SortingFilterOptions } from "@/components/CardSortingFilter";
+import {
+  CardSortingFilter,
+  type SortingFilterOptions,
+} from "@/components/CardSortingFilter";
 
 interface CreateCardForm {
   cardType: PrismaCardType;
@@ -74,7 +77,7 @@ interface CreateCardForm {
 export default function DeckCardsPage() {
   const params = useParams();
   const deckId = params.id as string;
-  
+
   const [searchFilters, setSearchFilters] = useState<{
     search: string;
     cardType?: "BASIC" | "CLOZE";
@@ -83,7 +86,15 @@ export default function DeckCardsPage() {
     searchFields: string[];
     createdAfter?: Date;
     createdBefore?: Date;
-    sortBy: "created_at" | "updated_at" | "front" | "due_date" | "interval" | "difficulty" | "lapses" | "repetitions";
+    sortBy:
+      | "created_at"
+      | "updated_at"
+      | "front"
+      | "due_date"
+      | "interval"
+      | "difficulty"
+      | "lapses"
+      | "repetitions";
     sortOrder: "asc" | "desc";
     stateFilter?: ("NEW" | "LEARNING" | "REVIEW" | "SUSPENDED")[];
     dueFilter?: "overdue" | "today" | "tomorrow" | "week" | "all";
@@ -115,14 +126,24 @@ export default function DeckCardsPage() {
     clozeText: "",
     tags: "",
   });
-  const [selectedCard, setSelectedCard] = useState<typeof filteredCards[0] | null>(null);
+  const [selectedCard, setSelectedCard] = useState<
+    (typeof filteredCards)[0] | null
+  >(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // Get deck details
-  const { data: deck, isLoading: isDeckLoading, refetch: refetchDeck } = api.deck.getById.useQuery({ id: deckId });
+  const {
+    data: deck,
+    isLoading: isDeckLoading,
+    refetch: refetchDeck,
+  } = api.deck.getById.useQuery({ id: deckId });
 
   // Get cards for this deck
-  const { data: cardsData, isLoading: isCardsLoading, refetch: refetchCards } = api.card.getByDeck.useQuery({
+  const {
+    data: cardsData,
+    isLoading: isCardsLoading,
+    refetch: refetchCards,
+  } = api.card.getByDeck.useQuery({
     deckId,
     search: searchFilters.search || undefined,
     cardType: searchFilters.cardType,
@@ -131,7 +152,12 @@ export default function DeckCardsPage() {
     createdBefore: searchFilters.createdBefore,
     sortBy: searchFilters.sortBy,
     sortOrder: searchFilters.sortOrder,
-    searchFields: searchFilters.searchFields as ("front" | "back" | "cloze_text" | "tags")[],
+    searchFields: searchFilters.searchFields as (
+      | "front"
+      | "back"
+      | "cloze_text"
+      | "tags"
+    )[],
     stateFilter: searchFilters.stateFilter,
     dueFilter: searchFilters.dueFilter,
     intervalRange: searchFilters.intervalRange,
@@ -145,26 +171,30 @@ export default function DeckCardsPage() {
   useEffect(() => {
     const handleFocus = () => {
       // Only refetch if the page is visible and data is not currently loading
-      if (document.visibilityState === 'visible' && !isDeckLoading && !isCardsLoading) {
+      if (
+        document.visibilityState === "visible" &&
+        !isDeckLoading &&
+        !isCardsLoading
+      ) {
         void refetchDeck();
         void refetchCards();
       }
     };
 
     // Check if we're coming back from a study session by looking for a sessionStorage flag
-    const completedStudy = sessionStorage.getItem('study-session-completed');
+    const completedStudy = sessionStorage.getItem("study-session-completed");
     if (completedStudy === deckId) {
-      sessionStorage.removeItem('study-session-completed');
+      sessionStorage.removeItem("study-session-completed");
       void refetchDeck();
       void refetchCards();
     }
 
-    document.addEventListener('visibilitychange', handleFocus);
-    window.addEventListener('focus', handleFocus);
+    document.addEventListener("visibilitychange", handleFocus);
+    window.addEventListener("focus", handleFocus);
 
     return () => {
-      document.removeEventListener('visibilitychange', handleFocus);
-      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
+      window.removeEventListener("focus", handleFocus);
     };
   }, [deckId, isDeckLoading, isCardsLoading, refetchDeck, refetchCards]);
 
@@ -201,23 +231,23 @@ export default function DeckCardsPage() {
   // Get card with reviews query
   const { data: cardWithReviews } = api.card.getByIdWithReviews.useQuery(
     { id: selectedCard?.id ?? "" },
-    { enabled: !!selectedCard?.id }
+    { enabled: !!selectedCard?.id },
   );
 
   const handleCreateCard = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Check if content is empty (accounting for empty HTML)
-    const frontText = createForm.front.replace(/<[^>]*>/g, '').trim();
-    const backText = createForm.back.replace(/<[^>]*>/g, '').trim();
-    
+    const frontText = createForm.front.replace(/<[^>]*>/g, "").trim();
+    const backText = createForm.back.replace(/<[^>]*>/g, "").trim();
+
     if (!frontText || !backText) {
       toast.error("Both front and back content are required");
       return;
     }
 
     if (createForm.cardType === "CLOZE") {
-      const clozeText = createForm.clozeText.replace(/<[^>]*>/g, '').trim();
+      const clozeText = createForm.clozeText.replace(/<[^>]*>/g, "").trim();
       if (!clozeText) {
         toast.error("Cloze text is required for cloze deletion cards");
         return;
@@ -232,32 +262,37 @@ export default function DeckCardsPage() {
 
     const tags = createForm.tags
       .split(",")
-      .map(tag => tag.trim())
-      .filter(tag => tag.length > 0);
+      .map((tag) => tag.trim())
+      .filter((tag) => tag.length > 0);
 
     createCard.mutate({
       deckId,
       cardType: createForm.cardType,
       front: createForm.front,
       back: createForm.back,
-      clozeText: createForm.cardType === "CLOZE" ? createForm.clozeText : undefined,
+      clozeText:
+        createForm.cardType === "CLOZE" ? createForm.clozeText : undefined,
       tags,
     });
   };
 
   const handleDeleteCard = (cardId: string) => {
-    if (confirm("Are you sure you want to delete this card? This action cannot be undone.")) {
+    if (
+      confirm(
+        "Are you sure you want to delete this card? This action cannot be undone.",
+      )
+    ) {
       deleteCard.mutate({ id: cardId });
     }
   };
 
-  const handleCardClick = (card: typeof filteredCards[0]) => {
+  const handleCardClick = (card: (typeof filteredCards)[0]) => {
     setSelectedCard(card);
     setIsDetailModalOpen(true);
   };
 
   const handleSortingFilterApply = (options: SortingFilterOptions) => {
-    setSearchFilters(prev => ({
+    setSearchFilters((prev) => ({
       ...prev,
       sortBy: options.sortBy,
       sortOrder: options.sortOrder,
@@ -273,20 +308,20 @@ export default function DeckCardsPage() {
   // Only show full page skeleton on initial load when deck is loading
   if (isDeckLoading) {
     return (
-      <div className="container mx-auto p-6 max-w-6xl">
+      <div className="container mx-auto max-w-6xl p-6">
         {/* Breadcrumb Skeleton */}
-        <div className="flex items-center gap-2 mb-4">
+        <div className="mb-4 flex items-center gap-2">
           <Skeleton className="h-4 w-20" />
           <Skeleton className="h-4 w-4" />
           <Skeleton className="h-4 w-12" />
           <Skeleton className="h-4 w-4" />
           <Skeleton className="h-4 w-32" />
         </div>
-        
+
         {/* Header with title and buttons */}
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="mb-2 h-8 w-48" />
             <Skeleton className="h-4 w-80" />
           </div>
           <div className="flex gap-2">
@@ -294,17 +329,17 @@ export default function DeckCardsPage() {
             <Skeleton className="h-10 w-28" />
           </div>
         </div>
-        
+
         <Card className="mb-6">
           <CardContent className="p-4">
-            <Skeleton className="h-10 w-full mb-2" />
+            <Skeleton className="mb-2 h-10 w-full" />
             <div className="flex gap-2">
               <Skeleton className="h-9 w-24" />
               <Skeleton className="h-9 w-24" />
             </div>
           </CardContent>
         </Card>
-        
+
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
             <SkeletonCardPreview key={i} />
@@ -317,10 +352,11 @@ export default function DeckCardsPage() {
   if (!deck) {
     return (
       <div className="container mx-auto p-6">
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-2">Deck not found</h2>
+        <div className="py-12 text-center">
+          <h2 className="mb-2 text-2xl font-bold">Deck not found</h2>
           <p className="text-muted-foreground mb-4">
-            The deck you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.
+            The deck you&apos;re looking for doesn&apos;t exist or you
+            don&apos;t have access to it.
           </p>
           <Link href="/decks">
             <Button>Back to Decks</Button>
@@ -333,7 +369,7 @@ export default function DeckCardsPage() {
   const filteredCards = cardsData?.cards ?? [];
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
+    <div className="container mx-auto max-w-6xl p-6">
       <Breadcrumb className="mb-4">
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -353,129 +389,157 @@ export default function DeckCardsPage() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold tracking-tight">{deck.name}</h1>
-          <p className="text-sm sm:text-base text-muted-foreground mt-1">
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl lg:text-2xl">
+            {deck.name}
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Manage cards in this deck • {cardsData?.totalCount ?? 0} cards total
           </p>
         </div>
-        
+
         <div className="flex gap-2">
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <Dialog
+            open={isCreateDialogOpen}
+            onOpenChange={setIsCreateDialogOpen}
+          >
             <DialogTrigger asChild>
               <Button variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="mr-2 h-4 w-4" />
                 Add Card
               </Button>
             </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-            <DialogHeader>
-              <DialogTitle>Create New Card</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleCreateCard} className="flex-1 overflow-hidden flex flex-col">
-              <div className="space-y-4 overflow-y-auto flex-1 px-1">
-                <div>
-                  <Label htmlFor="cardType">Card Type</Label>
-                  <Select 
-                    value={createForm.cardType} 
-                    onValueChange={(value: PrismaCardType) => 
-                      setCreateForm(prev => ({ ...prev, cardType: value }))
-                    }
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="BASIC">
-                        <div className="flex items-center">
-                          <FileText className="h-4 w-4 mr-2" />
-                          Basic Card
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="CLOZE">
-                        <div className="flex items-center">
-                          <Brain className="h-4 w-4 mr-2" />
-                          Cloze Deletion
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="front">Front (Question)</Label>
-                  <div className="mt-1">
-                    <RichTextEditor
-                      content={createForm.front}
-                      onChange={(content) => setCreateForm(prev => ({ ...prev, front: content }))}
-                      placeholder="Enter the question or prompt..."
-                      minHeight="80px"
-                      maxHeight="150px"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="back">Back (Answer)</Label>
-                  <div className="mt-1">
-                    <RichTextEditor
-                      content={createForm.back}
-                      onChange={(content) => setCreateForm(prev => ({ ...prev, back: content }))}
-                      placeholder="Enter the answer or explanation..."
-                      minHeight="80px"
-                      maxHeight="150px"
-                    />
-                  </div>
-                </div>
-
-                {createForm.cardType === "CLOZE" && (
+            <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col overflow-hidden">
+              <DialogHeader>
+                <DialogTitle>Create New Card</DialogTitle>
+              </DialogHeader>
+              <form
+                onSubmit={handleCreateCard}
+                className="flex flex-1 flex-col overflow-hidden"
+              >
+                <div className="flex-1 space-y-4 overflow-y-auto px-1">
                   <div>
-                    <Label htmlFor="clozeText">Cloze Context</Label>
+                    <Label htmlFor="cardType">Card Type</Label>
+                    <Select
+                      value={createForm.cardType}
+                      onValueChange={(value: PrismaCardType) =>
+                        setCreateForm((prev) => ({ ...prev, cardType: value }))
+                      }
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="BASIC">
+                          <div className="flex items-center">
+                            <FileText className="mr-2 h-4 w-4" />
+                            Basic Card
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="CLOZE">
+                          <div className="flex items-center">
+                            <Brain className="mr-2 h-4 w-4" />
+                            Cloze Deletion
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="front">Front (Question)</Label>
                     <div className="mt-1">
                       <RichTextEditor
-                        content={createForm.clozeText}
-                        onChange={(content) => setCreateForm(prev => ({ ...prev, clozeText: content }))}
-                        placeholder="Enter the full text with {{c1::hidden text}} markers..."
-                        minHeight="60px"
-                        maxHeight="120px"
+                        content={createForm.front}
+                        onChange={(content) =>
+                          setCreateForm((prev) => ({ ...prev, front: content }))
+                        }
+                        placeholder="Enter the question or prompt..."
+                        minHeight="80px"
+                        maxHeight="150px"
                       />
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Use {`{{c1::text}}`} format to mark text for deletion. Example: &quot;The capital of {`{{c1::France}}`} is Paris.&quot;
-                    </p>
-                    {createForm.clozeText.trim() && createForm.clozeText !== '<p></p>' && (
-                      <ClozePreview clozeText={createForm.clozeText} className="mt-3" />
-                    )}
                   </div>
-                )}
 
-                <div>
-                  <Label htmlFor="tags">Tags (Optional)</Label>
-                  <Input
-                    id="tags"
-                    value={createForm.tags}
-                    onChange={(e) => setCreateForm(prev => ({ ...prev, tags: e.target.value }))}
-                    placeholder="Enter tags separated by commas..."
-                    className="mt-1"
-                  />
+                  <div>
+                    <Label htmlFor="back">Back (Answer)</Label>
+                    <div className="mt-1">
+                      <RichTextEditor
+                        content={createForm.back}
+                        onChange={(content) =>
+                          setCreateForm((prev) => ({ ...prev, back: content }))
+                        }
+                        placeholder="Enter the answer or explanation..."
+                        minHeight="80px"
+                        maxHeight="150px"
+                      />
+                    </div>
+                  </div>
+
+                  {createForm.cardType === "CLOZE" && (
+                    <div>
+                      <Label htmlFor="clozeText">Cloze Context</Label>
+                      <div className="mt-1">
+                        <RichTextEditor
+                          content={createForm.clozeText}
+                          onChange={(content) =>
+                            setCreateForm((prev) => ({
+                              ...prev,
+                              clozeText: content,
+                            }))
+                          }
+                          placeholder="Enter the full text with {{c1::hidden text}} markers..."
+                          minHeight="60px"
+                          maxHeight="120px"
+                        />
+                      </div>
+                      <p className="text-muted-foreground mt-1 text-sm">
+                        Use {`{{c1::text}}`} format to mark text for deletion.
+                        Example: &quot;The capital of {`{{c1::France}}`} is
+                        Paris.&quot;
+                      </p>
+                      {createForm.clozeText.trim() &&
+                        createForm.clozeText !== "<p></p>" && (
+                          <ClozePreview
+                            clozeText={createForm.clozeText}
+                            className="mt-3"
+                          />
+                        )}
+                    </div>
+                  )}
+
+                  <div>
+                    <Label htmlFor="tags">Tags (Optional)</Label>
+                    <Input
+                      id="tags"
+                      value={createForm.tags}
+                      onChange={(e) =>
+                        setCreateForm((prev) => ({
+                          ...prev,
+                          tags: e.target.value,
+                        }))
+                      }
+                      placeholder="Enter tags separated by commas..."
+                      className="mt-1"
+                    />
+                  </div>
                 </div>
-              </div>
-              <DialogFooter className="mt-4 border-t pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setIsCreateDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={createCard.isPending}>
-                  {createCard.isPending ? "Creating..." : "Create Card"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
+                <DialogFooter className="mt-4 border-t pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsCreateDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={createCard.isPending}>
+                    {createCard.isPending ? "Creating..." : "Create Card"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
           </Dialog>
         </div>
       </div>
@@ -492,7 +556,7 @@ export default function DeckCardsPage() {
               initialFilters={searchFilters}
               deckId={deckId}
             />
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <CardSortingFilter
                 onApply={handleSortingFilterApply}
                 initialOptions={{
@@ -520,27 +584,33 @@ export default function DeckCardsPage() {
         </div>
       ) : filteredCards.length === 0 ? (
         <Card>
-          <CardContent className="text-center py-12">
+          <CardContent className="py-12 text-center">
             {searchFilters.search ? (
               <>
-                <Search className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">No cards found</h3>
+                <Search className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+                <h3 className="mb-2 text-lg font-semibold">No cards found</h3>
                 <p className="text-muted-foreground mb-4">
-                  No cards match your search criteria. Try adjusting your search terms.
+                  No cards match your search criteria. Try adjusting your search
+                  terms.
                 </p>
-                <Button variant="outline" onClick={() => setSearchFilters(prev => ({ ...prev, search: "" }))}>
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    setSearchFilters((prev) => ({ ...prev, search: "" }))
+                  }
+                >
                   Clear Search
                 </Button>
               </>
             ) : (
               <>
-                <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">No cards yet</h3>
+                <FileText className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+                <h3 className="mb-2 text-lg font-semibold">No cards yet</h3>
                 <p className="text-muted-foreground mb-4">
                   Add your first card to start building this deck.
                 </p>
                 <Button onClick={() => setIsCreateDialogOpen(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="mr-2 h-4 w-4" />
                   Add Your First Card
                 </Button>
               </>
@@ -550,55 +620,77 @@ export default function DeckCardsPage() {
       ) : (
         <div className="space-y-4">
           {filteredCards.map((card) => (
-            <Card 
-              key={card.id} 
-              className="group hover:shadow-md transition-shadow cursor-pointer"
+            <Card
+              key={card.id}
+              className="group cursor-pointer transition-shadow hover:shadow-md"
               onClick={() => handleCardClick(card)}
             >
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
                   <div className="flex-1 space-y-3">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant={card.card_type === "BASIC" ? "default" : "secondary"}>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge
+                        variant={
+                          card.card_type === "BASIC" ? "default" : "secondary"
+                        }
+                      >
                         {card.card_type === "BASIC" ? (
-                          <><FileText className="h-3 w-3 mr-1" />Basic</>
+                          <>
+                            <FileText className="mr-1 h-3 w-3" />
+                            Basic
+                          </>
                         ) : (
-                          <><Brain className="h-3 w-3 mr-1" />Cloze</>
+                          <>
+                            <Brain className="mr-1 h-3 w-3" />
+                            Cloze
+                          </>
                         )}
                       </Badge>
                       {card.card_states?.[0] && (
                         <>
-                          <CardStateIndicator state={card.card_states[0].state} />
-                          <IntervalDisplay interval={card.card_states[0].interval} />
-                          <DueDateBadge dueDate={card.card_states[0].due_date} />
+                          <CardStateIndicator
+                            state={card.card_states[0].state}
+                          />
+                          <IntervalDisplay
+                            interval={card.card_states[0].interval}
+                          />
+                          <DueDateBadge
+                            dueDate={card.card_states[0].due_date}
+                          />
                         </>
                       )}
                     </div>
 
                     {card.card_type === "BASIC" ? (
-                      <div className="grid md:grid-cols-2 gap-4">
+                      <div className="grid gap-4 md:grid-cols-2">
                         <div>
-                          <div className="text-sm font-medium text-muted-foreground mb-1">Front</div>
-                          <div className="text-sm bg-muted/50 p-3 rounded border-l-2 border-blue-200">
-                            <div 
-                              className="prose prose-sm max-w-none line-clamp-3"
-                              dangerouslySetInnerHTML={{ 
-                                __html: card.front.length > 150 
-                                  ? card.front.substring(0, 150) + '...' 
-                                  : card.front
+                          <div className="text-muted-foreground mb-1 text-sm font-medium">
+                            Front
+                          </div>
+                          <div className="bg-muted/50 rounded border-l-2 border-blue-200 p-3 text-sm">
+                            <div
+                              className="prose prose-sm line-clamp-3 max-w-none"
+                              dangerouslySetInnerHTML={{
+                                __html:
+                                  card.front.length > 150
+                                    ? card.front.substring(0, 150) + "..."
+                                    : card.front,
                               }}
                             />
                           </div>
                         </div>
                         <div>
-                          <div className="text-sm font-medium text-muted-foreground mb-1">Back</div>
-                          <div className="text-sm bg-muted/50 p-3 rounded border-l-2 border-green-200">
-                            <div 
-                              className="prose prose-sm max-w-none line-clamp-3"
-                              dangerouslySetInnerHTML={{ 
-                                __html: card.back.length > 150 
-                                  ? card.back.substring(0, 150) + '...' 
-                                  : card.back
+                          <div className="text-muted-foreground mb-1 text-sm font-medium">
+                            Back
+                          </div>
+                          <div className="bg-muted/50 rounded border-l-2 border-green-200 p-3 text-sm">
+                            <div
+                              className="prose prose-sm line-clamp-3 max-w-none"
+                              dangerouslySetInnerHTML={{
+                                __html:
+                                  card.back.length > 150
+                                    ? card.back.substring(0, 150) + "..."
+                                    : card.back,
                               }}
                             />
                           </div>
@@ -607,26 +699,41 @@ export default function DeckCardsPage() {
                     ) : (
                       card.cloze_text && (
                         <div>
-                          <div className="text-sm font-medium text-muted-foreground mb-1">Cloze Cards Preview</div>
-                          <div className="text-sm bg-orange-50 p-3 rounded border-l-2 border-orange-200">
+                          <div className="text-muted-foreground mb-1 text-sm font-medium">
+                            Cloze Cards Preview
+                          </div>
+                          <div className="rounded border-l-2 border-orange-200 bg-orange-50 p-3 text-sm">
                             {(() => {
-                              const parsedCards = parseClozeText(card.cloze_text);
+                              const parsedCards = parseClozeText(
+                                card.cloze_text,
+                              );
                               if (parsedCards.length === 0) {
-                                return <div className="text-muted-foreground">Invalid cloze format</div>;
+                                return (
+                                  <div className="text-muted-foreground">
+                                    Invalid cloze format
+                                  </div>
+                                );
                               }
                               return (
                                 <div className="space-y-2">
-                                  {parsedCards.slice(0, 2).map((clozeCard, index) => (
-                                    <div key={index} className="text-sm">
-                                      <span className="font-medium">Q{index + 1}:</span>{" "}
-                                      <span 
-                                        dangerouslySetInnerHTML={{ __html: clozeCard.question }}
-                                      />
-                                    </div>
-                                  ))}
+                                  {parsedCards
+                                    .slice(0, 2)
+                                    .map((clozeCard, index) => (
+                                      <div key={index} className="text-sm">
+                                        <span className="font-medium">
+                                          Q{index + 1}:
+                                        </span>{" "}
+                                        <span
+                                          dangerouslySetInnerHTML={{
+                                            __html: clozeCard.question,
+                                          }}
+                                        />
+                                      </div>
+                                    ))}
                                   {parsedCards.length > 2 && (
-                                    <div className="text-xs text-muted-foreground">
-                                      ... and {parsedCards.length - 2} more cloze cards
+                                    <div className="text-muted-foreground text-xs">
+                                      ... and {parsedCards.length - 2} more
+                                      cloze cards
                                     </div>
                                   )}
                                 </div>
@@ -638,10 +745,14 @@ export default function DeckCardsPage() {
                     )}
 
                     {card.tags.length > 0 && (
-                      <div className="pt-3 mt-3 border-t">
-                        <div className="flex gap-1 flex-wrap">
+                      <div className="mt-3 border-t pt-3">
+                        <div className="flex flex-wrap gap-1">
                           {card.tags.map((tag, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
+                            <Badge
+                              key={index}
+                              variant="outline"
+                              className="text-xs"
+                            >
                               {tag}
                             </Badge>
                           ))}
@@ -652,10 +763,10 @@ export default function DeckCardsPage() {
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-8 w-8 p-0" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
                         aria-label="Card options"
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -664,11 +775,11 @@ export default function DeckCardsPage() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem asChild>
-                        <Link 
+                        <Link
                           href={`/decks/${deckId}/cards/${card.id}/edit`}
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <Edit className="h-4 w-4 mr-2" />
+                          <Edit className="mr-2 h-4 w-4" />
                           Edit Card
                         </Link>
                       </DropdownMenuItem>
@@ -680,7 +791,7 @@ export default function DeckCardsPage() {
                           handleDeleteCard(card.id);
                         }}
                       >
-                        <Trash2 className="h-4 w-4 mr-2" />
+                        <Trash2 className="mr-2 h-4 w-4" />
                         Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -699,26 +810,26 @@ export default function DeckCardsPage() {
             <div className="flex items-center justify-between">
               <Button
                 variant="outline"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
+                <ArrowLeft className="mr-2 h-4 w-4" />
                 Previous
               </Button>
-              
+
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-muted-foreground text-sm">
                   Page {currentPage} of {Math.ceil(cardsData.totalCount / 20)}
                 </span>
               </div>
 
               <Button
                 variant="outline"
-                onClick={() => setCurrentPage(prev => prev + 1)}
+                onClick={() => setCurrentPage((prev) => prev + 1)}
                 disabled={currentPage >= Math.ceil(cardsData.totalCount / 20)}
               >
                 Next
-                <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
+                <ArrowLeft className="ml-2 h-4 w-4 rotate-180" />
               </Button>
             </div>
           </CardContent>
@@ -727,7 +838,7 @@ export default function DeckCardsPage() {
 
       {/* Study Deck Action */}
       {filteredCards.length > 0 && (
-        <div className="mt-8 text-center border-t pt-8">
+        <div className="mt-8 border-t pt-8 text-center">
           <div className="flex justify-center gap-4">
             <Link href={`/decks/${deckId}/study`}>
               <Button size="lg" className="px-8">
@@ -740,8 +851,9 @@ export default function DeckCardsPage() {
               </Button>
             </Link>
           </div>
-          <p className="text-sm text-muted-foreground mt-2">
-            Start a focused study session or view detailed performance statistics
+          <p className="text-muted-foreground mt-2 text-sm">
+            Start a focused study session or view detailed performance
+            statistics
           </p>
         </div>
       )}

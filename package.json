@@ -27,7 +27,8 @@
     "test:report": "playwright show-report",
     "test:unit": "jest",
     "test:unit:watch": "jest --watch",
-    "test:unit:coverage": "jest --coverage"
+    "test:unit:coverage": "jest --coverage",
+    "prepare": "husky"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.1",
@@ -94,6 +95,8 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
     "@eslint/eslintrc": "^3.3.1",
     "@jest/globals": "^30.0.5",
     "@playwright/test": "^1.54.1",
@@ -104,8 +107,10 @@
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.23.0",
     "eslint-config-next": "^15.2.3",
+    "husky": "^9.1.7",
     "jest": "^30.0.5",
     "jest-environment-node": "^30.0.5",
+    "lint-staged": "^16.1.6",
     "postcss": "^8.5.3",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
@@ -122,5 +127,14 @@
   "packageManager": "pnpm@10.8.0",
   "prisma": {
     "seed": "tsx prisma/seed.ts"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   }
 }

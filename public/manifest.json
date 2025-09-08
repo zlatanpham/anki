@@ -1,6 +1,6 @@
 {
-  "name": "Anki Flashcards",
-  "short_name": "Anki Flashcards",
+  "name": "Anki - Intelligent Flashcards for Effective Learning",
+  "short_name": "Anki",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -70,8 +70,8 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#000000",
-  "background_color": "#000000",
+  "theme_color": "#0B0B0B",
+  "background_color": "#0B0B0B",
   "display": "standalone",
   "start_url": "/",
   "scope": "/"

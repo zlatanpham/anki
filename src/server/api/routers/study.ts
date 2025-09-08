@@ -803,8 +803,8 @@ export const studyRouter = createTRPCRouter({
         reviews.forEach(review => {
           const dateKey = review.reviewed_at.toISOString().split('T')[0]!;
           if (dailyData[dateKey]) {
-            dailyData[dateKey]!.reviews++;
-            dailyData[dateKey]!.totalTime += review.response_time || 0;
+            dailyData[dateKey].reviews++;
+            dailyData[dateKey].totalTime += review.response_time || 0;
           }
         });
 

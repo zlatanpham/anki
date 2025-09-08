@@ -27,8 +27,8 @@ import {
   TrendingUpIcon,
   AlertCircleIcon,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { CardStateEnum } from "@prisma/client";
+// cn import removed - not used
+import { type CardStateEnum } from "@prisma/client";
 
 export interface SortingFilterOptions {
   sortBy: "due_date" | "interval" | "difficulty" | "created_at" | "updated_at" | "front" | "lapses" | "repetitions";
@@ -49,13 +49,13 @@ interface CardSortingFilterProps {
 export function CardSortingFilter({ onApply, initialOptions, cardCount }: CardSortingFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState<SortingFilterOptions>({
-    sortBy: initialOptions?.sortBy || "due_date",
-    sortOrder: initialOptions?.sortOrder || "asc",
-    stateFilter: initialOptions?.stateFilter || [],
-    dueFilter: initialOptions?.dueFilter || "all",
-    intervalRange: initialOptions?.intervalRange || [0, 365],
-    difficultyRange: initialOptions?.difficultyRange || [1.3, 2.7],
-    onlyWithLapses: initialOptions?.onlyWithLapses || false,
+    sortBy: initialOptions?.sortBy ?? "due_date",
+    sortOrder: initialOptions?.sortOrder ?? "asc",
+    stateFilter: initialOptions?.stateFilter ?? [],
+    dueFilter: initialOptions?.dueFilter ?? "all",
+    intervalRange: initialOptions?.intervalRange ?? [0, 365],
+    difficultyRange: initialOptions?.difficultyRange ?? [1.3, 2.7],
+    onlyWithLapses: initialOptions?.onlyWithLapses ?? false,
   });
 
   const activeFiltersCount = [
@@ -97,7 +97,7 @@ export function CardSortingFilter({ onApply, initialOptions, cardCount }: CardSo
   ];
 
   const selectedSortOption = sortOptions.find(opt => opt.value === options.sortBy);
-  const SortIcon = selectedSortOption?.icon || ArrowUpDownIcon;
+  const SortIcon = selectedSortOption?.icon ?? ArrowUpDownIcon;
 
   return (
     <div className="flex items-center gap-2">
@@ -173,7 +173,7 @@ export function CardSortingFilter({ onApply, initialOptions, cardCount }: CardSo
                     onClick={() => {
                       const newStates = options.stateFilter?.includes(state)
                         ? options.stateFilter.filter(s => s !== state)
-                        : [...(options.stateFilter || []), state];
+                        : [...(options.stateFilter ?? []), state];
                       setOptions({ ...options, stateFilter: newStates });
                     }}
                   >

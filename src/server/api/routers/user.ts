@@ -239,9 +239,9 @@ export const userRouter = createTRPCRouter({
         totalReviews: totalReviewsCount,
         totalDecks: userDecksCount,
         totalCards: userCardsCount,
-        lastStudyDate: lastReview?.reviewed_at || null,
+        lastStudyDate: lastReview?.reviewed_at ?? null,
       };
-    } catch (error) {
+    } catch {
       throw new Error("Failed to fetch user status");
     }
   }),
@@ -294,7 +294,7 @@ export const userRouter = createTRPCRouter({
         lastDeckName: lastReview.card.deck.name,
         lastSessionReviewCount: sessionStats._count,
       };
-    } catch (error) {
+    } catch {
       throw new Error("Failed to fetch last study session");
     }
   }),

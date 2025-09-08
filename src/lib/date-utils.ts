@@ -1,4 +1,4 @@
-import { formatDistanceToNow, format, isToday, isTomorrow, isAfter, isBefore, startOfDay } from "date-fns";
+import { formatDistanceToNow, format, isToday, isTomorrow, isBefore } from "date-fns";
 
 /**
  * Formats a date for due date display following the requirements:
@@ -11,8 +11,6 @@ import { formatDistanceToNow, format, isToday, isTomorrow, isAfter, isBefore, st
 export function formatDueDate(date: Date | string): { text: string; isOverdue: boolean; isDueToday: boolean } {
   const dueDate = typeof date === "string" ? new Date(date) : date;
   const now = new Date();
-  const todayStart = startOfDay(now);
-  const tomorrowStart = startOfDay(new Date(now.getTime() + 24 * 60 * 60 * 1000));
 
   // Check if overdue
   if (isBefore(dueDate, now)) {

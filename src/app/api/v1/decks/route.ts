@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { withAuthAndRateLimit, createErrorResponse, type AuthenticatedRequest } from '../middleware';
+import { NextResponse } from 'next/server';
+import { withAuthAndRateLimit, createErrorResponse } from '../middleware';
+import type { AuthenticatedRequest } from '../middleware';
 import { db } from '@/server/db';
 import { z } from 'zod';
 
@@ -25,7 +26,10 @@ export const GET = withAuthAndRateLimit(async (request: AuthenticatedRequest) =>
     const query = listDecksQuerySchema.parse(searchParams);
     
     // Build where clause
-    const where: any = {
+    const where: {
+      user_id: string;
+      organization_id?: string;
+    } = {
       user_id: request.user!.id,
     };
     

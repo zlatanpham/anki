@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -97,7 +96,7 @@ export default function ApiKeysPage() {
     try {
       await navigator.clipboard.writeText(keyToCopy);
       toast.success("API key copied to clipboard");
-    } catch (error) {
+    } catch {
       toast.error("Failed to copy API key");
     }
   };
@@ -119,7 +118,7 @@ export default function ApiKeysPage() {
     );
   }
 
-  const activeKeys = apiKeys?.filter(key => key.isActive && !key.isExpired) || [];
+  const activeKeys = apiKeys?.filter(key => key.isActive && !key.isExpired) ?? [];
 
   return (
     <div className="container mx-auto p-6">
@@ -215,7 +214,7 @@ export default function ApiKeysPage() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">
-                          {stats?.totalRequests || 0} requests
+                          {stats?.totalRequests ?? 0} requests
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -309,7 +308,7 @@ export default function ApiKeysPage() {
           <DialogHeader>
             <DialogTitle>API Key Generated</DialogTitle>
             <DialogDescription>
-              Copy this key now. You won't be able to see it again.
+              Copy this key now. You won&apos;t be able to see it again.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">

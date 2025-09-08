@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,7 +27,7 @@ const ITEMS_PER_PAGE = 20;
 
 export default function GlobalSearchPage() {
   const searchParams = useSearchParams();
-  const initialQuery = searchParams.get("q") || "";
+  const initialQuery = searchParams.get("q") ?? "";
 
   const [filters, setFilters] = useState<SearchFilters>({
     search: initialQuery,
@@ -61,11 +61,11 @@ export default function GlobalSearchPage() {
 
   const totalPages = searchQuery.data ? Math.ceil(searchQuery.data.totalCount / ITEMS_PER_PAGE) : 0;
 
-  const stripHtml = (html: string) => {
-    const tmp = document.createElement("DIV");
-    tmp.innerHTML = html;
-    return tmp.textContent || tmp.innerText || "";
-  };
+  // const stripHtml = (html: string) => {
+  //   const tmp = document.createElement("DIV");
+  //   tmp.innerHTML = html;
+  //   return tmp.textContent ?? tmp.innerText ?? "";
+  // };
 
   const highlightText = (text: string, searchTerm: string) => {
     if (!searchTerm) return text;

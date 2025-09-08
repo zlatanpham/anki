@@ -64,7 +64,7 @@ export default function EditDeckPage() {
   useEffect(() => {
     if (deck) {
       setName(deck.name);
-      setDescription(deck.description || "");
+      setDescription(deck.description ?? "");
       setIsPublic(deck.is_public);
     }
   }, [deck]);
@@ -171,7 +171,7 @@ export default function EditDeckPage() {
           <CardContent className="p-6 text-center">
             <h2 className="text-xl font-semibold mb-2">Deck Not Found</h2>
             <p className="text-muted-foreground mb-4">
-              The deck you're looking for doesn't exist or you don't have permission to edit it.
+              The deck you&apos;re looking for doesn&apos;t exist or you don&apos;t have permission to edit it.
             </p>
             <Button onClick={() => router.push("/decks")}>
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -295,13 +295,13 @@ export default function EditDeckPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-4 bg-muted rounded-lg">
                 <div className="text-2xl font-bold text-primary">
-                  {deck.cards?.length || 0}
+                  {deck.cards?.length ?? 0}
                 </div>
                 <div className="text-sm text-muted-foreground">Total Cards</div>
               </div>
               <div className="text-center p-4 bg-muted rounded-lg">
                 <div className="text-2xl font-bold text-primary">
-                  {deck.cards?.filter(card => card.card_type === "CLOZE").length || 0}
+                  {deck.cards?.filter(card => card.card_type === "CLOZE").length ?? 0}
                 </div>
                 <div className="text-sm text-muted-foreground">Cloze Cards</div>
               </div>
@@ -346,7 +346,7 @@ export default function EditDeckPage() {
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
                       This action cannot be undone. This will permanently delete the deck
-                      "{deck.name}" and all {deck.cards?.length || 0} cards in it.
+                      &quot;{deck.name}&quot; and all {deck.cards?.length ?? 0} cards in it.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>

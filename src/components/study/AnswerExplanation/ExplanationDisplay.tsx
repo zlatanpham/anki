@@ -1,6 +1,6 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
+// Card import removed - not used
 import { Badge } from "@/components/ui/badge";
 import { Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";

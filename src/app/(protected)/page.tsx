@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { BookOpen, Play, BarChart3, Plus } from "lucide-react";
@@ -84,7 +84,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="px-3 sm:px-6">
             <div className="text-xl font-bold sm:text-2xl">
-              {dueCardsCount?.totalDue || 0}
+              {dueCardsCount?.totalDue ?? 0}
             </div>
             <p className="text-muted-foreground text-xs">Ready for review</p>
           </CardContent>
@@ -93,13 +93,13 @@ export default function DashboardPage() {
         <Card className="sm:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pb-2 sm:px-6">
             <CardTitle className="text-xs font-medium sm:text-sm">
-              Today's Reviews
+              Today&apos;s Reviews
             </CardTitle>
             <BarChart3 className="text-muted-foreground h-5 w-5 flex-none" />
           </CardHeader>
           <CardContent className="px-3 sm:px-6">
             <div className="text-xl font-bold sm:text-2xl">
-              {studyStats?.totalReviews || 0}
+              {studyStats?.totalReviews ?? 0}
             </div>
             <p className="text-muted-foreground text-xs">
               {studyStats?.accuracy
@@ -118,7 +118,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="px-3 sm:px-6">
             <div className="text-xl font-bold sm:text-2xl">
-              {studyStats?.studyStreak || 0}
+              {studyStats?.studyStreak ?? 0}
             </div>
             <p className="text-muted-foreground text-xs">days in a row</p>
           </CardContent>
@@ -133,7 +133,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="px-3 sm:px-6">
             <div className="text-xl font-bold sm:text-2xl">
-              {decksData?.totalCount || 0}
+              {decksData?.totalCount ?? 0}
             </div>
             <p className="text-muted-foreground text-xs">decks created</p>
           </CardContent>
@@ -338,18 +338,18 @@ export default function DashboardPage() {
               <div className="flex-1 space-y-3">
                 <div className="flex justify-between text-sm">
                   <span>Total Cards:</span>
-                  <Badge variant="outline">{userStatus?.totalCards || 0}</Badge>
+                  <Badge variant="outline">{userStatus?.totalCards ?? 0}</Badge>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>All-time Reviews:</span>
                   <Badge variant="secondary">
-                    {userStatus?.totalReviews || 0}
+                    {userStatus?.totalReviews ?? 0}
                   </Badge>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Study Streak:</span>
                   <Badge variant="default">
-                    {studyStats?.studyStreak || 0} days
+                    {studyStats?.studyStreak ?? 0} days
                   </Badge>
                 </div>
               </div>
@@ -372,7 +372,7 @@ export default function DashboardPage() {
         <Card className="xl:col-span-1">
           <CardHeader>
             <CardTitle className="text-base sm:text-lg">
-              Today's Progress
+              Today&apos;s Progress
             </CardTitle>
             <CardDescription className="text-sm">
               {studyStats?.totalReviews && studyStats.totalReviews > 0

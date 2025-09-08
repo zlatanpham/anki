@@ -2,8 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Lightbulb, ChevronDown, ChevronUp } from "lucide-react";
+// Button, Lightbulb, ChevronDown, ChevronUp removed - not used
 import { ExplanationTrigger } from "./ExplanationTrigger";
 import { PresetOptions } from "./PresetOptions";
 import { CustomQuestionInput } from "./CustomQuestionInput";
@@ -40,10 +39,10 @@ export interface ConversationItem {
 
 export function AnswerExplanation({
   cardId,
-  front,
-  back,
-  clozeText,
-  onClose,
+  _front,
+  _back,
+  _clozeText,
+  _onClose,
 }: AnswerExplanationProps) {
   const isMobile = useIsMobile();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -63,12 +62,12 @@ export function AnswerExplanation({
     onSuccess: (data) => {
       setCurrentExplanation(data.explanation);
       setCurrentExplanationId(data.id);
-      setSuggestedFollowUps(data.suggestedFollowUps || []);
+      setSuggestedFollowUps(data.suggestedFollowUps ?? []);
 
       // Add to conversation history
       const question =
         conversationHistory.length > 0
-          ? conversationHistory[conversationHistory.length - 1]?.question || "Follow-up question"
+          ? conversationHistory[conversationHistory.length - 1]?.question ?? "Follow-up question"
           : "Initial explanation";
 
       setConversationHistory((prev) => [

@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { withAuthAndRateLimit, createErrorResponse, type AuthenticatedRequest } from '../../../../middleware';
+import { NextResponse } from 'next/server';
+import { withAuthAndRateLimit, createErrorResponse } from '../../../../middleware';
+import type { AuthenticatedRequest } from '../../../../middleware';
 import { db } from '@/server/db';
 import { z } from 'zod';
-import { CardType } from '@prisma/client';
+import type { CardType } from '@prisma/client';
 import { parseClozeText } from '@/lib/cloze';
 
 // Validation schema
@@ -44,7 +45,14 @@ export const POST = withAuthAndRateLimit(
       
       // Validate cards
       const results: Array<{ success: boolean; error?: string; cardId?: string }> = [];
-      const cardsToCreate: Array<any> = [];
+      const cardsToCreate: Array<{
+        deck_id: string;
+        card_type: CardType;
+        front: string;
+        back: string;
+        cloze_text?: string;
+        tags?: string[];
+      }> = [];
       
       for (const [index, cardData] of data.cards.entries()) {
         try {
@@ -79,7 +87,7 @@ export const POST = withAuthAndRateLimit(
           });
           
           results.push({ success: true });
-        } catch (error) {
+        } catch {
           results.push({
             success: false,
             error: `Invalid card data at index ${index}`,
@@ -88,7 +96,7 @@ export const POST = withAuthAndRateLimit(
       }
       
       // Create cards in a transaction
-      const createdCards = await db.$transaction(async (tx) => {
+      await db.$transaction(async (tx) => {
         const cards = [];
         
         for (const [index, cardData] of cardsToCreate.entries()) {
@@ -113,7 +121,7 @@ export const POST = withAuthAndRateLimit(
           // Update the result with card ID
           const resultIndex = results.findIndex((r, i) => r.success && i <= index);
           if (resultIndex !== -1 && results[resultIndex]) {
-            results[resultIndex]!.cardId = card.id;
+            results[resultIndex].cardId = card.id;
           }
           
           cards.push(card);

@@ -36,7 +36,14 @@ import { cn } from "@/lib/utils";
 import { AnswerExplanation } from "@/components/study/AnswerExplanation";
 
 interface StudySession {
-  cards: any[];
+  cards: Array<{
+    id: string;
+    front: string;
+    back: string | null;
+    cloze_text: string | null;
+    card_type: string;
+    tags: string[];
+  }>;
   currentIndex: number;
   showAnswer: boolean;
   startTime: Date;
@@ -124,7 +131,7 @@ export default function DeckStudyPage() {
     }
   };
 
-  const finishSession = async () => {
+  const finishSession = useCallback(async () => {
     if (session) {
       const duration = new Date().getTime() - session.startTime.getTime();
       const minutes = Math.round(duration / 60000);
@@ -149,13 +156,13 @@ export default function DeckStudyPage() {
     setSession(null);
     setResponseStartTime(null);
     await refetchQueue();
-  };
+  }, [session, deckId, router, refetchQueue]);
 
   const showAnswer = useCallback(() => {
     setSession((prev) => (prev ? { ...prev, showAnswer: true } : null));
   }, []);
 
-  const submitCardReview = (rating: ReviewRating) => {
+  const submitCardReview = useCallback((rating: ReviewRating) => {
     if (!session || !responseStartTime) return;
 
     const currentCard = session.cards[session.currentIndex];
@@ -198,7 +205,7 @@ export default function DeckStudyPage() {
       rating,
       responseTime,
     });
-  };
+  }, [session, responseStartTime, submitReview, finishSession]);
 
   const togglePause = () => {
     setIsPaused(!isPaused);
@@ -247,7 +254,7 @@ export default function DeckStudyPage() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [session, isPaused, showAnswer, submitCardReview, togglePause]);
+  }, [session, isPaused, showAnswer, submitCardReview]);
 
   if (isLoadingQueue) {
     return (
@@ -296,7 +303,7 @@ export default function DeckStudyPage() {
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
                   <Link href={`/decks/${deckId}/cards`}>
-                    {deck?.name || "Deck"}
+                    {deck?.name ?? "Deck"}
                   </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -343,7 +350,7 @@ export default function DeckStudyPage() {
                     Cards
                   </p>
                   <p className="text-3xl font-bold text-blue-600">
-                    {dueCardsCount?.due || 0}
+                    {dueCardsCount?.due ?? 0}
                   </p>
                   <Clock className="h-8 w-8 text-blue-600" />
                 </div>
@@ -352,7 +359,7 @@ export default function DeckStudyPage() {
                   <div>
                     <p className="text-muted-foreground text-sm">Due Cards</p>
                     <p className="text-2xl font-bold text-blue-600">
-                      {dueCardsCount?.due || 0}
+                      {dueCardsCount?.due ?? 0}
                     </p>
                   </div>
                   <Clock className="h-8 w-8 text-blue-600" />
@@ -371,7 +378,7 @@ export default function DeckStudyPage() {
                     Cards
                   </p>
                   <p className="text-3xl font-bold text-green-600">
-                    {dueCardsCount?.new || 0}
+                    {dueCardsCount?.new ?? 0}
                   </p>
                   <BarChart3 className="h-8 w-8 text-green-600" />
                 </div>
@@ -380,7 +387,7 @@ export default function DeckStudyPage() {
                   <div>
                     <p className="text-muted-foreground text-sm">New Cards</p>
                     <p className="text-2xl font-bold text-green-600">
-                      {dueCardsCount?.new || 0}
+                      {dueCardsCount?.new ?? 0}
                     </p>
                   </div>
                   <BarChart3 className="h-8 w-8 text-green-600" />
@@ -397,7 +404,7 @@ export default function DeckStudyPage() {
                     Learning
                   </p>
                   <p className="text-3xl font-bold text-orange-600">
-                    {dueCardsCount?.learning || 0}
+                    {dueCardsCount?.learning ?? 0}
                   </p>
                   <RotateCcw className="h-8 w-8 text-orange-600" />
                 </div>
@@ -406,7 +413,7 @@ export default function DeckStudyPage() {
                   <div>
                     <p className="text-muted-foreground text-sm">Learning</p>
                     <p className="text-2xl font-bold text-orange-600">
-                      {dueCardsCount?.learning || 0}
+                      {dueCardsCount?.learning ?? 0}
                     </p>
                   </div>
                   <RotateCcw className="h-8 w-8 text-orange-600" />
@@ -479,7 +486,6 @@ export default function DeckStudyPage() {
   );
   const progress =
     session.cards.length > 0 ? (totalAnswered / session.cards.length) * 100 : 0;
-  const totalReviews = totalAnswered;
 
   return (
     <div
@@ -564,7 +570,7 @@ export default function DeckStudyPage() {
             <Pause className="text-muted-foreground mx-auto mb-4 h-16 w-16" />
             <h2 className="mb-2 text-xl font-semibold">Study Paused</h2>
             <p className="text-muted-foreground mb-4">
-              Take a break and resume when you're ready.
+              Take a break and resume when you&apos;re ready.
             </p>
             <Button onClick={togglePause}>
               <Play className="mr-2 h-4 w-4" />
@@ -593,9 +599,9 @@ export default function DeckStudyPage() {
           <CardContent className="min-h-[300px]">
             {currentCard.card_type === "CLOZE" ? (
               <ClozeDisplay
-                clozeText={currentCard.cloze_text || ""}
+                clozeText={currentCard.cloze_text ?? ""}
                 front={currentCard.front}
-                back={currentCard.back || ""}
+                back={currentCard.back ?? ""}
                 showAnswer={session.showAnswer}
                 onShowAnswer={showAnswer}
               />
@@ -657,7 +663,7 @@ export default function DeckStudyPage() {
               <AnswerExplanation
                 cardId={currentCard.id}
                 front={currentCard.front}
-                back={currentCard.back || ""}
+                back={currentCard.back ?? ""}
                 clozeText={currentCard.cloze_text}
               />
             )}

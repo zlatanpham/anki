@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, MessageSquare } from "lucide-react";
 import { type ConversationItem } from "./AnswerExplanation";
-import { cn } from "@/lib/utils";
+// cn import removed - not used
 import { formatDistanceToNow } from "date-fns";
 
 interface ConversationThreadProps {
@@ -48,7 +48,7 @@ export function ConversationThread({
 
       {isExpanded && (
         <div className="space-y-3">
-          {previousConversations.map((item, index) => (
+          {previousConversations.map((item, _index) => (
             <div key={item.id} className="space-y-2 rounded-md bg-background p-3">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1">

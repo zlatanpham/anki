@@ -263,7 +263,7 @@ export default function StatisticsPage() {
             <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="px-3 sm:px-6">
-            <div className="text-xl sm:text-2xl font-bold">{studyStats?.totalReviews || 0}</div>
+            <div className="text-xl sm:text-2xl font-bold">{studyStats?.totalReviews ?? 0}</div>
             <p className="text-xs text-muted-foreground">
               {selectedPeriod === "today" ? "today" : `this ${selectedPeriod}`}
             </p>
@@ -276,7 +276,7 @@ export default function StatisticsPage() {
             <Target className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="px-3 sm:px-6">
-            <div className="text-xl sm:text-2xl font-bold">{studyStats?.accuracy || 0}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{studyStats?.accuracy ?? 0}%</div>
             <p className="text-xs text-muted-foreground">
               Success rate
             </p>
@@ -289,7 +289,7 @@ export default function StatisticsPage() {
             <Flame className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="px-3 sm:px-6">
-            <div className="text-xl sm:text-2xl font-bold">{studyStats?.studyStreak || 0}</div>
+            <div className="text-xl sm:text-2xl font-bold">{studyStats?.studyStreak ?? 0}</div>
             <p className="text-xs text-muted-foreground">
               consecutive days
             </p>
@@ -439,7 +439,7 @@ export default function StatisticsPage() {
                       tickLine={false}
                       width={isMobile ? 25 : 40}
                     />
-                    <Tooltip formatter={(value) => [`${value}%`, "Accuracy"]} />
+                    <Tooltip formatter={(value: number) => [`${value}%`, "Accuracy"]} />
                     <Area
                       type="monotone"
                       dataKey="accuracy"
@@ -580,7 +580,7 @@ export default function StatisticsPage() {
                     <Brain className="h-5 w-5 text-blue-600" />
                     <span className="font-medium">New Cards</span>
                   </div>
-                  <Badge className="bg-blue-600">{dueCardsCount?.newCards || 0}</Badge>
+                  <Badge className="bg-blue-600">{dueCardsCount?.newCards ?? 0}</Badge>
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg">
@@ -588,7 +588,7 @@ export default function StatisticsPage() {
                     <Clock className="h-5 w-5 text-orange-600" />
                     <span className="font-medium">Learning Cards</span>
                   </div>
-                  <Badge className="bg-orange-600">{dueCardsCount?.learningCards || 0}</Badge>
+                  <Badge className="bg-orange-600">{dueCardsCount?.learningCards ?? 0}</Badge>
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
@@ -596,14 +596,14 @@ export default function StatisticsPage() {
                     <CheckCircle className="h-5 w-5 text-green-600" />
                     <span className="font-medium">Review Cards</span>
                   </div>
-                  <Badge className="bg-green-600">{dueCardsCount?.reviewCards || 0}</Badge>
+                  <Badge className="bg-green-600">{dueCardsCount?.reviewCards ?? 0}</Badge>
                 </div>
 
                 <div className="pt-4 border-t">
                   <div className="flex items-center justify-between">
                     <span className="font-semibold">Total Due</span>
                     <Badge variant="default" className="text-lg px-3 py-1">
-                      {dueCardsCount?.totalDue || 0}
+                      {dueCardsCount?.totalDue ?? 0}
                     </Badge>
                   </div>
                 </div>
@@ -624,7 +624,7 @@ export default function StatisticsPage() {
                   <div>
                     <p className="font-medium text-green-800">Strong Performance</p>
                     <p className="text-sm text-green-700">
-                      Your accuracy rate of {studyStats?.accuracy || 0}% shows excellent retention.
+                      Your accuracy rate of {studyStats?.accuracy ?? 0}% shows excellent retention.
                     </p>
                   </div>
                 </div>
@@ -634,7 +634,7 @@ export default function StatisticsPage() {
                   <div>
                     <p className="font-medium text-blue-800">Consistency Streak</p>
                     <p className="text-sm text-blue-700">
-                      You've studied for {studyStats?.studyStreak || 0} consecutive days. Keep it up!
+                      You&apos;ve studied for {studyStats?.studyStreak ?? 0} consecutive days. Keep it up!
                     </p>
                   </div>
                 </div>

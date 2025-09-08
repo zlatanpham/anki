@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CardStateIndicator } from "@/components/CardStateIndicator";
 import { IntervalDisplay } from "@/components/IntervalDisplay";
 import { DueDateBadge } from "@/components/DueDateBadge";
-import { formatDueDate, formatInterval } from "@/lib/date-utils";
+// formatDueDate and formatInterval removed - not used
 import {
   CalendarIcon,
   ClockIcon,
@@ -26,7 +26,7 @@ import {
   PauseIcon,
   PlayIcon,
   RotateCcwIcon,
-  BarChart3Icon,
+  // BarChart3Icon, - not used
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -66,11 +66,11 @@ export function CardDetailModal({
   const isSuspended = cardState?.state === "SUSPENDED";
 
   // Calculate performance metrics
-  const totalReviews = card.reviews?.length || 0;
-  const successfulReviews = card.reviews?.filter(r => r.rating === "EASY" || r.rating === "GOOD").length || 0;
+  const totalReviews = card.reviews?.length ?? 0;
+  const successfulReviews = card.reviews?.filter(r => r.rating === "EASY" || r.rating === "GOOD").length ?? 0;
   const successRate = totalReviews > 0 ? (successfulReviews / totalReviews) * 100 : 0;
   const avgResponseTime = totalReviews > 0 
-    ? (card.reviews?.reduce((acc, r) => acc + r.response_time, 0) || 0) / totalReviews / 1000 
+    ? (card.reviews?.reduce((acc, r) => acc + r.response_time, 0) ?? 0) / totalReviews / 1000 
     : 0;
 
   // Get difficulty level based on easiness factor
@@ -220,7 +220,7 @@ export function CardDetailModal({
                   <h4 className="text-sm font-medium text-muted-foreground">Rating Distribution</h4>
                   <div className="space-y-2">
                     {["EASY", "GOOD", "HARD", "AGAIN"].map((rating) => {
-                      const count = card.reviews?.filter(r => r.rating === rating).length || 0;
+                      const count = card.reviews?.filter(r => r.rating === rating).length ?? 0;
                       const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
                       
                       return (
@@ -249,7 +249,7 @@ export function CardDetailModal({
                   {card.reviews
                     .sort((a, b) => new Date(b.reviewed_at).getTime() - new Date(a.reviewed_at).getTime())
                     .slice(0, 10)
-                    .map((review, index) => (
+                    .map((review, _index) => (
                       <div
                         key={review.id}
                         className="flex items-center justify-between p-3 rounded-lg border"

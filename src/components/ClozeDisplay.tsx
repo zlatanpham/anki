@@ -108,7 +108,7 @@ export function ClozeDisplay({
           )}
         </div>
         <div className="text-lg leading-relaxed p-4 bg-blue-50 rounded-lg border-l-4 border-blue-200">
-          {currentCard?.question || ""}
+          {currentCard?.question ?? ""}
         </div>
       </div>
 
@@ -118,7 +118,7 @@ export function ClozeDisplay({
           <div>
             <div className="text-sm font-medium text-muted-foreground mb-2">Answer</div>
             <div className="text-lg leading-relaxed p-4 bg-green-50 rounded-lg border-l-4 border-green-200 font-semibold text-green-800">
-              {currentCard?.answer || ""}
+              {currentCard?.answer ?? ""}
             </div>
           </div>
 
@@ -126,7 +126,7 @@ export function ClozeDisplay({
           <div>
             <div className="text-sm font-medium text-muted-foreground mb-2">Full Context</div>
             <div className="text-sm leading-relaxed p-3 bg-gray-50 rounded-lg border border-gray-200">
-              {renderClozeContext(currentCard?.context || "")}
+              {renderClozeContext(currentCard?.context ?? "")}
             </div>
           </div>
 

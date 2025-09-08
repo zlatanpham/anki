@@ -344,7 +344,7 @@ const queue = await response.json();`
       setCopiedIndex(id);
       toast.success("Copied to clipboard");
       setTimeout(() => setCopiedIndex(null), 2000);
-    } catch (error) {
+    } catch {
       toast.error("Failed to copy to clipboard");
     }
   };
@@ -551,7 +551,7 @@ const queue = await response.json();`
                         </div>
                         <div className="flex items-start gap-2">
                           <Badge variant="outline" className="mt-0.5">RESOURCE_NOT_FOUND</Badge>
-                          <span className="text-muted-foreground">Resource doesn't exist</span>
+                          <span className="text-muted-foreground">Resource doesn&apos;t exist</span>
                         </div>
                       </div>
                     </div>

@@ -23,7 +23,7 @@ export function ExplanationActions({
   const handleCopy = () => {
     const explanationElement = document.querySelector('.prose');
     if (explanationElement?.textContent) {
-      navigator.clipboard.writeText(explanationElement.textContent);
+      void navigator.clipboard.writeText(explanationElement.textContent);
       toast.success("Explanation copied to clipboard");
     }
   };
@@ -39,12 +39,12 @@ export function ExplanationActions({
             title: 'Anki Card Explanation',
             text: shareText,
           });
-        } catch (error) {
+        } catch {
           // User cancelled share
         }
       } else {
         // Fallback to copying to clipboard with a different message
-        navigator.clipboard.writeText(shareText);
+        void navigator.clipboard.writeText(shareText);
         toast.success("Explanation copied - ready to share!");
       }
     }

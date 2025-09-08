@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Baby, Lightbulb, Target, Layers } from "lucide-react";
 import { type QuestionType } from "./AnswerExplanation";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
+// useIsMobile import removed - not used
 
 interface PresetOption {
   type: QuestionType;
@@ -55,8 +55,6 @@ interface PresetOptionsProps {
 }
 
 export function PresetOptions({ onSelect }: PresetOptionsProps) {
-  const isMobile = useIsMobile();
-  
   // On very small screens (< 400px), use 1 column
   // On mobile/tablet (400px - 1024px), use 2 columns
   // On desktop (> 1024px), use 4 columns

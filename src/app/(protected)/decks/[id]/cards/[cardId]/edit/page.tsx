@@ -65,7 +65,7 @@ export default function EditCardPage() {
       setCardType(card.card_type);
       setFront(card.front);
       setBack(card.back);
-      setClozeText(card.cloze_text || "");
+      setClozeText(card.cloze_text ?? "");
       setTags(card.tags);
     }
   }, [card]);
@@ -198,7 +198,7 @@ export default function EditCardPage() {
           <CardContent className="p-6 text-center">
             <h2 className="text-xl font-semibold mb-2">Card Not Found</h2>
             <p className="text-muted-foreground mb-4">
-              The card you're looking for doesn't exist or you don't have permission to edit it.
+              The card you&apos;re looking for doesn&apos;t exist or you don&apos;t have permission to edit it.
             </p>
             <Button onClick={() => router.push(`/decks/${deckId}/cards`)}>
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -221,7 +221,7 @@ export default function EditCardPage() {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink href={`/decks/${deckId}/cards`}>
-              {deck?.name || "Deck"}
+              {deck?.name ?? "Deck"}
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />

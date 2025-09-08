@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest, NextResponse } from 'next/server';
+import { NextResponse as NextResponseModule } from 'next/server';
 import { ApiKeyService } from '@/server/services/apiKey';
 import { defaultRateLimiter, batchRateLimiter } from '@/server/services/rateLimiter';
 import type { ApiKey, User } from '@prisma/client';
@@ -13,7 +14,7 @@ export interface ApiErrorResponse {
   error: {
     code: string;
     message: string;
-    details?: Record<string, any>;
+    details?: Record<string, unknown>;
   };
 }
 
@@ -24,9 +25,9 @@ export function createErrorResponse(
   code: string,
   message: string,
   statusCode: number,
-  details?: Record<string, any>
-): NextResponse<ApiErrorResponse> {
-  return NextResponse.json(
+  details?: Record<string, unknown>
+): NextResponse {
+  return NextResponseModule.json(
     {
       error: {
         code,
@@ -55,9 +56,9 @@ function extractApiKey(request: NextRequest): string | null {
  * Authentication middleware for API routes
  */
 export function withAuth(
-  handler: (request: AuthenticatedRequest, params?: any) => Promise<NextResponse>
+  handler: (request: AuthenticatedRequest, params?: unknown) => Promise<NextResponse>
 ) {
-  return async function (request: NextRequest, params?: any): Promise<NextResponse> {
+  return async function (request: NextRequest, params?: unknown): Promise<NextResponse> {
     const startTime = Date.now();
     
     try {
@@ -110,8 +111,8 @@ export function withAuth(
         request.method,
         response.status,
         responseTime,
-        request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined,
-        request.headers.get('user-agent') || undefined
+        request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? undefined,
+        request.headers.get('user-agent') ?? undefined
       );
       
       return response;
@@ -130,15 +131,15 @@ export function withAuth(
  * Rate limiting middleware
  */
 export function withRateLimit(
-  handler: (request: AuthenticatedRequest, params?: any) => Promise<NextResponse>,
+  handler: (request: AuthenticatedRequest, params?: unknown) => Promise<NextResponse>,
   useBatchLimits = false
 ) {
-  return async function (request: AuthenticatedRequest, params?: any): Promise<NextResponse> {
+  return async function (request: AuthenticatedRequest, params?: unknown): Promise<NextResponse> {
     // Get the appropriate rate limiter
     const rateLimiter = useBatchLimits ? batchRateLimiter : defaultRateLimiter;
     
     // Use API key ID as identifier for rate limiting
-    const identifier = request.apiKey?.id || 'anonymous';
+    const identifier = request.apiKey?.id ?? 'anonymous';
     
     // Check rate limit
     const limitInfo = await rateLimiter.checkLimit(identifier);
@@ -171,7 +172,7 @@ export function withRateLimit(
  * Combined auth and rate limit middleware
  */
 export function withAuthAndRateLimit(
-  handler: (request: AuthenticatedRequest, params?: any) => Promise<NextResponse>,
+  handler: (request: AuthenticatedRequest, params?: unknown) => Promise<NextResponse>,
   useBatchLimits = false
 ) {
   return withAuth(withRateLimit(handler, useBatchLimits));

@@ -28,7 +28,23 @@ import { cn } from "@/lib/utils";
 import { AnswerExplanation } from "@/components/study/AnswerExplanation";
 
 interface StudySession {
-  cards: any[];
+  cards: {
+    id: string;
+    state: string;
+    card: {
+      id: string;
+      front: string;
+      back: string;
+      card_type: string;
+      cloze_text?: string;
+      tags?: string[];
+    };
+    due_date: Date;
+    interval: number;
+    repetitions: number;
+    easiness_factor: number;
+    lapses: number;
+  }[];
   currentIndex: number;
   showAnswer: boolean;
   startTime: Date;
@@ -224,7 +240,7 @@ export default function StudyPage() {
 
     document.addEventListener("keydown", handleKeyPress);
     return () => document.removeEventListener("keydown", handleKeyPress);
-  }, [session, isPaused]);
+  }, [session, isPaused]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Refresh data when page gains focus
   useEffect(() => {
@@ -314,7 +330,7 @@ export default function StudyPage() {
                     Cards
                   </p>
                   <p className="text-3xl font-bold text-blue-600">
-                    {dueCardsCount?.totalDue || 0}
+                    {dueCardsCount?.totalDue ?? 0}
                   </p>
                   <Clock className="h-8 w-8 text-blue-600" />
                 </div>
@@ -323,7 +339,7 @@ export default function StudyPage() {
                   <div>
                     <p className="text-muted-foreground text-sm">Due Cards</p>
                     <p className="text-2xl font-bold text-blue-600">
-                      {dueCardsCount?.totalDue || 0}
+                      {dueCardsCount?.totalDue ?? 0}
                     </p>
                   </div>
                   <Clock className="h-8 w-8 text-blue-600" />
@@ -342,7 +358,7 @@ export default function StudyPage() {
                     Cards
                   </p>
                   <p className="text-3xl font-bold text-green-600">
-                    {dueCardsCount?.newCards || 0}
+                    {dueCardsCount?.newCards ?? 0}
                   </p>
                   <BarChart3 className="h-8 w-8 text-green-600" />
                 </div>
@@ -351,7 +367,7 @@ export default function StudyPage() {
                   <div>
                     <p className="text-muted-foreground text-sm">New Cards</p>
                     <p className="text-2xl font-bold text-green-600">
-                      {dueCardsCount?.newCards || 0}
+                      {dueCardsCount?.newCards ?? 0}
                     </p>
                   </div>
                   <BarChart3 className="h-8 w-8 text-green-600" />
@@ -368,7 +384,7 @@ export default function StudyPage() {
                     Learning
                   </p>
                   <p className="text-3xl font-bold text-orange-600">
-                    {dueCardsCount?.learningCards || 0}
+                    {dueCardsCount?.learningCards ?? 0}
                   </p>
                   <RotateCcw className="h-8 w-8 text-orange-600" />
                 </div>
@@ -377,7 +393,7 @@ export default function StudyPage() {
                   <div>
                     <p className="text-muted-foreground text-sm">Learning</p>
                     <p className="text-2xl font-bold text-orange-600">
-                      {dueCardsCount?.learningCards || 0}
+                      {dueCardsCount?.learningCards ?? 0}
                     </p>
                   </div>
                   <RotateCcw className="h-8 w-8 text-orange-600" />
@@ -447,7 +463,7 @@ export default function StudyPage() {
   );
   const progress =
     session.cards.length > 0 ? (totalAnswered / session.cards.length) * 100 : 0;
-  const totalReviews = totalAnswered;
+  // const totalReviews = totalAnswered;
 
   return (
     <div
@@ -533,7 +549,7 @@ export default function StudyPage() {
             <Pause className="text-muted-foreground mx-auto mb-4 h-16 w-16" />
             <h2 className="mb-2 text-xl font-semibold">Study Paused</h2>
             <p className="text-muted-foreground mb-4">
-              Take a break and resume when you're ready.
+              Take a break and resume when you&apos;re ready.
             </p>
             <Button onClick={togglePause}>
               <Play className="mr-2 h-4 w-4" />
@@ -565,9 +581,9 @@ export default function StudyPage() {
           <CardContent className="min-h-[300px]">
             {currentCard.card.card_type === "CLOZE" ? (
               <ClozeDisplay
-                clozeText={currentCard.card.cloze_text || ""}
+                clozeText={currentCard.card.cloze_text ?? ""}
                 front={currentCard.card.front}
-                back={currentCard.card.back || ""}
+                back={currentCard.card.back ?? ""}
                 showAnswer={session.showAnswer}
                 onShowAnswer={showAnswer}
               />
@@ -592,8 +608,8 @@ export default function StudyPage() {
                     <div className="mt-4">
                       <AnswerExplanation
                         cardId={currentCard.card.id}
-                        front={currentCard.card.front || ""}
-                        back={currentCard.card.back || ""}
+                        front={currentCard.card.front ?? ""}
+                        back={currentCard.card.back ?? ""}
                         clozeText={currentCard.card.cloze_text}
                         key={`${currentCard.card.id}-${session.currentIndex}`}
                       />
@@ -606,7 +622,7 @@ export default function StudyPage() {
             {/* Additional context for cloze cards */}
             {currentCard.card.card_type === "CLOZE" &&
               session.showAnswer &&
-              (currentCard.card.front || currentCard.card.back) && (
+              (currentCard.card.front ?? currentCard.card.back) && (
                 <div className="mt-6 space-y-4">
                   {currentCard.card.front && (
                     <div className="rounded-lg border bg-blue-50 p-4">
@@ -634,8 +650,8 @@ export default function StudyPage() {
                     <div className="mt-4">
                       <AnswerExplanation
                         cardId={currentCard.card.id}
-                        front={currentCard.card.front || ""}
-                        back={currentCard.card.back || ""}
+                        front={currentCard.card.front ?? ""}
+                        back={currentCard.card.back ?? ""}
                         clozeText={currentCard.card.cloze_text}
                         key={`${currentCard.card.id}-${session.currentIndex}`}
                       />

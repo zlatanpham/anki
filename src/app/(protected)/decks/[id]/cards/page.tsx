@@ -115,7 +115,7 @@ export default function DeckCardsPage() {
     clozeText: "",
     tags: "",
   });
-  const [selectedCard, setSelectedCard] = useState<any>(null);
+  const [selectedCard, setSelectedCard] = useState<typeof filteredCards[0] | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // Get deck details
@@ -200,7 +200,7 @@ export default function DeckCardsPage() {
 
   // Get card with reviews query
   const { data: cardWithReviews } = api.card.getByIdWithReviews.useQuery(
-    { id: selectedCard?.id || "" },
+    { id: selectedCard?.id ?? "" },
     { enabled: !!selectedCard?.id }
   );
 
@@ -320,7 +320,7 @@ export default function DeckCardsPage() {
         <div className="text-center py-12">
           <h2 className="text-2xl font-bold mb-2">Deck not found</h2>
           <p className="text-muted-foreground mb-4">
-            The deck you're looking for doesn't exist or you don't have access to it.
+            The deck you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.
           </p>
           <Link href="/decks">
             <Button>Back to Decks</Button>
@@ -330,7 +330,7 @@ export default function DeckCardsPage() {
     );
   }
 
-  const filteredCards = cardsData?.cards || [];
+  const filteredCards = cardsData?.cards ?? [];
 
   return (
     <div className="container mx-auto p-6 max-w-6xl">
@@ -358,7 +358,7 @@ export default function DeckCardsPage() {
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-2xl font-semibold tracking-tight">{deck.name}</h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1">
-            Manage cards in this deck • {cardsData?.totalCount || 0} cards total
+            Manage cards in this deck • {cardsData?.totalCount ?? 0} cards total
           </p>
         </div>
         
@@ -443,7 +443,7 @@ export default function DeckCardsPage() {
                       />
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Use {`{{c1::text}}`} format to mark text for deletion. Example: "The capital of {`{{c1::France}}`} is Paris."
+                      Use {`{{c1::text}}`} format to mark text for deletion. Example: &quot;The capital of {`{{c1::France}}`} is Paris.&quot;
                     </p>
                     {createForm.clozeText.trim() && createForm.clozeText !== '<p></p>' && (
                       <ClozePreview clozeText={createForm.clozeText} className="mt-3" />
@@ -748,7 +748,7 @@ export default function DeckCardsPage() {
 
       {/* Card Detail Modal */}
       <CardDetailModal
-        card={cardWithReviews || selectedCard}
+        card={cardWithReviews ?? selectedCard}
         isOpen={isDetailModalOpen}
         onClose={() => {
           setIsDetailModalOpen(false);

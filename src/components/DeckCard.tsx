@@ -20,16 +20,16 @@ import {
   BarChart3,
   BookOpen,
   Users,
-  Calendar,
-  Clock,
+  // Calendar, - not used
+  // Clock, - not used
   CheckCircle2,
-  AlertCircle,
+  // AlertCircle, - not used
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ExportDeck } from "@/components/ExportDeck";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { api } from "@/trpc/react";
-import { useEffect } from "react";
+// useEffect removed - not used
 
 interface DeckCardProps {
   deck: {
@@ -70,7 +70,7 @@ export function DeckCard({ deck, onDelete, showStats = true }: DeckCardProps) {
     }
   );
 
-  const stats = deck.stats || (statsData?.[deck.id]);
+  const stats = deck.stats ?? (statsData?.[deck.id]);
 
   const getDueCardsBadgeColor = (dueCount: number) => {
     if (dueCount === 0) return "bg-muted text-muted-foreground";
@@ -100,7 +100,7 @@ export function DeckCard({ deck, onDelete, showStats = true }: DeckCardProps) {
               <Badge 
                 className={cn(
                   "shrink-0",
-                  getDueCardsBadgeColor(stats.due),
+                  getDueCardsBadgeColor(stats.due as number),
                   isMobile && "text-xs px-2 py-0.5"
                 )}
               >
@@ -179,17 +179,17 @@ export function DeckCard({ deck, onDelete, showStats = true }: DeckCardProps) {
                   <>
                     <div className="flex items-center gap-1.5">
                       <div className="h-2 w-2 rounded-full bg-blue-500 shrink-0" />
-                      <span className="font-medium">{stats.new || 0}</span>
+                      <span className="font-medium">{stats.new ?? 0}</span>
                       <span className="text-muted-foreground">new</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <div className="h-2 w-2 rounded-full bg-orange-500 shrink-0" />
-                      <span className="font-medium">{stats.learning || 0}</span>
+                      <span className="font-medium">{stats.learning ?? 0}</span>
                       <span className="text-muted-foreground">learning</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <div className="h-2 w-2 rounded-full bg-green-500 shrink-0" />
-                      <span className="font-medium">{stats.review || 0}</span>
+                      <span className="font-medium">{stats.review ?? 0}</span>
                       <span className="text-muted-foreground">review</span>
                     </div>
                   </>

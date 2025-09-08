@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withAuthAndRateLimit, createErrorResponse, type AuthenticatedRequest } from '../../middleware';
 import { db } from '@/server/db';
 import { z } from 'zod';
@@ -33,7 +33,7 @@ export const GET = withAuthAndRateLimit(async (request: AuthenticatedRequest) =>
     }
     
     // Build where clause
-    const where: any = {
+    const where: Record<string, unknown> = {
       user_id: request.user!.id,
       state: { in: stateFilter },
       due_date: { lte: new Date() },

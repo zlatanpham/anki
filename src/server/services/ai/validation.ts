@@ -42,7 +42,7 @@ export class RequestValidationService {
 
     for (const pattern of patterns) {
       const match = prompt.match(pattern);
-      if (match && match[1]) {
+      if (match?.[1]) {
         return parseInt(match[1]);
       }
     }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { CalendarIcon, Search, X, Filter, Save, BookOpen } from "lucide-react";
+import { CalendarIcon, Search, X, Filter, BookOpen } from "lucide-react";
 import { api } from "@/trpc/react";
 import { cn } from "@/lib/utils";
 
@@ -124,11 +124,11 @@ export function AdvancedSearch({
 
   const hasActiveFilters = 
     filters.search || 
-    filters.cardType || 
-    filters.tags.length > 0 || 
+    filters.cardType ?? 
+    filters.tags.length > 0 ?? 
     (filters.deckIds.length > 0 && !deckId) || // Only count deckIds as active filter if not in deck-specific mode
-    filters.createdAfter || 
-    filters.createdBefore ||
+    filters.createdAfter ?? 
+    filters.createdBefore ??
     filters.searchFields.length !== 4 ||
     filters.sortBy !== "created_at" ||
     filters.sortOrder !== "desc";
@@ -175,7 +175,7 @@ export function AdvancedSearch({
                 <div className="space-y-2">
                   <Label>Card Type</Label>
                   <Select
-                    value={filters.cardType || "all"}
+                    value={filters.cardType ?? "all"}
                     onValueChange={(value) => 
                       setFilters(prev => ({ 
                         ...prev, 

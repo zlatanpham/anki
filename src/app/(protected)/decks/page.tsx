@@ -109,8 +109,8 @@ export default function DecksPage() {
     decksData?.decks.filter(
       (deck) =>
         deck.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        deck.description?.toLowerCase().includes(searchQuery.toLowerCase()),
-    ) || [];
+        (deck.description?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false),
+    ) ?? [];
 
   if (isLoading) {
     return (

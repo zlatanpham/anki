@@ -48,7 +48,6 @@ import { validateClozeText, parseClozeText } from "@/lib/cloze";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { AdvancedSearch } from "@/components/AdvancedSearch";
 import { SkeletonCardPreview } from "@/components/ui/skeleton-card";
-import { AICardGenerator } from "@/components/ai/AICardGenerator";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Breadcrumb,
@@ -116,7 +115,7 @@ export default function DeckCardsPage() {
     clozeText: "",
     tags: "",
   });
-  const [selectedCard, setSelectedCard] = useState<(typeof cardsData)["cards"][0] | null>(null);
+  const [selectedCard, setSelectedCard] = useState<any>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // Get deck details
@@ -364,14 +363,6 @@ export default function DeckCardsPage() {
         </div>
         
         <div className="flex gap-2">
-          <AICardGenerator 
-            deckId={deckId} 
-            deckName={deck.name}
-            onCardsAdded={() => {
-              void refetchCards();
-              void refetchDeck();
-            }}
-          />
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">

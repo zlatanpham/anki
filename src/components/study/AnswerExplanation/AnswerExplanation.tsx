@@ -68,7 +68,7 @@ export function AnswerExplanation({
       // Add to conversation history
       const question =
         conversationHistory.length > 0
-          ? conversationHistory[conversationHistory.length - 1].question
+          ? conversationHistory[conversationHistory.length - 1]?.question || "Follow-up question"
           : "Initial explanation";
 
       setConversationHistory((prev) => [

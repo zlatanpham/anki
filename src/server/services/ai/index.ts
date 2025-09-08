@@ -1,11 +1,10 @@
 import { google } from "@ai-sdk/google";
 import { openai } from "@ai-sdk/openai";
 import { anthropic } from "@ai-sdk/anthropic";
-import { generateText, generateObject, type LanguageModel } from "ai";
+import { generateText, generateObject } from "ai";
 import { z } from "zod";
 import { env } from "@/env";
 import { TRPCError } from "@trpc/server";
-import { trackAIUsage, type AIRequest, type AIResponse } from "@/lib/ai-usage-tracker";
 
 // Card generation schema for structured output
 const cardSchema = z.object({
@@ -106,7 +105,7 @@ export interface GrammarCorrection {
 }
 
 export class AICardService {
-  private model: LanguageModel;
+  private model: any;
   private maxCards: number;
   private userId?: string;
   private organizationId?: string | null;
@@ -222,33 +221,7 @@ Generate diverse flashcards following the exact format specified above.`;
       });
 
       // Track AI usage if userId is provided
-      if (this.userId) {
-        const modelName = this.getModelName();
-        const aiRequest: AIRequest = { prompt, model: modelName };
-        
-        // The Vercel AI SDK v4 uses different response structure
-        const aiResponse: AIResponse = {
-          text: JSON.stringify(object),
-          model: modelName,
-          // Try to extract usage from the response
-          usage: (response as any)?.usage ? {
-            promptTokens: (response as any).usage.promptTokens,
-            completionTokens: (response as any).usage.completionTokens,
-            totalTokens: (response as any).usage.totalTokens
-          } : undefined,
-          experimental_providerMetadata: response as any
-        };
-        
-        await trackAIUsage(
-          aiRequest,
-          aiResponse,
-          this.userId,
-          this.organizationId ?? null,
-          'card_generation',
-          startTime,
-          'success'
-        );
-      }
+      // AI usage tracking removed
 
       // Limit the number of cards to maxCards and validate cloze cards
       const validatedCards = object.cards
@@ -292,17 +265,8 @@ Generate diverse flashcards following the exact format specified above.`;
       
       // Track failed AI usage
       if (this.userId) {
-        const aiRequest: AIRequest = { prompt: input.substring(0, 200), model: this.getModelName() };
-        await trackAIUsage(
-          aiRequest,
-          {} as AIResponse,
-          this.userId,
-          this.organizationId ?? null,
-          'card_generation',
-          startTime,
-          'error',
-          error.message || 'Unknown error'
-        );
+        // Request tracking removed prompt: input.substring(0, 200), model: this.getModelName() };
+        // AI usage tracking removed
       }
 
       // Check for specific error types
@@ -357,25 +321,7 @@ Use {{c1::text}} syntax for cloze deletions. Create variations that test differe
         maxRetries: 2,
       });
 
-      // Track AI usage
-      if (this.userId) {
-        const aiRequest: AIRequest = { prompt, model: this.getModelName() };
-        const aiResponse: AIResponse = {
-          text: JSON.stringify(object),
-          model: this.getModelName(),
-          experimental_providerMetadata: (response as any)?.experimental_providerMetadata
-        };
-        
-        await trackAIUsage(
-          aiRequest,
-          aiResponse,
-          this.userId,
-          this.organizationId ?? null,
-          'cloze_suggestion',
-          startTime,
-          'success'
-        );
-      }
+      // AI usage tracking removed
 
       return object.suggestions;
     } catch (error: any) {
@@ -383,17 +329,8 @@ Use {{c1::text}} syntax for cloze deletions. Create variations that test differe
       
       // Track failed AI usage
       if (this.userId) {
-        const aiRequest: AIRequest = { prompt: text.substring(0, 200), model: this.getModelName() };
-        await trackAIUsage(
-          aiRequest,
-          {} as AIResponse,
-          this.userId,
-          this.organizationId ?? null,
-          'cloze_suggestion',
-          startTime,
-          'error',
-          error.message || 'Unknown error'
-        );
+        // Request tracking removed prompt: text.substring(0, 200), model: this.getModelName() };
+        // AI usage tracking removed
       }
 
       if (error.statusCode === 503 || error.message?.includes("overloaded")) {
@@ -430,25 +367,7 @@ Provide the corrected version and list all corrections made with explanations.`;
         prompt,
       });
       
-      // Track AI usage
-      if (this.userId) {
-        const aiRequest: AIRequest = { prompt, model: this.getModelName() };
-        const aiResponse: AIResponse = {
-          text: JSON.stringify(object),
-          model: this.getModelName(),
-          experimental_providerMetadata: (response as any)?.experimental_providerMetadata
-        };
-        
-        await trackAIUsage(
-          aiRequest,
-          aiResponse,
-          this.userId,
-          this.organizationId ?? null,
-          'grammar_check',
-          startTime,
-          'success'
-        );
-      }
+      // AI usage tracking removed
 
       return {
         correctedText: object.corrected.text,
@@ -460,17 +379,8 @@ Provide the corrected version and list all corrections made with explanations.`;
       
       // Track failed AI usage
       if (this.userId) {
-        const aiRequest: AIRequest = { prompt: text.substring(0, 200), model: this.getModelName() };
-        await trackAIUsage(
-          aiRequest,
-          {} as AIResponse,
-          this.userId,
-          this.organizationId ?? null,
-          'grammar_check',
-          startTime,
-          'error',
-          error.message || 'Unknown error'
-        );
+        // Request tracking removed prompt: text.substring(0, 200), model: this.getModelName() };
+        // AI usage tracking removed
       }
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
@@ -663,31 +573,7 @@ Provide a helpful explanation:`
         maxRetries: 2,
       });
 
-      // Track AI usage if userId is provided
-      if (this.userId) {
-        const aiRequest: AIRequest = { prompt, model: this.getModelName() };
-        
-        const aiResponse: AIResponse = {
-          text: JSON.stringify(object),
-          model: this.getModelName(),
-          usage: (response as any)?.usage ? {
-            promptTokens: (response as any).usage.promptTokens,
-            completionTokens: (response as any).usage.completionTokens,
-            totalTokens: (response as any).usage.totalTokens
-          } : undefined,
-          experimental_providerMetadata: response as any
-        };
-        
-        await trackAIUsage(
-          aiRequest,
-          aiResponse,
-          this.userId,
-          this.organizationId ?? null,
-          'answer_explanation',
-          startTime,
-          'success'
-        );
-      }
+      // AI usage tracking removed
 
       return {
         explanation: object.explanation,
@@ -699,17 +585,8 @@ Provide a helpful explanation:`
       
       // Track failed AI usage
       if (this.userId) {
-        const aiRequest: AIRequest = { prompt: prompt.substring(0, 200), model: this.getModelName() };
-        await trackAIUsage(
-          aiRequest,
-          {} as AIResponse,
-          this.userId,
-          this.organizationId ?? null,
-          'answer_explanation',
-          startTime,
-          'error',
-          error.message || 'Unknown error'
-        );
+        // Request tracking removed prompt: prompt.substring(0, 200), model: this.getModelName() };
+        // AI usage tracking removed
       }
 
       if (error.statusCode === 503 || error.message?.includes("overloaded")) {

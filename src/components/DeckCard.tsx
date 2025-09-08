@@ -85,7 +85,7 @@ export function DeckCard({ deck, onDelete, showStats = true }: DeckCardProps) {
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <CardTitle className={cn(
-              "leading-tight truncate",
+              "leading-tight line-clamp-2",
               isMobile ? "text-base" : "text-lg"
             )}>{deck.name}</CardTitle>
             {deck.description && !isMobile && (

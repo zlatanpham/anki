@@ -39,10 +39,10 @@ export interface ConversationItem {
 
 export function AnswerExplanation({
   cardId,
-  _front,
-  _back,
-  _clozeText,
-  _onClose,
+  front: _front,
+  back: _back,
+  clozeText: _clozeText,
+  onClose: _onClose,
 }: AnswerExplanationProps) {
   const isMobile = useIsMobile();
   const [isExpanded, setIsExpanded] = useState(false);

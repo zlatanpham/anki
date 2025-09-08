@@ -19,9 +19,20 @@ const batchAddCardsSchema = z.object({
 
 // POST /api/v1/decks/{deckId}/cards/batch - Add multiple cards to a deck
 export const POST = withAuthAndRateLimit(
-  async (request: AuthenticatedRequest, { params }: { params: { deckId: string } }) => {
+  async (request: AuthenticatedRequest, _params?: unknown) => {
     try {
-      const deckId = params.deckId;
+      // Extract deckId from URL path
+      const url = new URL(request.url);
+      const pathSegments = url.pathname.split('/');
+      const deckId = pathSegments[pathSegments.findIndex(segment => segment === 'decks') + 1];
+      
+      if (!deckId) {
+        return createErrorResponse(
+          'INVALID_REQUEST',
+          'Deck ID not found in URL',
+          400
+        );
+      }
       
       // Verify deck exists and user has access
       const deck = await db.deck.findFirst({

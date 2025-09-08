@@ -36,8 +36,11 @@ interface StudySession {
       front: string;
       back: string;
       card_type: string;
-      cloze_text?: string;
+      cloze_text?: string | null;
       tags?: string[];
+      deck?: {
+        name: string;
+      };
     };
     due_date: Date;
     interval: number;
@@ -176,7 +179,7 @@ export default function StudyPage() {
 
     // Submit review in background
     submitReview.mutate({
-      cardId: currentCard.card_id,
+      cardId: currentCard.card.id,
       rating,
       responseTime,
     });
@@ -568,7 +571,7 @@ export default function StudyPage() {
               </CardTitle>
               <div className="flex flex-wrap gap-2">
                 <Badge variant="outline">
-                  {currentCard.card.deck.name}
+                  {currentCard.card.deck?.name ?? "Unknown Deck"}
                 </Badge>
                 {currentCard.card.tags?.map((tag: string) => (
                   <Badge key={tag} variant="secondary">
@@ -610,7 +613,7 @@ export default function StudyPage() {
                         cardId={currentCard.card.id}
                         front={currentCard.card.front ?? ""}
                         back={currentCard.card.back ?? ""}
-                        clozeText={currentCard.card.cloze_text}
+                        clozeText={currentCard.card.cloze_text ?? undefined}
                         key={`${currentCard.card.id}-${session.currentIndex}`}
                       />
                     </div>
@@ -652,7 +655,7 @@ export default function StudyPage() {
                         cardId={currentCard.card.id}
                         front={currentCard.card.front ?? ""}
                         back={currentCard.card.back ?? ""}
-                        clozeText={currentCard.card.cloze_text}
+                        clozeText={currentCard.card.cloze_text ?? undefined}
                         key={`${currentCard.card.id}-${session.currentIndex}`}
                       />
                     </div>

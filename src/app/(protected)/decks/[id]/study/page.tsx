@@ -166,6 +166,7 @@ export default function DeckStudyPage() {
     if (!session || !responseStartTime) return;
 
     const currentCard = session.cards[session.currentIndex];
+    if (!currentCard) return;
     const responseTime = new Date().getTime() - responseStartTime.getTime();
 
     // Optimistically update session stats and move to next card
@@ -479,6 +480,10 @@ export default function DeckStudyPage() {
   }
 
   const currentCard = session.cards[session.currentIndex];
+  if (!currentCard) {
+    return <div>No more cards to study.</div>;
+  }
+  
   // Calculate progress based on answered cards, not current position
   const totalAnswered = Object.values(session.sessionStats).reduce(
     (a, b) => a + b,
@@ -620,7 +625,7 @@ export default function DeckStudyPage() {
                     <div className="bg-muted/50 rounded-lg border p-6">
                       <div
                         className="prose prose-sm max-w-none"
-                        dangerouslySetInnerHTML={{ __html: currentCard.back }}
+                        dangerouslySetInnerHTML={{ __html: currentCard.back ?? "" }}
                       />
                     </div>
                   </>
@@ -664,7 +669,7 @@ export default function DeckStudyPage() {
                 cardId={currentCard.id}
                 front={currentCard.front}
                 back={currentCard.back ?? ""}
-                clozeText={currentCard.cloze_text}
+                clozeText={currentCard.cloze_text ?? undefined}
               />
             )}
           </CardContent>

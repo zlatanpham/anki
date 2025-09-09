@@ -48,6 +48,7 @@ import { validateClozeText, parseClozeText } from "@/lib/cloze";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { AdvancedSearch } from "@/components/AdvancedSearch";
 import { SkeletonCardPreview } from "@/components/ui/skeleton-card";
+import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Breadcrumb,
@@ -668,15 +669,13 @@ export default function DeckCardsPage() {
                             Front
                           </div>
                           <div className="bg-muted/50 rounded border-l-2 border-blue-200 p-3 text-sm">
-                            <div
-                              className="prose prose-sm line-clamp-3 max-w-none"
-                              dangerouslySetInnerHTML={{
-                                __html:
-                                  card.front.length > 150
-                                    ? card.front.substring(0, 150) + "..."
-                                    : card.front,
-                              }}
-                            />
+                            <div className="line-clamp-3">
+                              <MarkdownRenderer>
+                                {card.front.length > 150
+                                  ? card.front.substring(0, 150) + "..."
+                                  : card.front}
+                              </MarkdownRenderer>
+                            </div>
                           </div>
                         </div>
                         <div>
@@ -684,15 +683,13 @@ export default function DeckCardsPage() {
                             Back
                           </div>
                           <div className="bg-muted/50 rounded border-l-2 border-green-200 p-3 text-sm">
-                            <div
-                              className="prose prose-sm line-clamp-3 max-w-none"
-                              dangerouslySetInnerHTML={{
-                                __html:
-                                  card.back.length > 150
-                                    ? card.back.substring(0, 150) + "..."
-                                    : card.back,
-                              }}
-                            />
+                            <div className="line-clamp-3">
+                              <MarkdownRenderer>
+                                {card.back.length > 150
+                                  ? card.back.substring(0, 150) + "..."
+                                  : card.back}
+                              </MarkdownRenderer>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -723,11 +720,9 @@ export default function DeckCardsPage() {
                                         <span className="font-medium">
                                           Q{index + 1}:
                                         </span>{" "}
-                                        <span
-                                          dangerouslySetInnerHTML={{
-                                            __html: clozeCard.question,
-                                          }}
-                                        />
+                                        <MarkdownRenderer>
+                                          {clozeCard.question}
+                                        </MarkdownRenderer>
                                       </div>
                                     ))}
                                   {parsedCards.length > 2 && (

@@ -19,6 +19,7 @@ export default tseslint.config(
     ],
     rules: {
       "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/prefer-nullish-coalescing": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-return": "off",
       "@typescript-eslint/no-unsafe-call": "off",
@@ -40,7 +41,6 @@ export default tseslint.config(
       "@next/next/no-img-element": "off",
       // Temporary overrides for development
       "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/prefer-nullish-coalescing": "warn",
       "@typescript-eslint/restrict-template-expressions": "warn",
       "react/no-unescaped-entities": "warn",
       "react-hooks/exhaustive-deps": "warn",

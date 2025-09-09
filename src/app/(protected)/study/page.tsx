@@ -26,6 +26,7 @@ import { ratingColors, ratingLabels, ratingKeys } from "@/lib/theme";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { AnswerExplanation } from "@/components/study/AnswerExplanation";
+import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 
 interface StudySession {
   cards: {
@@ -591,22 +592,16 @@ export default function StudyPage() {
             ) : (
               <div className="space-y-6">
                 <div className="rounded-lg border p-6">
-                  <div
-                    className="prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{ __html: currentCard.card.front }}
-                  />
+                  <MarkdownRenderer>{currentCard.card.front}</MarkdownRenderer>
                 </div>
 
                 {session.showAnswer && (
                   <>
                     <Separator />
                     <div className="bg-muted/50 rounded-lg border p-6">
-                      <div
-                        className="prose prose-sm max-w-none"
-                        dangerouslySetInnerHTML={{
-                          __html: currentCard.card.back,
-                        }}
-                      />
+                      <MarkdownRenderer>
+                        {currentCard.card.back}
+                      </MarkdownRenderer>
                     </div>
                     <div className="mt-4">
                       <AnswerExplanation
@@ -632,12 +627,9 @@ export default function StudyPage() {
                       <h4 className="mb-2 font-medium text-blue-900">
                         Additional Context
                       </h4>
-                      <div
-                        className="prose prose-sm max-w-none text-blue-800"
-                        dangerouslySetInnerHTML={{
-                          __html: currentCard.card.front,
-                        }}
-                      />
+                      <MarkdownRenderer className="text-blue-800">
+                        {currentCard.card.front}
+                      </MarkdownRenderer>
                     </div>
                   )}
                   {currentCard.card.back && (
@@ -645,12 +637,9 @@ export default function StudyPage() {
                       <h4 className="mb-2 font-medium text-green-900">
                         Extra Information
                       </h4>
-                      <div
-                        className="prose prose-sm max-w-none text-green-800"
-                        dangerouslySetInnerHTML={{
-                          __html: currentCard.card.back,
-                        }}
-                      />
+                      <MarkdownRenderer className="text-green-800">
+                        {currentCard.card.back}
+                      </MarkdownRenderer>
                     </div>
                   )}
                   {session.showAnswer && (

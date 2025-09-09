@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 
 interface SearchFilters {
   search: string;
@@ -254,29 +255,17 @@ export default function GlobalSearchPage() {
                                 <p className="text-muted-foreground mb-1 text-sm">
                                   Front:
                                 </p>
-                                <div
-                                  className="prose prose-sm max-w-none"
-                                  dangerouslySetInnerHTML={{
-                                    __html: highlightText(
-                                      card.front,
-                                      filters.search,
-                                    ),
-                                  }}
-                                />
+                                <MarkdownRenderer allowRawHtml>
+                                  {highlightText(card.front, filters.search)}
+                                </MarkdownRenderer>
                               </div>
                               <div className="rounded-lg border p-3">
                                 <p className="text-muted-foreground mb-1 text-sm">
                                   Back:
                                 </p>
-                                <div
-                                  className="prose prose-sm max-w-none"
-                                  dangerouslySetInnerHTML={{
-                                    __html: highlightText(
-                                      card.back,
-                                      filters.search,
-                                    ),
-                                  }}
-                                />
+                                <MarkdownRenderer allowRawHtml>
+                                  {highlightText(card.back, filters.search)}
+                                </MarkdownRenderer>
                               </div>
                             </>
                           ) : (
@@ -286,15 +275,12 @@ export default function GlobalSearchPage() {
                                   <p className="text-muted-foreground mb-1 text-sm">
                                     Cloze Text:
                                   </p>
-                                  <div
-                                    className="prose prose-sm max-w-none"
-                                    dangerouslySetInnerHTML={{
-                                      __html: highlightText(
-                                        card.cloze_text,
-                                        filters.search,
-                                      ),
-                                    }}
-                                  />
+                                  <MarkdownRenderer allowRawHtml>
+                                    {highlightText(
+                                      card.cloze_text,
+                                      filters.search,
+                                    )}
+                                  </MarkdownRenderer>
                                 </div>
                               )}
                               {card.front && (
@@ -302,15 +288,9 @@ export default function GlobalSearchPage() {
                                   <p className="text-muted-foreground mb-1 text-sm">
                                     Additional Context:
                                   </p>
-                                  <div
-                                    className="prose prose-sm max-w-none"
-                                    dangerouslySetInnerHTML={{
-                                      __html: highlightText(
-                                        card.front,
-                                        filters.search,
-                                      ),
-                                    }}
-                                  />
+                                  <MarkdownRenderer allowRawHtml>
+                                    {highlightText(card.front, filters.search)}
+                                  </MarkdownRenderer>
                                 </div>
                               )}
                             </>

@@ -30,6 +30,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 
 export default function EditCardPage() {
   const router = useRouter();
@@ -419,27 +420,21 @@ export default function EditCardPage() {
                   <Label className="text-muted-foreground text-sm font-medium">
                     Front
                   </Label>
-                  <div
-                    className="prose prose-sm mt-2 max-w-none"
-                    dangerouslySetInnerHTML={{
-                      __html:
-                        front ||
-                        "<p class='text-muted-foreground'>Enter front content...</p>",
-                    }}
-                  />
+                  <div className="mt-2">
+                    <MarkdownRenderer>
+                      {front || "*Enter front content...*"}
+                    </MarkdownRenderer>
+                  </div>
                 </div>
                 <div className="rounded-lg border p-4">
                   <Label className="text-muted-foreground text-sm font-medium">
                     Back
                   </Label>
-                  <div
-                    className="prose prose-sm mt-2 max-w-none"
-                    dangerouslySetInnerHTML={{
-                      __html:
-                        back ||
-                        "<p class='text-muted-foreground'>Enter back content...</p>",
-                    }}
-                  />
+                  <div className="mt-2">
+                    <MarkdownRenderer>
+                      {back || "*Enter back content...*"}
+                    </MarkdownRenderer>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -463,10 +458,9 @@ export default function EditCardPage() {
                     <Label className="text-muted-foreground text-sm font-medium">
                       Additional Context
                     </Label>
-                    <div
-                      className="prose prose-sm mt-2 max-w-none"
-                      dangerouslySetInnerHTML={{ __html: front }}
-                    />
+                    <div className="mt-2">
+                      <MarkdownRenderer>{front}</MarkdownRenderer>
+                    </div>
                   </div>
                 )}
                 {back && (
@@ -474,10 +468,9 @@ export default function EditCardPage() {
                     <Label className="text-muted-foreground text-sm font-medium">
                       Back Extra
                     </Label>
-                    <div
-                      className="prose prose-sm mt-2 max-w-none"
-                      dangerouslySetInnerHTML={{ __html: back }}
-                    />
+                    <div className="mt-2">
+                      <MarkdownRenderer>{back}</MarkdownRenderer>
+                    </div>
                   </div>
                 )}
               </div>

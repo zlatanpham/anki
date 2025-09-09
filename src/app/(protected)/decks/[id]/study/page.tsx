@@ -34,6 +34,7 @@ import { ratingColors, ratingLabels, ratingKeys } from "@/lib/theme";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { AnswerExplanation } from "@/components/study/AnswerExplanation";
+import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 
 interface StudySession {
   cards: Array<{
@@ -616,22 +617,16 @@ export default function DeckStudyPage() {
             ) : (
               <div className="space-y-6">
                 <div className="rounded-lg border p-6">
-                  <div
-                    className="prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{ __html: currentCard.front }}
-                  />
+                  <MarkdownRenderer>{currentCard.front}</MarkdownRenderer>
                 </div>
 
                 {session.showAnswer && (
                   <>
                     <Separator />
                     <div className="bg-muted/50 rounded-lg border p-6">
-                      <div
-                        className="prose prose-sm max-w-none"
-                        dangerouslySetInnerHTML={{
-                          __html: currentCard.back ?? "",
-                        }}
-                      />
+                      <MarkdownRenderer>
+                        {currentCard.back ?? ""}
+                      </MarkdownRenderer>
                     </div>
                   </>
                 )}
@@ -648,10 +643,9 @@ export default function DeckStudyPage() {
                       <h4 className="mb-2 font-medium text-blue-900">
                         Additional Context
                       </h4>
-                      <div
-                        className="prose prose-sm max-w-none text-blue-800"
-                        dangerouslySetInnerHTML={{ __html: currentCard.front }}
-                      />
+                      <MarkdownRenderer className="text-blue-800">
+                        {currentCard.front}
+                      </MarkdownRenderer>
                     </div>
                   )}
                   {currentCard.back && (
@@ -659,10 +653,9 @@ export default function DeckStudyPage() {
                       <h4 className="mb-2 font-medium text-green-900">
                         Extra Information
                       </h4>
-                      <div
-                        className="prose prose-sm max-w-none text-green-800"
-                        dangerouslySetInnerHTML={{ __html: currentCard.back }}
-                      />
+                      <MarkdownRenderer className="text-green-800">
+                        {currentCard.back}
+                      </MarkdownRenderer>
                     </div>
                   )}
                 </div>

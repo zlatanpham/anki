@@ -217,7 +217,7 @@ ${input}
 Generate diverse flashcards following the exact format specified above.`;
 
     try {
-      const { object, response } = await generateObject({
+      const { object } = await generateObject({
         model: this.model,
         schema: cardSchema,
         prompt,
@@ -305,7 +305,6 @@ Generate diverse flashcards following the exact format specified above.`;
   }
 
   async suggestClozes(text: string): Promise<ClozesSuggestion[]> {
-    const startTime = Date.now();
     const prompt = `Analyze this text and suggest multiple cloze deletion variations. Focus on key concepts, definitions, dates, numbers, and important terms.
 
 For each suggestion:
@@ -318,7 +317,7 @@ Text: ${text}
 Use {{c1::text}} syntax for cloze deletions. Create variations that test different aspects of understanding.`;
 
     try {
-      const { object, response } = await generateObject({
+      const { object } = await generateObject({
         model: this.model,
         schema: clozeSuggestionSchema,
         prompt,
@@ -357,7 +356,6 @@ Use {{c1::text}} syntax for cloze deletions. Create variations that test differe
     corrections: GrammarCorrection[];
     overallQuality: string;
   }> {
-    const startTime = Date.now();
     const prompt = `Check and correct any grammar, spelling, punctuation, or style issues in this text. Maintain the original meaning while improving clarity.
 
 Text: ${text}
@@ -365,7 +363,7 @@ Text: ${text}
 Provide the corrected version and list all corrections made with explanations.`;
 
     try {
-      const { object, response } = await generateObject({
+      const { object } = await generateObject({
         model: this.model,
         schema: grammarCorrectionSchema,
         prompt,

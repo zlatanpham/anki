@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { parseClozeText, renderClozeContext } from "@/lib/cloze";
 import { ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react";
+import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 
 interface ClozeDisplayProps {
   clozeText: string;
@@ -42,10 +43,9 @@ export function ClozeDisplay({
           <div className="text-muted-foreground mb-2 text-sm font-medium">
             Question
           </div>
-          <div
-            className="bg-muted/50 rounded-lg p-4 text-lg leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: front }}
-          />
+          <MarkdownRenderer className="bg-muted/50 rounded-lg p-4 text-lg leading-relaxed">
+            {front}
+          </MarkdownRenderer>
         </div>
 
         {showAnswer && (
@@ -53,10 +53,9 @@ export function ClozeDisplay({
             <div className="text-muted-foreground mb-2 text-sm font-medium">
               Answer
             </div>
-            <div
-              className="bg-primary/5 rounded-lg p-4 text-lg leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: back }}
-            />
+            <MarkdownRenderer className="bg-primary/5 rounded-lg p-4 text-lg leading-relaxed">
+              {back}
+            </MarkdownRenderer>
           </div>
         )}
       </div>
@@ -152,10 +151,9 @@ export function ClozeDisplay({
               <div className="text-muted-foreground mb-2 text-sm font-medium">
                 Additional Notes
               </div>
-              <div
-                className="rounded-lg border-l-4 border-yellow-200 bg-yellow-50 p-3 text-sm leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: back }}
-              />
+              <MarkdownRenderer className="rounded-lg border-l-4 border-yellow-200 bg-yellow-50 p-3 text-sm leading-relaxed">
+                {back}
+              </MarkdownRenderer>
             </div>
           )}
         </>
@@ -217,14 +215,13 @@ export function ClozePreview({ clozeText, className = "" }: ClozePreviewProps) {
               <div className="space-y-2 text-sm">
                 <div className="flex gap-2">
                   <span className="flex-shrink-0 font-medium">Q:</span>
-                  <div dangerouslySetInnerHTML={{ __html: card.question }} />
+                  <MarkdownRenderer>{card.question}</MarkdownRenderer>
                 </div>
                 <div className="flex gap-2">
                   <span className="flex-shrink-0 font-medium">A:</span>
-                  <span
-                    className="font-semibold text-green-700"
-                    dangerouslySetInnerHTML={{ __html: card.answer }}
-                  />
+                  <MarkdownRenderer className="font-semibold text-green-700">
+                    {card.answer}
+                  </MarkdownRenderer>
                 </div>
               </div>
             </div>

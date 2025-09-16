@@ -287,7 +287,7 @@ model CardExplanation {
     id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
     card_id           String    @db.Uuid
     user_id           String
-    question_type     String    @db.VarChar(50) // eli5, example, importance, breakdown, custom
+    question_type     String    @db.VarChar(50) // firstPrinciples, caveman, memoryHook, realWorld, custom
     question          String?   @db.Text
     explanation       String    @db.Text
     tokens_used       Int?

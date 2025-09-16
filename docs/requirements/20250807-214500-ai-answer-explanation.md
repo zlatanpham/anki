@@ -7,6 +7,7 @@ This document outlines the requirements for implementing an AI-powered answer ex
 ## Business Context and Problem Statement
 
 ### Current State
+
 - Users review flashcards and see questions with answers
 - When users don't understand an answer, they must:
   - Leave the study session to research
@@ -14,12 +15,14 @@ This document outlines the requirements for implementing an AI-powered answer ex
   - Potentially memorize without understanding
 
 ### Business Need
+
 - Enhance learning effectiveness by providing instant, contextual explanations
 - Reduce cognitive friction during study sessions
 - Improve retention through better understanding
 - Differentiate the application with AI-powered learning assistance
 
 ### Success Metrics
+
 - Increased user engagement (time spent in study sessions)
 - Higher retention rates (measured through spaced repetition performance)
 - Reduced card suspension rates
@@ -29,22 +32,26 @@ This document outlines the requirements for implementing an AI-powered answer ex
 ## Stakeholder Analysis
 
 ### Primary Stakeholders
+
 - **Students/Learners**: Need clear explanations to understand complex concepts
 - **Content Creators**: Want their cards to be more effective learning tools
 - **Application Administrators**: Need to manage AI costs and usage
 
 ### Secondary Stakeholders
+
 - **Organizations**: May want to track AI usage across their members
 - **Support Team**: Will need to handle AI-related issues and feedback
 
 ## Functional Requirements
 
 ### FR1: Answer Explanation Trigger
+
 **ID**: FR1  
 **Priority**: High  
 **Description**: Users can trigger AI explanations after revealing an answer
 
 **Acceptance Criteria**:
+
 - [ ] Clicking on the answer area reveals explanation options
 - [ ] Visual indicator (icon/button) shows explanation is available
 - [ ] Smooth transition animation when revealing options
@@ -52,26 +59,30 @@ This document outlines the requirements for implementing an AI-powered answer ex
 - [ ] Accessible via keyboard shortcuts (e.g., 'E' for explain)
 
 ### FR2: Preset Explanation Options
+
 **ID**: FR2  
 **Priority**: High  
 **Description**: Provide preset explanation styles for common learning needs
 
 **Acceptance Criteria**:
+
 - [ ] At least 4 preset options available:
-  - "Explain like I'm 5" (ELI5)
-  - "Give me an example"
-  - "Why is this important?"
-  - "Break it down step-by-step"
+  - "Explain with first principles"
+  - "Explain it to a caveman"
+  - "Give me a memory trick"
+  - "Show me how to use it"
 - [ ] Each preset generates contextually appropriate explanations
 - [ ] Presets are visually distinct and easy to select
 - [ ] User can select preset with single click/tap
 
 ### FR3: Custom Question Input
+
 **ID**: FR3  
 **Priority**: High  
 **Description**: Allow users to ask specific questions about the answer
 
 **Acceptance Criteria**:
+
 - [ ] Text input field for custom questions
 - [ ] Character limit of 500 characters
 - [ ] Submit via Enter key or button click
@@ -80,11 +91,13 @@ This document outlines the requirements for implementing an AI-powered answer ex
 - [ ] Suggested follow-up questions based on context
 
 ### FR4: AI-Generated Explanations
+
 **ID**: FR4  
 **Priority**: High  
 **Description**: Generate high-quality, contextual explanations
 
 **Acceptance Criteria**:
+
 - [ ] Explanations consider both question and answer context
 - [ ] Support for different explanation styles
 - [ ] Include relevant examples when appropriate
@@ -93,11 +106,13 @@ This document outlines the requirements for implementing an AI-powered answer ex
 - [ ] Include source confidence indicator
 
 ### FR5: Explanation Display
+
 **ID**: FR5  
 **Priority**: High  
 **Description**: Present explanations in a user-friendly interface
 
 **Acceptance Criteria**:
+
 - [ ] Expandable panel below the answer
 - [ ] Clear typography and formatting
 - [ ] Support for markdown rendering
@@ -107,11 +122,13 @@ This document outlines the requirements for implementing an AI-powered answer ex
 - [ ] Smooth animations and transitions
 
 ### FR6: Conversation Threading
+
 **ID**: FR6  
 **Priority**: Medium  
 **Description**: Support follow-up questions and conversation context
 
 **Acceptance Criteria**:
+
 - [ ] Maintain context of previous Q&A within the card
 - [ ] Display conversation history
 - [ ] Allow up to 5 follow-up questions per card
@@ -119,11 +136,13 @@ This document outlines the requirements for implementing an AI-powered answer ex
 - [ ] Visual threading of Q&A pairs
 
 ### FR7: Explanation Saving
+
 **ID**: FR7  
 **Priority**: Medium  
 **Description**: Allow users to save useful explanations
 
 **Acceptance Criteria**:
+
 - [ ] Save explanation to card notes
 - [ ] Tag saved explanations
 - [ ] Access saved explanations in card details
@@ -131,11 +150,13 @@ This document outlines the requirements for implementing an AI-powered answer ex
 - [ ] Bulk export saved explanations
 
 ### FR8: Usage Analytics
+
 **ID**: FR8  
 **Priority**: Low  
 **Description**: Track explanation usage for insights
 
 **Acceptance Criteria**:
+
 - [ ] Log explanation requests per user
 - [ ] Track most used preset options
 - [ ] Monitor custom question patterns
@@ -145,30 +166,35 @@ This document outlines the requirements for implementing an AI-powered answer ex
 ## Non-Functional Requirements
 
 ### NFR1: Performance
+
 - **Response Time**: AI explanations generated within 3 seconds (95th percentile)
 - **Concurrent Users**: Support 100+ simultaneous explanation requests
 - **Caching**: Cache common explanations for instant retrieval
 - **Offline Mode**: Graceful degradation when AI service unavailable
 
 ### NFR2: Security
+
 - **Data Privacy**: No card content stored in AI service logs
 - **User Isolation**: Explanations generated only from user's own cards
 - **Input Validation**: Sanitize all user inputs before AI processing
 - **Rate Limiting**: Prevent abuse through request throttling
 
 ### NFR3: Usability
+
 - **Accessibility**: WCAG 2.1 AA compliance
 - **Mobile Responsive**: Full functionality on screens ≥320px width
 - **Internationalization**: Support for multilingual explanations
 - **Loading States**: Clear feedback during AI processing
 
 ### NFR4: Reliability
+
 - **Availability**: 99.5% uptime for explanation service
 - **Error Handling**: Graceful fallbacks for AI failures
 - **Retry Logic**: Automatic retry with exponential backoff
 - **Circuit Breaker**: Prevent cascade failures
 
 ### NFR5: Scalability
+
 - **Horizontal Scaling**: AI service can scale with demand
 - **Queue Management**: Handle burst traffic via job queues
 - **Resource Optimization**: Efficient token usage
@@ -183,7 +209,13 @@ This document outlines the requirements for implementing an AI-powered answer ex
 explainAnswer: protectedProcedure
   .input(z.object({
     cardId: z.string().uuid(),
-    questionType: z.enum(["eli5", "example", "importance", "breakdown", "custom"]),
+    questionType: z.enum([
+      "firstPrinciples",
+      "caveman",
+      "memoryHook",
+      "realWorld",
+      "custom",
+    ]),
     customQuestion: z.string().max(500).optional(),
     conversationHistory: z.array(z.object({
       question: z.string(),
@@ -229,7 +261,7 @@ CREATE TABLE card_explanations (
   is_saved BOOLEAN DEFAULT false,
   tags TEXT[],
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   INDEX idx_card_explanations_card_user (card_id, user_id),
   INDEX idx_card_explanations_saved (user_id, is_saved)
 );
@@ -242,16 +274,13 @@ CREATE TABLE card_explanations (
 
 ```typescript
 // New components structure
-components/
-  study/
-    AnswerExplanation/
-      AnswerExplanation.tsx          // Main container
-      ExplanationTrigger.tsx          // Click/tap trigger
-      PresetOptions.tsx               // Preset question buttons
-      CustomQuestionInput.tsx         // Custom question form
-      ExplanationDisplay.tsx          // Rendered explanation
-      ConversationThread.tsx          // Q&A history
-      ExplanationActions.tsx          // Save/share actions
+components / study / AnswerExplanation / AnswerExplanation.tsx; // Main container
+ExplanationTrigger.tsx; // Click/tap trigger
+PresetOptions.tsx; // Preset question buttons
+CustomQuestionInput.tsx; // Custom question form
+ExplanationDisplay.tsx; // Rendered explanation
+ConversationThread.tsx; // Q&A history
+ExplanationActions.tsx; // Save/share actions
 ```
 
 ### TR4: AI Service Integration
@@ -263,7 +292,7 @@ class AICardService {
     card: { front: string; back: string },
     questionType: string,
     customQuestion?: string,
-    conversationHistory?: Array<{ question: string; answer: string }>
+    conversationHistory?: Array<{ question: string; answer: string }>,
   ): Promise<{
     explanation: string;
     suggestedFollowUps?: string[];
@@ -277,22 +306,26 @@ class AICardService {
 ## Integration Requirements
 
 ### IR1: Study Session Integration
+
 - Explanation UI integrated into study review interface
 - Available after answer reveal
 - Does not interfere with review rating buttons
 - Maintains study session state during explanations
 
 ### IR2: Card Detail Integration
+
 - View saved explanations in card detail modal
 - Edit and manage explanations
 - Export explanations with card data
 
 ### IR3: Analytics Integration
+
 - Track explanation usage in existing AI usage tables
 - Include in monthly usage quotas
 - Dashboard metrics for explanation feature
 
 ### IR4: Mobile App Integration
+
 - Native mobile UI components
 - Touch-optimized interactions
 - Offline explanation cache
@@ -300,6 +333,7 @@ class AICardService {
 ## User Experience Design
 
 ### UX1: Interaction Flow
+
 1. User reveals answer during study
 2. Answer area becomes interactive (subtle highlight)
 3. Click/tap reveals explanation options
@@ -309,6 +343,7 @@ class AICardService {
 7. User can ask follow-up questions or continue studying
 
 ### UX2: Visual Design
+
 - Explanation panel uses consistent design system
 - Clear visual hierarchy
 - Distinct styling for AI-generated content
@@ -316,6 +351,7 @@ class AICardService {
 - Dark mode support
 
 ### UX3: Error States
+
 - "AI service temporarily unavailable"
 - "Failed to generate explanation"
 - "Usage limit reached"
@@ -324,17 +360,20 @@ class AICardService {
 ## Security and Privacy Considerations
 
 ### SP1: Data Protection
+
 - No PII in AI prompts
 - Explanations not shared between users
 - Secure API communication
 - Audit trail for AI usage
 
 ### SP2: Content Filtering
+
 - Filter inappropriate custom questions
 - Validate AI responses for safety
 - Report mechanism for problematic content
 
 ### SP3: Access Control
+
 - User can only explain their accessible cards
 - Organization admins can view usage metrics
 - Rate limits per user tier
@@ -342,18 +381,21 @@ class AICardService {
 ## Performance Requirements
 
 ### PR1: Response Times
+
 - Initial explanation: < 3 seconds
 - Follow-up questions: < 2 seconds
 - UI interactions: < 100ms
 - Cache retrieval: < 50ms
 
 ### PR2: Resource Usage
+
 - Minimize token consumption
 - Efficient prompt engineering
 - Response caching strategy
 - Progressive UI loading
 
 ### PR3: Scalability Targets
+
 - 10,000+ daily active users
 - 100,000+ daily explanations
 - 1M+ cached explanations
@@ -362,6 +404,7 @@ class AICardService {
 ## Implementation Phases
 
 ### Phase 1: Core Functionality (Week 1-2)
+
 1. Basic explanation trigger UI
 2. Preset question options
 3. AI service integration
@@ -369,6 +412,7 @@ class AICardService {
 5. Usage tracking
 
 ### Phase 2: Enhanced Features (Week 3-4)
+
 1. Custom question input
 2. Conversation threading
 3. Explanation saving
@@ -376,6 +420,7 @@ class AICardService {
 5. Error handling improvements
 
 ### Phase 3: Advanced Features (Week 5-6)
+
 1. Follow-up suggestions
 2. Explanation sharing
 3. Analytics dashboard
@@ -383,6 +428,7 @@ class AICardService {
 5. Performance optimization
 
 ### Phase 4: Polish & Scale (Week 7-8)
+
 1. Caching implementation
 2. Advanced UI animations
 3. A/B testing framework
@@ -392,6 +438,7 @@ class AICardService {
 ## Success Criteria
 
 ### Quantitative Metrics
+
 - 60% of active users try the feature within first month
 - 40% of users use it regularly (weekly)
 - Average session length increases by 15%
@@ -399,6 +446,7 @@ class AICardService {
 - AI cost per user remains under $0.50/month
 
 ### Qualitative Metrics
+
 - Positive user feedback (>4.0/5 rating)
 - Reduced support tickets about understanding content
 - User testimonials about improved learning
@@ -407,18 +455,21 @@ class AICardService {
 ## Risk Assessment
 
 ### Technical Risks
+
 - **AI Service Reliability**: Mitigate with fallbacks and caching
 - **Cost Overruns**: Implement strict quotas and monitoring
 - **Performance Impact**: Use progressive loading and optimization
 - **Integration Complexity**: Phased rollout with feature flags
 
 ### Business Risks
+
 - **User Adoption**: Mitigate with onboarding and education
 - **Content Quality**: Implement feedback mechanisms
 - **Competitive Response**: Fast iteration and unique features
 - **Support Burden**: Comprehensive documentation and FAQs
 
 ### Mitigation Strategies
+
 1. Implement circuit breakers for AI service
 2. Cache frequently requested explanations
 3. Progressive rollout with monitoring
@@ -428,6 +479,7 @@ class AICardService {
 ## Future Enhancements
 
 ### Version 2.0 Considerations
+
 - Voice-based explanations
 - Visual diagrams and illustrations
 - Explanation personalization based on learning style
@@ -440,18 +492,22 @@ class AICardService {
 
 ### Appendix A: Example Interactions
 
-#### Example 1: ELI5 Explanation
-**Card**: 
+#### Example 1: Caveman Explanation
+
+**Card**:
+
 - Q: "What is photosynthesis?"
 - A: "The process by which plants convert light energy into chemical energy (glucose) using carbon dioxide and water"
 
-**User clicks**: "Explain like I'm 5"
+**User clicks**: "Explain it to a caveman"
 
-**AI Response**: 
-"Imagine plants are like little chefs with a magical recipe! They take sunlight (like heat from an oven), water from the ground (like water from a tap), and air they breathe (carbon dioxide) to cook up their own food (sugar). This cooking process is called photosynthesis. It's how plants make their own lunch using the sun as their kitchen!"
+**AI Response**:
+"Sun hit leaf. Leaf drink water from dirt. Leaf breathe sky air. Inside leaf, tiny fire cooks sun + water + air into sweet plant food. Plant eats own food and grow big. No sun, plant go hungry."
 
 #### Example 2: Custom Question
+
 **Card**:
+
 - Q: "What is the capital of France?"
 - A: "Paris"
 
@@ -474,33 +530,41 @@ The Capetian kings particularly established Paris as the permanent capital in th
 
 ```typescript
 const EXPLANATION_PROMPTS = {
-  eli5: `Explain this answer as if teaching a 5-year-old child. Use simple words, analogies, and examples they can understand. Be friendly and encouraging.
+  firstPrinciples: `Rebuild this answer using first principles. Identify the basic truths, surface the assumptions, and show how the conclusion follows.
+
+Write the explanation in Markdown with bold section labels (e.g., **Fundamental Truths:**), short paragraphs, and bullet/numbered lists. Avoid headings larger than level 3.
 
 Question: {question}
 Answer: {answer}
 
-Provide a simple, clear explanation:`,
+Deliver a concise first-principles explanation:`,
 
-  example: `Provide concrete, real-world examples that illustrate this answer. Make them relevant and easy to understand.
+  caveman: `Explain this answer as if teaching a curious caveman. Use very simple words, concrete sensory comparisons, and avoid jargon.
 
-Question: {question}
-Answer: {answer}
-
-Give 2-3 practical examples:`,
-
-  importance: `Explain why this information matters and how it connects to broader concepts or real-world applications.
+Format the response in Markdown. Keep sentences short, prefer bullet lists, and use bold labels instead of large headings.
 
 Question: {question}
 Answer: {answer}
 
-Explain the significance:`,
+Give the caveman-style explanation:`,
 
-  breakdown: `Break down this answer into clear, logical steps or components. Explain each part thoroughly.
+  memoryHook: `Create a memorable hook that helps the learner retain this answer. Use mnemonics, short stories, or vivid images.
+
+Return Markdown that highlights each hook clearly with bold labels and lists. Keep the story vivid but concise.
 
 Question: {question}
 Answer: {answer}
 
-Provide a step-by-step breakdown:`,
+Provide the memory trick with a short explanation:`,
+
+  realWorld: `Show how to put this answer to work. Highlight realistic situations, decisions, or workflows where the knowledge is applied.
+
+Respond in Markdown using bullet or numbered lists for scenarios. Use bold labels for sections instead of large headings and keep paragraphs brief.
+
+Question: {question}
+Answer: {answer}
+
+Describe concrete real-world uses:`,
 
   custom: `Based on the question and answer below, please answer the user's specific question.
 
@@ -509,23 +573,25 @@ Card Answer: {answer}
 
 User's Question: {customQuestion}
 
-Previous Context: {conversationHistory}
+{conversationContext}
 
-Provide a helpful explanation:`
+Provide a helpful explanation written in Markdown. Use bold labels for key points, short paragraphs, and lists when helpful. Avoid headings larger than level 3:`,
 };
 ```
 
 ### Appendix C: Cost Projections
 
 #### Token Usage Estimates
+
 - Average explanation: 200-500 tokens
 - Cost per explanation: $0.002-$0.005
 - Monthly budget per user: $0.50
 - Explanation quota: 100-250 per month
 
 #### Scaling Costs
+
 - 1,000 users: $500/month
-- 10,000 users: $5,000/month  
+- 10,000 users: $5,000/month
 - 100,000 users: $50,000/month
 - Cache hit rate target: 30% (reduces costs by 30%)
 

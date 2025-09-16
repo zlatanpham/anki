@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Baby, Lightbulb, Target, Layers } from "lucide-react";
+import { Atom, Hammer, Sparkles, Compass } from "lucide-react";
 import { type QuestionType } from "./AnswerExplanation";
 import { cn } from "@/lib/utils";
 // useIsMobile import removed - not used
@@ -17,40 +17,40 @@ interface PresetOption {
 
 const presetOptions: PresetOption[] = [
   {
-    type: "eli5",
-    label: "Explain like I'm 5",
-    description: "Simple explanation with analogies",
-    icon: Baby,
+    type: "firstPrinciples",
+    label: "Explain with first principles",
+    description: "Start from the basics and build the answer back up",
+    icon: Atom,
     color:
       "text-blue-600 hover:text-blue-700 hover:border-blue-300 focus-visible:border-blue-400 focus-visible:ring-blue-200",
     iconBgColor: "bg-blue-50 group-hover:bg-blue-100",
   },
   {
-    type: "example",
-    label: "Give me an example",
-    description: "Real-world applications",
-    icon: Lightbulb,
+    type: "caveman",
+    label: "Explain it to a caveman",
+    description: "Use primitive words, senses, and no jargon",
+    icon: Hammer,
     color:
-      "text-green-600 hover:text-green-700 hover:border-green-300 focus-visible:border-green-400 focus-visible:ring-green-200",
-    iconBgColor: "bg-green-50 group-hover:bg-green-100",
+      "text-amber-600 hover:text-amber-700 hover:border-amber-300 focus-visible:border-amber-400 focus-visible:ring-amber-200",
+    iconBgColor: "bg-amber-50 group-hover:bg-amber-100",
   },
   {
-    type: "importance",
-    label: "Why is this important?",
-    description: "Significance and connections",
-    icon: Target,
+    type: "memoryHook",
+    label: "Give me a memory trick",
+    description: "Create a mnemonic, story, or vivid hook",
+    icon: Sparkles,
     color:
-      "text-purple-600 hover:text-purple-700 hover:border-purple-300 focus-visible:border-purple-400 focus-visible:ring-purple-200",
-    iconBgColor: "bg-purple-50 group-hover:bg-purple-100",
+      "text-fuchsia-600 hover:text-fuchsia-700 hover:border-fuchsia-300 focus-visible:border-fuchsia-400 focus-visible:ring-fuchsia-200",
+    iconBgColor: "bg-fuchsia-50 group-hover:bg-fuchsia-100",
   },
   {
-    type: "breakdown",
-    label: "Break it down",
-    description: "Step-by-step explanation",
-    icon: Layers,
+    type: "realWorld",
+    label: "Show me how to use it",
+    description: "Connect the idea to real decisions or actions",
+    icon: Compass,
     color:
-      "text-orange-600 hover:text-orange-700 hover:border-orange-300 focus-visible:border-orange-400 focus-visible:ring-orange-200",
-    iconBgColor: "bg-orange-50 group-hover:bg-orange-100",
+      "text-emerald-600 hover:text-emerald-700 hover:border-emerald-300 focus-visible:border-emerald-400 focus-visible:ring-emerald-200",
+    iconBgColor: "bg-emerald-50 group-hover:bg-emerald-100",
   },
 ];
 

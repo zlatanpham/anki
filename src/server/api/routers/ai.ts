@@ -93,10 +93,10 @@ export const aiRouter = createTRPCRouter({
       z.object({
         cardId: z.string().uuid(),
         questionType: z.enum([
-          "eli5",
-          "example",
-          "importance",
-          "breakdown",
+          "firstPrinciples",
+          "caveman",
+          "memoryHook",
+          "realWorld",
           "custom",
         ]),
         customQuestion: z.string().max(500).optional(),
@@ -384,7 +384,12 @@ export const aiRouter = createTRPCRouter({
     .input(
       z.object({
         cardIds: z.array(z.string().uuid()).min(1).max(10),
-        questionType: z.enum(["eli5", "example", "importance", "breakdown"]),
+        questionType: z.enum([
+          "firstPrinciples",
+          "caveman",
+          "memoryHook",
+          "realWorld",
+        ]),
       }),
     )
     .mutation(async ({ ctx, input }) => {

@@ -487,7 +487,12 @@ Return a JSON object with: estimatedCards (number), topics (array of strings), d
 
   async explainAnswer(
     card: { front: string; back: string; clozeText?: string },
-    questionType: "eli5" | "example" | "importance" | "breakdown" | "custom",
+    questionType:
+      | "firstPrinciples"
+      | "caveman"
+      | "memoryHook"
+      | "realWorld"
+      | "custom",
     customQuestion?: string,
     conversationHistory?: Array<{ question: string; answer: string }>,
   ): Promise<{
@@ -499,33 +504,41 @@ Return a JSON object with: estimatedCards (number), topics (array of strings), d
 
     // Prepare the prompt templates
     const promptTemplates = {
-      eli5: `Explain this answer as if teaching a 5-year-old child. Use simple words, analogies, and examples they can understand. Be friendly and encouraging.
+      firstPrinciples: `Rebuild this answer using first principles. Identify the fundamental truths, make any necessary assumptions explicit, and show how the conclusion follows step by step.
+
+Write the explanation in Markdown with short sections. Prefer bold section labels (e.g., **Fundamental Truths:**) and numbered or bulleted lists. Keep sentences concise and avoid headings larger than level 3.
 
 Question: {question}
 Answer: {answer}
 
-Provide a simple, clear explanation:`,
+Deliver a concise first-principles explanation:`,
 
-      example: `Provide concrete, real-world examples that illustrate this answer. Make them relevant and easy to understand.
+      caveman: `Explain this answer as if teaching a curious caveman. Use extremely simple words, vivid sensory comparisons, and avoid any technical jargon. Keep it punchy and concrete.
 
-Question: {question}
-Answer: {answer}
-
-Give 2-3 practical examples:`,
-
-      importance: `Explain why this information matters and how it connects to broader concepts or real-world applications.
+Format the response in Markdown with short sentences, short paragraphs, and bulleted lists where it helps. Use bold labels instead of large headings.
 
 Question: {question}
 Answer: {answer}
 
-Explain the significance:`,
+Give the caveman-style explanation:`,
 
-      breakdown: `Break down this answer into clear, logical steps or components. Explain each part thoroughly.
+      memoryHook: `Create a memorable hook that helps a learner retain this answer. Use mnemonics, short stories, visual imagery, or acronyms so the idea sticks.
+
+Return Markdown that highlights each hook clearly using bold labels and lists. Keep the story vivid but concise.
 
 Question: {question}
 Answer: {answer}
 
-Provide a step-by-step breakdown:`,
+Provide the memory trick with a short explanation:`,
+
+      realWorld: `Show how to apply this answer in realistic situations. Highlight practical scenarios, decisions, or workflows where this knowledge makes a difference.
+
+Respond in Markdown using bullet or numbered lists for scenarios. Use bold labels for sections instead of large headings and keep paragraphs brief.
+
+Question: {question}
+Answer: {answer}
+
+Describe concrete real-world uses:`,
 
       custom: `Based on the question and answer below, please answer the user's specific question.
 
@@ -536,7 +549,7 @@ User's Question: {customQuestion}
 
 {conversationContext}
 
-Provide a helpful explanation:`,
+Provide a helpful explanation written in Markdown. Use bold labels for key points, short paragraphs, and lists when helpful. Avoid headings larger than level 3:`,
     };
 
     // Get the question and answer from the card

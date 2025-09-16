@@ -23,10 +23,10 @@ interface AnswerExplanationProps {
 }
 
 export type QuestionType =
-  | "eli5"
-  | "example"
-  | "importance"
-  | "breakdown"
+  | "firstPrinciples"
+  | "caveman"
+  | "memoryHook"
+  | "realWorld"
   | "custom";
 
 export interface ConversationItem {

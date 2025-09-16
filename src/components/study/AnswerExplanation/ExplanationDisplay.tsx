@@ -1,10 +1,12 @@
 "use client";
 
 // Card import removed - not used
+import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 
 interface ExplanationDisplayProps {
   explanation: string;
@@ -19,51 +21,9 @@ export function ExplanationDisplay({
 }: ExplanationDisplayProps) {
   const isMobile = useIsMobile();
 
-  // Simple markdown-like formatting
-  const formatExplanation = (text: string) => {
-    // Split by paragraphs
-    const paragraphs = text.split("\n\n");
-
-    return paragraphs.map((paragraph, idx) => {
-      // Check for bullet points
-      if (
-        paragraph.trim().startsWith("- ") ||
-        paragraph.trim().startsWith("* ")
-      ) {
-        const items = paragraph.split("\n").filter((line) => line.trim());
-        return (
-          <ul key={idx} className="list-disc space-y-1 pl-6">
-            {items.map((item, itemIdx) => (
-              <li key={itemIdx} className="text-sm">
-                {item.replace(/^[-*]\s+/, "")}
-              </li>
-            ))}
-          </ul>
-        );
-      }
-
-      // Check for numbered lists
-      if (/^\d+\.\s/.test(paragraph.trim())) {
-        const items = paragraph.split("\n").filter((line) => line.trim());
-        return (
-          <ol key={idx} className="list-decimal space-y-1 pl-6">
-            {items.map((item, itemIdx) => (
-              <li key={itemIdx} className="text-sm">
-                {item.replace(/^\d+\.\s+/, "")}
-              </li>
-            ))}
-          </ol>
-        );
-      }
-
-      // Regular paragraph
-      return (
-        <p key={idx} className="text-sm leading-relaxed">
-          {paragraph}
-        </p>
-      );
-    });
-  };
+  const normalizedExplanation = useMemo(() => {
+    return explanation.replace(/\r\n/g, "\n").trim();
+  }, [explanation]);
 
   return (
     <div
@@ -87,13 +47,18 @@ export function ExplanationDisplay({
         )}
       </div>
 
-      <div
-        className={cn(
-          "prose prose-sm max-w-none text-gray-700",
-          isLoading && "animate-pulse",
-        )}
-      >
-        {formatExplanation(explanation)}
+      <div className={cn(isLoading && "animate-pulse")}>
+        <MarkdownRenderer
+          className={cn(
+            "text-gray-700",
+            "prose-headings:text-base prose-headings:font-semibold prose-headings:mt-3",
+            "prose-p:my-2 prose-p:leading-relaxed",
+            "prose-ol:my-2 prose-ul:my-2 prose-li:my-1",
+            "prose-strong:text-gray-900",
+          )}
+        >
+          {normalizedExplanation}
+        </MarkdownRenderer>
       </div>
     </div>
   );

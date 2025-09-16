@@ -9,12 +9,14 @@ A modern Anki-inspired flashcard application built with Next.js 15, featuring sp
 ## Features
 
 ### Flashcard Learning
+
 - **Spaced Repetition**: Optimized learning intervals based on memory science
 - **Card Management**: Create, edit, and organize flashcards in decks
 - **Study Sessions**: Interactive learning with progress tracking
 - **Multi-format Cards**: Support for text, images, and rich content
 
 ### Platform Features
+
 - **Authentication**: GitHub OAuth + Email/Password with NextAuth.js
 - **Multi-tenant**: Organization-based deck sharing and collaboration
 - **Modern UI**: Responsive design with shadcn/ui components
@@ -34,7 +36,7 @@ A modern Anki-inspired flashcard application built with Next.js 15, featuring sp
 
 ### Prerequisites
 
-- Node.js 18+ and pnpm
+- Node.js 20+ and pnpm
 - Docker (for PostgreSQL)
 - Git
 
@@ -150,16 +152,19 @@ src/
 The application includes schemas for flashcard learning and multi-tenant organizations:
 
 ### Authentication & Users
+
 - **User**: User accounts with email/password and OAuth support
 - **Account**: OAuth account connections (NextAuth)
 - **Session**: User sessions (NextAuth)
 - **VerificationToken**: Email verification tokens (NextAuth)
 
 ### Organizations & Sharing
+
 - **Organization**: Multi-tenant containers for shared decks and collaboration
 - **OrganizationMember**: Organization membership with role management
 
 ### Flashcard System
+
 - **Deck**: Collections of flashcards organized by topic
 - **Card**: Individual flashcards with front/back content
 - **Study Session**: Learning sessions with progress tracking

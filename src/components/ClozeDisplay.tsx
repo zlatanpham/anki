@@ -14,6 +14,7 @@ interface ClozeDisplayProps {
   showAnswer: boolean;
   onShowAnswer: () => void;
   className?: string;
+  hideRevealButton?: boolean;
 }
 
 export function ClozeDisplay({
@@ -23,6 +24,7 @@ export function ClozeDisplay({
   showAnswer,
   onShowAnswer,
   className = "",
+  hideRevealButton = false,
 }: ClozeDisplayProps) {
   const [currentClozeIndex, setCurrentClozeIndex] = useState(0);
   const [parsedCards, setParsedCards] = useState<
@@ -106,7 +108,7 @@ export function ClozeDisplay({
       <div>
         <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm font-medium">
           Fill in the blank
-          {!showAnswer && (
+          {!showAnswer && !hideRevealButton && (
             <Button
               variant="ghost"
               size="sm"

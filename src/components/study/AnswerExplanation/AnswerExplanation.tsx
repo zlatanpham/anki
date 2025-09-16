@@ -2,8 +2,6 @@
 
 import { useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-// Button, Lightbulb, ChevronDown, ChevronUp removed - not used
-import { ExplanationTrigger } from "./ExplanationTrigger";
 import { PresetOptions } from "./PresetOptions";
 import { CustomQuestionInput } from "./CustomQuestionInput";
 import { ExplanationDisplay } from "./ExplanationDisplay";
@@ -45,8 +43,7 @@ export function AnswerExplanation({
   onClose: _onClose,
 }: AnswerExplanationProps) {
   const isMobile = useIsMobile();
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [showOptions, setShowOptions] = useState(false);
+  const [showOptions, setShowOptions] = useState(true);
   const [currentExplanation, setCurrentExplanation] = useState<string | null>(
     null,
   );
@@ -95,17 +92,6 @@ export function AnswerExplanation({
       toast.error(error.message || "Failed to save explanation");
     },
   });
-
-  const handleTriggerClick = useCallback(() => {
-    if (!isExpanded) {
-      setIsExpanded(true);
-      setShowOptions(true);
-    } else {
-      setIsExpanded(false);
-      setShowOptions(false);
-      // Don't clear explanation when collapsing
-    }
-  }, [isExpanded]);
 
   const handlePresetSelect = useCallback(
     (questionType: QuestionType) => {
@@ -161,105 +147,93 @@ export function AnswerExplanation({
 
   return (
     <div className={cn("mt-4", isMobile && "mt-3")}>
-      <ExplanationTrigger
-        onClick={handleTriggerClick}
-        isExpanded={isExpanded}
-        isLoading={explainMutation.isPending}
-      />
-
-      {isExpanded && (
-        <Card
-          className={cn(
-            "mt-5 overflow-hidden border-none !p-0",
-            explainMutation.isPending && "border-blue-200",
+      <Card className="overflow-hidden border-none !p-0">
+        <CardContent className="p-0">
+          {showOptions && !currentExplanation && (
+            <div className="space-y-4">
+              <PresetOptions onSelect={handlePresetSelect} />
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background text-muted-foreground px-2">
+                    Or ask a specific question
+                  </span>
+                </div>
+              </div>
+              <CustomQuestionInput
+                onSubmit={handleCustomQuestion}
+                isLoading={explainMutation.isPending}
+              />
+            </div>
           )}
-        >
-          <CardContent className={cn("p-0")}>
-            {showOptions && !currentExplanation && (
-              <div className="space-y-4">
-                <PresetOptions onSelect={handlePresetSelect} />
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background text-muted-foreground px-2">
-                      Or ask a specific question
-                    </span>
-                  </div>
-                </div>
-                <CustomQuestionInput
-                  onSubmit={handleCustomQuestion}
-                  isLoading={explainMutation.isPending}
+
+          {currentExplanation && (
+            <div className="space-y-4">
+              <ExplanationDisplay
+                explanation={currentExplanation}
+                isLoading={explainMutation.isPending}
+              />
+
+              {conversationHistory.length > 1 && (
+                <ConversationThread
+                  history={conversationHistory}
+                  onQuestionClick={handleFollowUpClick}
                 />
-              </div>
-            )}
+              )}
 
-            {currentExplanation && (
-              <div className="space-y-4">
-                <ExplanationDisplay
-                  explanation={currentExplanation}
-                  isLoading={explainMutation.isPending}
-                />
-
-                {conversationHistory.length > 1 && (
-                  <ConversationThread
-                    history={conversationHistory}
-                    onQuestionClick={handleFollowUpClick}
-                  />
-                )}
-
-                {suggestedFollowUps.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-muted-foreground text-sm font-medium">
-                      Suggested follow-up questions:
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {suggestedFollowUps.map((question, index) => (
-                        <div
-                          key={index}
-                          onClick={() => handleFollowUpClick(question)}
-                          className="border-muted bg-muted hover:text-foreground cursor-pointer rounded-md border p-3 text-xs transition-colors"
-                        >
-                          {question}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <CustomQuestionInput
-                  onSubmit={handleCustomQuestion}
-                  isLoading={explainMutation.isPending}
-                  placeholder="Ask a follow-up question..."
-                />
-
-                <ExplanationActions
-                  onSave={handleSaveExplanation}
-                  onNewExplanation={() => {
-                    setCurrentExplanation(null);
-                    setShowOptions(true);
-                    setConversationHistory([]);
-                  }}
-                  isSaved={false}
-                  isLoading={saveExplanationMutation.isPending}
-                />
-              </div>
-            )}
-
-            {explainMutation.isPending && !currentExplanation && (
-              <div className="flex items-center justify-center py-8">
-                <div className="flex flex-col items-center space-y-3">
-                  <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
-                  <p className="text-muted-foreground text-sm">
-                    Generating explanation...
+              {suggestedFollowUps.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-muted-foreground text-sm font-medium">
+                    Suggested follow-up questions:
                   </p>
+                  <div className="flex flex-wrap gap-2">
+                    {suggestedFollowUps.map((question, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleFollowUpClick(question)}
+                        className="border-muted bg-muted hover:text-foreground cursor-pointer rounded-md border p-3 text-xs transition-colors"
+                      >
+                        {question}
+                      </div>
+                    ))}
+                  </div>
                 </div>
+              )}
+
+              <CustomQuestionInput
+                onSubmit={handleCustomQuestion}
+                isLoading={explainMutation.isPending}
+                placeholder="Ask a follow-up question..."
+              />
+
+              <ExplanationActions
+                onSave={handleSaveExplanation}
+                onNewExplanation={() => {
+                  setCurrentExplanation(null);
+                  setShowOptions(true);
+                  setConversationHistory([]);
+                  setSuggestedFollowUps([]);
+                }}
+                isSaved={false}
+                isLoading={saveExplanationMutation.isPending}
+              />
+            </div>
+          )}
+
+          {explainMutation.isPending && !currentExplanation && (
+            <div className="flex items-center justify-center py-8">
+              <div className="flex flex-col items-center space-y-3">
+                <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
+                <p className="text-muted-foreground text-sm">
+                  Generating explanation...
+                </p>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

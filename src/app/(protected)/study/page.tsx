@@ -17,6 +17,7 @@ import {
   Play,
   RotateCcw,
   BookOpen,
+  Lightbulb,
 } from "lucide-react";
 import { type ReviewRating } from "@prisma/client";
 import { ClozeDisplay } from "@/components/ClozeDisplay";
@@ -27,6 +28,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { AnswerExplanation } from "@/components/study/AnswerExplanation";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 
 interface StudySession {
   cards: {
@@ -775,8 +782,13 @@ function MobileStudySession({
   restartSession,
 }: MobileStudySessionProps) {
   const deckName = currentCard.card.deck?.name ?? "All Decks";
-  const cardTypeLabel =
-    currentCard.card.card_type === "CLOZE" ? "Cloze Deletion" : "Flashcard";
+  const [isExplanationOpen, setIsExplanationOpen] = useState(false);
+
+  useEffect(() => {
+    if (!session.showAnswer) {
+      setIsExplanationOpen(false);
+    }
+  }, [session.showAnswer, session.currentIndex]);
 
   return (
     <div className="bg-background fixed inset-0 z-[60] flex flex-col">
@@ -822,20 +834,9 @@ function MobileStudySession({
           <span>{Math.round(progress)}%</span>
         </div>
         <Progress value={progress} className="h-1.5" />
-        <div className="text-muted-foreground mt-3 flex flex-wrap items-center justify-center gap-2 text-xs">
-          <Badge variant="outline" className="px-2 py-1 text-[11px]">
-            {deckName}
-          </Badge>
-          {currentCard.card.tags?.slice(0, 2).map((tag) => (
-            <Badge
-              key={tag}
-              variant="secondary"
-              className="px-2 py-1 text-[11px]"
-            >
-              {tag}
-            </Badge>
-          ))}
-        </div>
+        <p className="text-muted-foreground mt-2 text-center text-xs font-medium">
+          {deckName}
+        </p>
       </div>
 
       {isPaused ? (
@@ -853,10 +854,7 @@ function MobileStudySession({
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto px-4 pb-6">
-          <div className="text-muted-foreground mb-4 text-center text-xs font-medium tracking-wide uppercase">
-            {cardTypeLabel}
-          </div>
-          <div className="bg-card rounded-2xl border p-4 shadow-sm">
+          <div className="bg-card rounded-lg border p-4">
             {currentCard.card.card_type === "CLOZE" ? (
               <ClozeDisplay
                 clozeText={currentCard.card.cloze_text ?? ""}
@@ -868,30 +866,18 @@ function MobileStudySession({
                 className="space-y-4 text-left"
               />
             ) : (
-              <div className="space-y-5">
-                <div className="bg-muted/50 rounded-xl p-4 text-base leading-relaxed">
+              <div className="space-y-4">
+                <div className="bg-muted/50 rounded-lg p-4 text-base leading-relaxed">
                   <MarkdownRenderer>{currentCard.card.front}</MarkdownRenderer>
                 </div>
                 {session.showAnswer && (
-                  <div className="rounded-xl border border-green-200 bg-green-50 p-4 text-base leading-relaxed font-medium text-green-900">
+                  <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-base leading-relaxed font-medium text-green-900">
                     <MarkdownRenderer>{currentCard.card.back}</MarkdownRenderer>
                   </div>
                 )}
               </div>
             )}
           </div>
-
-          {session.showAnswer && (
-            <div className="bg-muted/40 mt-4 rounded-xl border p-4 text-left">
-              <AnswerExplanation
-                cardId={currentCard.card.id}
-                front={currentCard.card.front ?? ""}
-                back={currentCard.card.back ?? ""}
-                clozeText={currentCard.card.cloze_text ?? undefined}
-                key={`${currentCard.card.id}-${session.currentIndex}`}
-              />
-            </div>
-          )}
         </div>
       )}
 
@@ -902,6 +888,32 @@ function MobileStudySession({
             paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
           }}
         >
+          {session.showAnswer && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="mb-3 w-full text-sm font-medium"
+              onClick={() => setIsExplanationOpen(true)}
+            >
+              <Lightbulb className="mr-2 h-4 w-4" /> Explain this answer
+            </Button>
+          )}
+          <Drawer open={isExplanationOpen} onOpenChange={setIsExplanationOpen}>
+            <DrawerContent className="z-[70]">
+              <DrawerHeader className="border-b px-4 py-3">
+                <DrawerTitle>Answer explanation</DrawerTitle>
+              </DrawerHeader>
+              <div className="overflow-y-auto px-4 pb-6">
+                <AnswerExplanation
+                  cardId={currentCard.card.id}
+                  front={currentCard.card.front ?? ""}
+                  back={currentCard.card.back ?? ""}
+                  clozeText={currentCard.card.cloze_text ?? undefined}
+                  key={`${currentCard.card.id}-${session.currentIndex}`}
+                />
+              </div>
+            </DrawerContent>
+          </Drawer>
           {!session.showAnswer ? (
             <Button
               onClick={showAnswer}

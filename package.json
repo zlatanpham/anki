@@ -140,5 +140,10 @@
     "*.{json,md,yml,yaml}": [
       "prettier --write"
     ]
+  },
+  "pnpm": {
+    "overrides": {
+      "debug": "4.4.3"
+    }
   }
 }

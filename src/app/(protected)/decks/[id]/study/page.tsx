@@ -17,6 +17,7 @@ import {
   Play,
   RotateCcw,
   BookOpen,
+  Lightbulb,
 } from "lucide-react";
 import { type ReviewRating } from "@prisma/client";
 import { ClozeDisplay } from "@/components/ClozeDisplay";
@@ -35,6 +36,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { AnswerExplanation } from "@/components/study/AnswerExplanation";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 
 interface StudySession {
   cards: Array<{
@@ -227,6 +234,17 @@ export default function DeckStudyPage() {
     // Navigate back to the deck cards page
     router.push(`/decks/${deckId}/cards`);
   };
+
+  useEffect(() => {
+    if (!isMobile || !session) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isMobile, session]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -496,6 +514,26 @@ export default function DeckStudyPage() {
   const progress =
     session.cards.length > 0 ? (totalAnswered / session.cards.length) * 100 : 0;
 
+  if (isMobile) {
+    return (
+      <MobileDeckStudySession
+        session={session}
+        currentCard={currentCard}
+        progress={progress}
+        isPaused={isPaused}
+        togglePause={togglePause}
+        showAnswer={showAnswer}
+        submitCardReview={submitCardReview}
+        submitReviewPending={submitReview.isPending}
+        finishSession={() => {
+          void finishSession();
+        }}
+        resetSession={resetSession}
+        deckName={deck?.name}
+      />
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -727,6 +765,232 @@ export default function DeckStudyPage() {
                 <span className="hidden text-xs opacity-70 sm:block">
                   Press {ratingKeys.easy}
                 </span>
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface MobileDeckStudySessionProps {
+  session: StudySession;
+  currentCard: StudySession["cards"][number];
+  progress: number;
+  isPaused: boolean;
+  togglePause: () => void;
+  showAnswer: () => void;
+  submitCardReview: (rating: ReviewRating) => void;
+  submitReviewPending: boolean;
+  finishSession: () => void;
+  resetSession: () => void;
+  deckName?: string;
+}
+
+function MobileDeckStudySession({
+  session,
+  currentCard,
+  progress,
+  isPaused,
+  togglePause,
+  showAnswer,
+  submitCardReview,
+  submitReviewPending,
+  finishSession,
+  resetSession,
+  deckName,
+}: MobileDeckStudySessionProps) {
+  const [isExplanationOpen, setIsExplanationOpen] = useState(false);
+  const resolvedDeckName = deckName ?? "Deck Study";
+
+  useEffect(() => {
+    if (!session.showAnswer) {
+      setIsExplanationOpen(false);
+    }
+  }, [session.showAnswer, session.currentIndex]);
+
+  return (
+    <div className="bg-background fixed inset-0 z-[60] flex flex-col">
+      <div className="flex items-center justify-between border-b px-4 py-3">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={finishSession}
+          className="font-semibold"
+        >
+          End
+        </Button>
+        <div className="text-sm font-semibold">
+          {session.currentIndex + 1} / {session.cards.length}
+        </div>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={resetSession}
+            aria-label="Reset session"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={togglePause}
+            aria-label={isPaused ? "Resume study" : "Pause study"}
+          >
+            {isPaused ? (
+              <Play className="h-4 w-4" />
+            ) : (
+              <Pause className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      </div>
+
+      <div className="border-b px-4 py-3">
+        <div className="text-muted-foreground mb-2 flex items-center justify-between text-xs tracking-wide uppercase">
+          <span>Progress</span>
+          <span>{Math.round(progress)}%</span>
+        </div>
+        <Progress value={progress} className="h-1.5" />
+        <p className="text-muted-foreground mt-2 text-center text-xs font-medium">
+          {resolvedDeckName}
+        </p>
+      </div>
+
+      {isPaused ? (
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+          <Pause className="text-muted-foreground h-12 w-12" />
+          <div>
+            <h2 className="text-lg font-semibold">Study paused</h2>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Take a short break and resume when you&apos;re ready.
+            </p>
+          </div>
+          <Button onClick={togglePause} className="px-6">
+            <Play className="mr-2 h-4 w-4" /> Resume
+          </Button>
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto px-4 pb-6">
+          <div className="bg-card rounded-lg border p-4">
+            {currentCard.card_type === "CLOZE" ? (
+              <ClozeDisplay
+                clozeText={currentCard.cloze_text ?? ""}
+                front={currentCard.front}
+                back={currentCard.back ?? ""}
+                showAnswer={session.showAnswer}
+                onShowAnswer={showAnswer}
+                hideRevealButton
+                className="space-y-4 text-left"
+              />
+            ) : (
+              <div className="space-y-4">
+                <div className="bg-muted/50 rounded-lg p-4 text-base leading-relaxed">
+                  <MarkdownRenderer>{currentCard.front}</MarkdownRenderer>
+                </div>
+                {session.showAnswer && (
+                  <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-base leading-relaxed font-medium text-green-900">
+                    <MarkdownRenderer>
+                      {currentCard.back ?? ""}
+                    </MarkdownRenderer>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {!isPaused && (
+        <div
+          className="bg-background border-t px-4 pt-4"
+          style={{
+            paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
+          }}
+        >
+          {session.showAnswer && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="mb-3 w-full text-sm font-medium"
+              onClick={() => setIsExplanationOpen(true)}
+            >
+              <Lightbulb className="mr-2 h-4 w-4" /> Explain this answer
+            </Button>
+          )}
+          <Drawer open={isExplanationOpen} onOpenChange={setIsExplanationOpen}>
+            <DrawerContent className="z-[70]">
+              <DrawerHeader className="border-b px-4 py-3">
+                <DrawerTitle>Answer explanation</DrawerTitle>
+              </DrawerHeader>
+              <div className="overflow-y-auto px-4 pb-6">
+                <AnswerExplanation
+                  cardId={currentCard.id}
+                  front={currentCard.front}
+                  back={currentCard.back ?? ""}
+                  clozeText={currentCard.cloze_text ?? undefined}
+                  key={`${currentCard.id}-${session.currentIndex}`}
+                />
+              </div>
+            </DrawerContent>
+          </Drawer>
+          {!session.showAnswer ? (
+            <Button
+              onClick={showAnswer}
+              size="lg"
+              className="h-14 w-full text-base font-semibold"
+            >
+              Show Answer
+            </Button>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant={ratingColors.again.variant}
+                onClick={() => submitCardReview("AGAIN")}
+                disabled={submitReviewPending}
+                className={cn(
+                  "h-14 text-base font-semibold",
+                  ratingColors.again.variant === "destructive"
+                    ? ""
+                    : ratingColors.again.className,
+                )}
+              >
+                {ratingLabels.again}
+              </Button>
+              <Button
+                variant={ratingColors.hard.variant}
+                onClick={() => submitCardReview("HARD")}
+                disabled={submitReviewPending}
+                className={cn(
+                  "h-14 text-base font-semibold",
+                  ratingColors.hard.className,
+                )}
+              >
+                {ratingLabels.hard}
+              </Button>
+              <Button
+                variant={ratingColors.good.variant}
+                onClick={() => submitCardReview("GOOD")}
+                disabled={submitReviewPending}
+                className={cn(
+                  "h-14 text-base font-semibold",
+                  ratingColors.good.className,
+                )}
+              >
+                {ratingLabels.good}
+              </Button>
+              <Button
+                variant={ratingColors.easy.variant}
+                onClick={() => submitCardReview("EASY")}
+                disabled={submitReviewPending}
+                className={cn(
+                  "h-14 text-base font-semibold",
+                  ratingColors.easy.className,
+                )}
+              >
+                {ratingLabels.easy}
               </Button>
             </div>
           )}
